@@ -15,6 +15,8 @@ struct TEAM21_CH3_PROJECT_API FOutGameWeaponPreviewData
 	FText displayName;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<AActor> weaponClass;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<AActor> previewSpawnPoint;
 	UPROPERTY(EditInstanceOnly)
 	float weaponDamage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

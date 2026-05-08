@@ -48,6 +48,6 @@ void AOutGamePlayerController::SetViewTargetByTag(FName cameraTag, float blendTi
 	
 	if (foundCameras.Num() > 0 && IsValid(foundCameras[0]))
 	{
-		SetViewTargetWithBlend(foundCameras[0], blendTime);
+		SetViewTargetWithBlend(foundCameras[0], blendTime,VTBlend_EaseInOut, 2.0f);
 	}
 }
