@@ -128,13 +128,37 @@ void ACharacterBase::HandleOnCheckHit()
 			{
 				if (IsValid(HitResult.GetActor()) == true)
 				{
-					UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Hit Actor Name: %s"), *HitResult.GetActor()->GetName()));
+					if (1 == ShowAttackMeleeDebug)
+					{
+						UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Hit Actor Name: %s"), *HitResult.GetActor()->GetName()));
+					}
 					FDamageEvent DamageEvent;
 					HitResult.GetActor()->TakeDamage(10.f, DamageEvent, GetController(), this);
 				}
 			}
 		}
 	}
+	
+	//if (1 == ShowAttackMeleeDebug)
+	//{
+	//	FVector TraceVector = AttackMeleeRange * GetActorForwardVector(); //50.f * 벡터X , 정면으로 나가는 벡터
+	//	FVector Center = GetActorLocation() + TraceVector + GetActorUpVector() * 40.f; //캐릭터 앞쪽이동/캡슐을 위로 40.f들어올림
+	//	float HalfHeight = AttackMeleeRange * 0.5f + AttackMeleeRadius; //캡슐높이 절반
+	//	FQuat CapsuleRot = FRotationMatrix::MakeFromZ(TraceVector).ToQuat(); //캡슐 회전 / ToQuit-> 가로로 눕힘
+	//	FColor DrawColor = true == bResult ? FColor::Green : FColor::Red; //초록색 : hit, 빨간색 NonHit
+	//	float DebugLifeTime = 5.f; //Duration
+	//
+	//	DrawDebugCapsule(
+	//		GetWorld(), //디버깅할 장소
+	//		Center, //캡슐 중앙위치
+	//		HalfHeight, //캡슐 반높이
+	//		AttackMeleeRadius,//반지름
+	//		CapsuleRot,//가로
+	//		DrawColor,
+	//		false, //영구 지속
+	//		DebugLifeTime
+	//	);
+	//}
 }
 
 void ACharacterBase::HandleOnPostCharacterDead()
