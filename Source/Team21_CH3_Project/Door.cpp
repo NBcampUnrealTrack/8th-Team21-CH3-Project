@@ -42,11 +42,6 @@ void ADoor::BeginPlay()
 	OpenRelativeLocation = ClosedRelativeLocation + FVector(0.f, OpenDistance, 0.f);
 	
 	TargetRelativeLocation = ClosedRelativeLocation;
-
-	FTimerHandle TestTimer;
-	GetWorldTimerManager().SetTimer(TestTimer, [this]() {
-		this->Interact(nullptr);
-		}, 3.0f, false);
 	
 }
 

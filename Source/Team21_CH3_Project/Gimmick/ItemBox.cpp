@@ -22,14 +22,18 @@ void AItemBox::Interact(AActor* Interactor)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Box Opened!"));
 
-		int32 LootCount = FMath::RandRange(1, 2);
+		int32 LootCount = FMath::RandRange(1, 5);
 		for (int32 i = 0; i < LootCount; i++)
 		{
 			GiveRandomItem(Player);
 		}
 
 		bIsOpened = true;
+		
+		SetLifeSpan(2.0f);
 	}
+
+
 }
 
 void AItemBox::GiveRandomItem(AActor* TargetActor)
@@ -51,5 +55,7 @@ void AItemBox::GiveRandomItem(AActor* TargetActor)
 	{
 		UE_LOG(LogTemp, Log, TEXT("HealthPack Given!"));
 	}
+
+	
 }
 

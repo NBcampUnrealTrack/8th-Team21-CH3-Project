@@ -30,4 +30,6 @@ public:
 	TObjectPtr<UInputAction> Dash;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UInputAction> ToggleSelector;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UInputAction> Interaction;
 };
