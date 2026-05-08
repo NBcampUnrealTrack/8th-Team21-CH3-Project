@@ -41,6 +41,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Record")
 	void AddPlayerKillCount(int32 killCount = 1);
 
+	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Score")
+	int32 GetPlayerScore() const;
+	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Score")
+	int32 GetAIScore() const;
+	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Score")
+	void AddPlayerScore(int32 score = 1);
+	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Score")
+	void AddAIScore(int32 score = 1);
+	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Score")
+	void ClearScore();
+
 	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Result")
 	bool GetIsWin() const;
 	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Result")
@@ -56,6 +67,10 @@ private:
 	float masterVolume;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Record", meta = (AllowPrivateAccess = "true"))
 	int32 playerTotalKillCount;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Score", meta = (AllowPrivateAccess = "true"))
+	int32 playerScore;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Score", meta = (AllowPrivateAccess = "true"))
+	int32 aiScore;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Result", meta = (AllowPrivateAccess = "true"))
 	bool bIsWin;
 };

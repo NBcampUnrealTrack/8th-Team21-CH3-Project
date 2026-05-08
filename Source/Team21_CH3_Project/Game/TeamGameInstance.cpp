@@ -6,6 +6,8 @@ UTeamGameInstance::UTeamGameInstance(){
 	mouseSensitivity = 1.0f;
 	masterVolume = 1.0f;
 	playerTotalKillCount = 0;
+	playerScore = 0;
+	aiScore = 0;
 	bIsWin = false;
 }
 
@@ -52,8 +54,31 @@ void UTeamGameInstance::SetPlayerTotalKillCount(int32 killCount){
 }
 
 void UTeamGameInstance::AddPlayerKillCount(int32 killCount){
-	const int32 safeKillCount = FMath::Max(0, killCount);
+	int32 safeKillCount = FMath::Max(0, killCount);
 	playerTotalKillCount += safeKillCount;
+}
+
+int32 UTeamGameInstance::GetPlayerScore() const{
+	return playerScore;
+}
+
+int32 UTeamGameInstance::GetAIScore() const{
+	return aiScore;
+}
+
+void UTeamGameInstance::AddPlayerScore(int32 score){
+	int32 safeScore = FMath::Max(0, score);
+	playerScore += safeScore;
+}
+
+void UTeamGameInstance::AddAIScore(int32 score){
+	int32 safeScore = FMath::Max(0, score);
+	aiScore += safeScore;
+}
+
+void UTeamGameInstance::ClearScore(){
+	playerScore = 0;
+	aiScore = 0;
 }
 
 bool UTeamGameInstance::GetIsWin() const{
