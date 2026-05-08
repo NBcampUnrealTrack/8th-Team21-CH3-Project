@@ -88,3 +88,11 @@ bool UTeamGameInstance::GetIsWin() const{
 void UTeamGameInstance::SetIsWin(bool bNewIsWin){
 	bIsWin = bNewIsWin;
 }
+
+bool UTeamGameInstance::GetMatch() const{
+	return bIsWin;
+}
+
+void UTeamGameInstance::SetMatch(bool bHasMatch){
+	bIsWin = bHasMatch;
+}

@@ -56,6 +56,10 @@ public:
 	bool GetIsWin() const;
 	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Result")
 	void SetIsWin(bool bNewIsWin);
+	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Result")
+	bool GetMatch() const;
+	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Result")
+	void SetMatch(bool bHasMatch);
 
 
 private:
@@ -73,4 +77,6 @@ private:
 	int32 aiScore;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Result", meta = (AllowPrivateAccess = "true"))
 	bool bIsWin;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Result", meta = (AllowPrivateAccess = "true"))
+	bool bHasMatchResult;
 };
