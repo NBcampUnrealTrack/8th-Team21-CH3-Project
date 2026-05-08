@@ -35,6 +35,8 @@ void UOutGameTransitionWidget::PlayFadeOut(){
 }
 
 void UOutGameTransitionWidget::PlayFadeIn(){
+	SetVisibility(ESlateVisibility::Visible);
+	
 	if (IsValid(FadeInAnim) == true) PlayAnimation(FadeInAnim);
 }
 

@@ -9,6 +9,7 @@ UTeamGameInstance::UTeamGameInstance(){
 	playerScore = 0;
 	aiScore = 0;
 	bIsWin = false;
+	bHasMatchResult = true;
 }
 
 EWeaponType UTeamGameInstance::GetSelectedWeaponType() const{
@@ -90,7 +91,7 @@ void UTeamGameInstance::SetIsWin(bool bNewIsWin){
 }
 
 bool UTeamGameInstance::GetMatch() const{
-	return bIsWin;
+	return bHasMatchResult;
 }
 
 void UTeamGameInstance::SetMatch(bool bHasMatch){

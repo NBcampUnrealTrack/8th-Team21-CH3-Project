@@ -3,6 +3,7 @@
 #include "Blueprint/UserWidget.h"
 #include "OutGameUI/Widget/OutGameRootWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "Game/TeamGameInstance.h"
 
 void AOutGamePlayerController::BeginPlay(){
 	Super::BeginPlay();
@@ -17,10 +18,18 @@ void AOutGamePlayerController::BeginPlay(){
 		if (IsValid(RootWidgetInstance) == true)
 		{
 			RootWidgetInstance->AddToViewport();
+			UTeamGameInstance* gameInstance = Cast<UTeamGameInstance>(GetWorld()->GetGameInstance());
+			if (IsValid(gameInstance) == true)
+			{
+				if (gameInstance->GetMatch() == true)
+				{
+					RootWidgetInstance->ShowTransitionFadein();
+					RootWidgetInstance->ShowWidget(EOutGameWidgetType::Result);
+					// gameInstance->SetMatch(false);
+				}
+			}
 		}
 	}
-	
-	// TODO:Create GameInstance Result / MainMenu Setting 
 	
 	bShowMouseCursor = true;
 	

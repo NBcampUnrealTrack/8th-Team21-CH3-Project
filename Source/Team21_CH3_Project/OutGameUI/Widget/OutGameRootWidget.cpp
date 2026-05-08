@@ -28,6 +28,14 @@ void UOutGameRootWidget::ShowTransition(TFunction<void()> action){
 	if (IsValid(TransitionWidget) == true) TransitionWidget->PlayFadeOut();
 }
 
+void UOutGameRootWidget::ShowTransitionFadeOut(){
+	if (IsValid(TransitionWidget) == true) TransitionWidget->PlayFadeOut();
+}
+
+void UOutGameRootWidget::ShowTransitionFadein(){
+	if (IsValid(TransitionWidget) == true) TransitionWidget->PlayFadeIn();
+}
+
 void UOutGameRootWidget::SetHeaderVisible(bool bVisible){
 	if (IsValid(commonHeaderWidget) == true)
 	{

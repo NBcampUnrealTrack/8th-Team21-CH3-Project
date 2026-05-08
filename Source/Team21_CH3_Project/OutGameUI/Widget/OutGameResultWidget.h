@@ -6,6 +6,7 @@
 #include "OutGameResultWidget.generated.h"
 
 class UButton;
+class UTextBlock;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API UOutGameResultWidget : public UOutGameWidgetBase
@@ -17,7 +18,15 @@ public:
 	
 private:
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> ReturnToLobbyButton;
+	TObjectPtr<UButton> returnToLobbyButton;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> playerTotalKillText;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> gameResultText;
+	
+	//UPROPERTY(meta = (BindWidget))
+	//TObjectPtr<UWidgetSwitcher> screenSwitcher;
+	
 	UFUNCTION()
 	void HandleReturnToLobby(); 
 };

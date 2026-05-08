@@ -61,7 +61,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Result")
 	void SetMatch(bool bHasMatch);
 
-
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Weapon", meta = (AllowPrivateAccess = "true"))
 	EWeaponType selectedWeaponType;
@@ -77,6 +76,6 @@ private:
 	int32 aiScore;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Result", meta = (AllowPrivateAccess = "true"))
 	bool bIsWin;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Result", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Team Game Instance|Result", meta = (AllowPrivateAccess = "true"))
 	bool bHasMatchResult;
 };
