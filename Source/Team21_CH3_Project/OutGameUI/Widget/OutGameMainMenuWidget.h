@@ -32,7 +32,5 @@ protected:
 	UFUNCTION()
 	void HandlePlayClicked();
 	UFUNCTION()
-	void HandleSettingsClicked();
-	UFUNCTION()
 	void HandleQuitClicked();
 };

@@ -15,13 +15,13 @@ class UTextBlock;
 UCLASS()
 class TEAM21_CH3_PROJECT_API UOutGameSettingsWidget : public UOutGameWidgetBase{
 	GENERATED_BODY()
-	
+
 public:
 	virtual void NativeOnInitialized() override;
-	
+
 private:
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<USlider> mouseSensitivitySlider; 
+	TObjectPtr<USlider> mouseSensitivitySlider;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> mouseSensitivityText;
 	UPROPERTY(meta = (BindWidget))
@@ -30,7 +30,7 @@ private:
 	float pendingGraphicsQuality;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> applyButton;
-	
+
 	UFUNCTION()
 	void HandleMouseSensitivityChanged(float value);
 
@@ -38,9 +38,9 @@ private:
 	void HandleGraphicsQualityChanged(FString selectedItem, ESelectInfo::Type selectionType);
 	UFUNCTION()
 	void HandleApplyClicked();
-	
+
 #pragma region sound
-	
+
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<USlider> masterVolumeSlider;
 	UPROPERTY(meta = (BindWidget))
@@ -49,9 +49,9 @@ private:
 	TObjectPtr<USoundClass> masterSoundClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Sound")
 	TObjectPtr<USoundMix> soundMix;
-	
+
 	UFUNCTION()
 	void HandleMasterVolumeChanged(float value);
-	
-#pragma endregion 
+
+#pragma endregion
 };
