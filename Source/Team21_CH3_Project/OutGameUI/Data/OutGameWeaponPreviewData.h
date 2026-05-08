@@ -20,7 +20,7 @@ struct TEAM21_CH3_PROJECT_API FOutGameWeaponPreviewData
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 ammoCapacity;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float shootingSpeed;
+	float firePerMinute;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float shootingRange;
+	float maxAttackRange;
 };

@@ -9,7 +9,7 @@ UTeamGameInstance::UTeamGameInstance(){
 	playerScore = 0;
 	aiScore = 0;
 	bIsWin = false;
-	bHasMatchResult = true;
+	bHasMatchResult = false;
 }
 
 EWeaponType UTeamGameInstance::GetSelectedWeaponType() const{
