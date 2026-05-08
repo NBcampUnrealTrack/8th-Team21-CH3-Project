@@ -53,6 +53,7 @@ private:
 	void InputToggleSelector(const FInputActionValue& InValue);
 	void InputStartFullAutoFire(const FInputActionValue& InValue);
 	void InputStopFullAutoFire(const FInputActionValue& InValue);
+	void InputInteraction(const FInputActionValue& InValue);
 
 
 protected:
@@ -99,5 +100,13 @@ public:
 		// 타이머 핸들 변수 선언
 	//float TimeBetweenFire;
 		// 발사 간 타이밍
+#pragma endregion
+
+#pragma region Interaction
+
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Interaction")
+	float InteractionRange = 1000.f;
+
 #pragma endregion
 };

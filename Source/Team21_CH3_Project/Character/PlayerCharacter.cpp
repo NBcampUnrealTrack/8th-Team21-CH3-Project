@@ -15,6 +15,7 @@
 #include "Engine/DamageEvents.h"
 #include "Team21_CH3_Project.h"
 #include "Animation/CharacterAnimInstance.h"
+#include "Interfaces/Interaction.h"
 
 
 
@@ -98,6 +99,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		CharacterInputComponent->BindAction(CharacterInputConfig->ToggleSelector, ETriggerEvent::Started, this, &ThisClass::InputToggleSelector);
 		CharacterInputComponent->BindAction(CharacterInputConfig->AttackRanged, ETriggerEvent::Started, this, &ThisClass::InputStartFullAutoFire);
 		CharacterInputComponent->BindAction(CharacterInputConfig->AttackRanged, ETriggerEvent::Completed, this, &ThisClass::InputStopFullAutoFire);
+		CharacterInputComponent->BindAction(CharacterInputConfig->Interaction, ETriggerEvent::Started, this, &ThisClass::InputInteraction);
 		//UE_LOG(LogTemp, Warning, TEXT("InputComponent Bind Suceess"));
 	}
 }
@@ -334,5 +336,47 @@ void APlayerCharacter::InputStopFullAutoFire(const FInputActionValue& InValue)
 	if (true == bIsFullAutoFire)
 	{
 		GetWorldTimerManager().ClearTimer(FullAutoTimerHandle);
+	}
+}
+
+void APlayerCharacter::InputInteraction(const FInputActionValue& InValue)
+{
+	DrawDebugSphere(GetWorld(), GetActorLocation(), 50.f, 16, FColor::Yellow, false, 3.f);
+
+	APlayerController* PlayerController = GetController<APlayerController>();
+	if (IsValid(PlayerController) == false)
+	{
+		return;
+	}
+
+	FVector CameraLocation;
+	FRotator CameraRotation;
+	PlayerController->GetPlayerViewPoint(CameraLocation, CameraRotation);
+
+	FVector TraceViewPoint = CameraLocation + CameraRotation.Vector() * InteractionRange;
+
+	FHitResult HitResult;
+	FCollisionQueryParams TraceCollision(NAME_None, false, this);
+
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, TraceViewPoint, ECC_Visibility, TraceCollision);
+
+	if (bHit)
+	{
+		DrawDebugLine(GetWorld(), CameraLocation, HitResult.ImpactPoint, FColor::Green, false, 3.f, 0, 2.f);
+		DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 5.f, 16, FColor::Green, false, 3.f);
+
+		IInteraction* Interactable = Cast<IInteraction>(HitResult.GetActor());
+		if (Interactable != nullptr)
+		{
+			Interactable->Interact(this);
+			UE_LOG(LogTemp, Warning, TEXT("Interaction Activated"))
+		}
+		
+	}
+
+	else
+	{
+		// 아무것도 안 맞았을 때: 시작점 → 끝점까지 빨간선
+		DrawDebugLine(GetWorld(), CameraLocation, TraceViewPoint, FColor::Red, false, 3.f, 0, 2.f);
 	}
 }
