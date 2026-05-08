@@ -25,7 +25,7 @@ void UOutGameMissionSelectWidget::LevelClicked(){
 			{
 				rootWidgetInstance->SetSelectedLevel(selectedMapLevel);
 				rootWidgetInstance->SetHeaderVisible(false);
-				pc->SetViewTargetByTag("WeaponSelectCamera", 0.0f);
+				pc->SetViewTargetByTag("RifleSelectCamera", 0.0f);
 				rootWidgetInstance->ShowWidget(EOutGameWidgetType::WeaponSelect);
 			});
 		}

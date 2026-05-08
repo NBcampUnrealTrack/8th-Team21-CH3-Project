@@ -23,6 +23,8 @@ public:
 	bool ShowPreviousWeapon();
 	UFUNCTION()
 	void ClearPreviewWeapon();
+	UFUNCTION()
+	void SetWeaponIndex(int32 index);
 private:
 	UPROPERTY(EditAnywhere, Category = "Preveiw|Weapon")
 	TArray<FOutGameWeaponPreviewData> weaponPreviews;

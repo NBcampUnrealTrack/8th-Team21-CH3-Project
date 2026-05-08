@@ -36,10 +36,14 @@ bool AOutGameWeaponPreviewManager::ShowWeaponByIndex(int32 weaponIndex){
 	ClearPreviewWeapon();
 	currentWeaponIndex = weaponIndex;
 	
+	FTransform spawnTransform = GetActorTransform();
+	previewSpawnPoint = data.previewSpawnPoint;
+	
+	if (IsValid(previewSpawnPoint) == true) spawnTransform = previewSpawnPoint->GetActorTransform();
+	
 	currentWeaponActor = GetWorld()->SpawnActor<AActor>(
 		data.weaponClass,
-		GetActorLocation(),
-		GetActorRotation()
+		spawnTransform
 	);
 
 	return IsValid(currentWeaponActor);
@@ -71,4 +75,8 @@ void AOutGameWeaponPreviewManager::ClearPreviewWeapon(){
 		currentWeaponActor->Destroy();
 		currentWeaponActor = nullptr;
 	}
+}
+
+void AOutGameWeaponPreviewManager::SetWeaponIndex(int32 index){
+	currentWeaponIndex = index;
 }

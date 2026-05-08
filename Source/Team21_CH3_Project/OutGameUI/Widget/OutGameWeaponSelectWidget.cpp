@@ -76,6 +76,10 @@ void UOutGameWeaponSelectWidget::HandleBackClicked(){
 		{
 			RootWidgetInstance->ShowTransition([this, RootWidgetInstance, PC]
 			{
+				if (IsValid(GetWeaponPreviewManagerInstance()) == true)
+				{
+					GetWeaponPreviewManagerInstance()->SetWeaponIndex(0);
+				}
 				ClearWeaponPreview();
 				RootWidgetInstance->SetHeaderVisible(true);
 				RootWidgetInstance->ShowWidget(EOutGameWidgetType::MainMenu);
@@ -97,6 +101,25 @@ void UOutGameWeaponSelectWidget::UpdateNextWeaponData(bool bIsNext){
 	
 	currentWeaponData = previewManager->GetCurrentWeaponData();
 	if (currentWeaponData == nullptr) return;
+	
+	//Camera logic
+	if (AOutGamePlayerController* PC = GetOwningPlayer<AOutGamePlayerController>())
+	{
+		switch (currentWeaponData->weaponType)
+		{
+		case EWeaponType::Rifle:
+			PC->SetViewTargetByTag("RifleSelectCamera", 0.5f);
+			break;
+		case EWeaponType::Shotgun:
+			PC->SetViewTargetByTag("ShotgunSelectCamera", 0.5f);
+			break;
+		case EWeaponType::Pistol:
+			PC->SetViewTargetByTag("PistolSelectCamera", 0.5f);
+			break;
+		default:
+			break;
+		}
+	}
 
 	SetWeaponInfo();
 }
