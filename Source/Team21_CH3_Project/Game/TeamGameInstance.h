@@ -7,9 +7,10 @@
 
 UENUM(BlueprintType)
 enum class EWeaponType : uint8{
-	Rifle UMETA(DisplayName = "Rifle"),
-	Shotgun UMETA(DisplayName = "Shotgun"),
-	Pistol UMETA(DisplayName = "Pistol")
+	Rifle = 0 UMETA(DisplayName = "Rifle"),
+	Shotgun = 1 UMETA(DisplayName = "Shotgun"),
+	Pistol = 2 UMETA(DisplayName = "Pistol"),
+	None
 };
 
 UCLASS(BlueprintType)

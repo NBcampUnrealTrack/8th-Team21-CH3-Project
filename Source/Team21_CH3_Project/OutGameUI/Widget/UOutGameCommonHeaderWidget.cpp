@@ -17,6 +17,7 @@ void UUOutGameCommonHeaderWidget::HandlePlayClicked(){
 		if (UOutGameRootWidget* RootWidgetInstance = PC->GetRootWidget())
 		{
 			RootWidgetInstance->ShowWidget(EOutGameWidgetType::MainMenu);
+			PC->SetViewTargetByTag("LobbyCamera", 0.0f);
 		}
 	}
 }
@@ -27,6 +28,7 @@ void UUOutGameCommonHeaderWidget::HandleWeaponsClicked(){
 		if (UOutGameRootWidget* RootWidgetInstance = PC->GetRootWidget())
 		{
 			RootWidgetInstance->ShowWidget(EOutGameWidgetType::Weapons);
+			PC->SetViewTargetByTag("SettingsCamera", 0.0f);
 		}
 	}
 }
@@ -37,6 +39,7 @@ void UUOutGameCommonHeaderWidget::HandleStoreButton(){
 		if (UOutGameRootWidget* RootWidgetInstance = PC->GetRootWidget())
 		{
 			RootWidgetInstance->ShowWidget(EOutGameWidgetType::Store);
+			PC->SetViewTargetByTag("SettingsCamera", 0.0f);
 		}
 	}
 }
@@ -47,6 +50,7 @@ void UUOutGameCommonHeaderWidget::HandleSettingsClicked(){
 		if (UOutGameRootWidget* RootWidgetInstance = PC->GetRootWidget())
 		{
 			RootWidgetInstance->ShowWidget(EOutGameWidgetType::Settings);
+			PC->SetViewTargetByTag("SettingsCamera", 0.0f);
 		}
 	}
 }

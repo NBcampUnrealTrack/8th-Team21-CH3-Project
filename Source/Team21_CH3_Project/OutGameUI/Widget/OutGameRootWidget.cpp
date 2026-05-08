@@ -3,6 +3,9 @@
 #include "Components/WidgetSwitcher.h"
 #include "OutGameUI/Widget/OutGameTransitionWidget.h"
 #include "OutGameUI/Widget/UOutGameCommonHeaderWidget.h"
+#include "OutGameUI/Controller/OutGamePlayerController.h"
+#include "Game/TeamGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 
 void UOutGameRootWidget::NativeOnInitialized(){
 	Super::NativeOnInitialized();
@@ -54,6 +57,32 @@ void UOutGameRootWidget::HandleTransitionFadeOutFinished(){
 		TransitionWidget->PlayFadeIn();
 	}
 }
+
+void UOutGameRootWidget::OpenSelectedLevel(){
+	switch (selectedMapLevel)
+	{
+	case EMapLevel::Easy:
+		UGameplayStatics::OpenLevel(this, TEXT("EasyMap"));
+		break;
+	case EMapLevel::Normal:
+		UGameplayStatics::OpenLevel(this, TEXT("NormalMap"));
+		break;
+	case EMapLevel::Hard:
+		UGameplayStatics::OpenLevel(this, TEXT("HardMap"));
+		break;
+	default:
+		break;
+	}
+}
+
+EMapLevel UOutGameRootWidget::GetSelectedLevel(){
+	return selectedMapLevel;
+}
+
+void UOutGameRootWidget::SetSelectedLevel(EMapLevel level){
+	selectedMapLevel = level;
+}
+
 
 
 

@@ -13,12 +13,14 @@ class TEAM21_CH3_PROJECT_API AOutGameWeaponPreviewManager : public AActor{
 public:
 	AOutGameWeaponPreviewManager();
 	
+	const FOutGameWeaponPreviewData* GetCurrentWeaponData();
+	
 	UFUNCTION()
-	void ShowWeaponByIndex(int32 index);
+	bool ShowWeaponByIndex(int32 weaponIndex);
 	UFUNCTION()
-	void ShowNextWeapon();
+	bool ShowNextWeapon();
 	UFUNCTION()
-	void ShowPreviousWeapon();
+	bool ShowPreviousWeapon();
 	UFUNCTION()
 	void ClearPreviewWeapon();
 private:
