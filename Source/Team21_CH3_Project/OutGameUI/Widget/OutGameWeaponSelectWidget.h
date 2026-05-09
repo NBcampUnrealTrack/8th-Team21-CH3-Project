@@ -17,6 +17,13 @@ class TEAM21_CH3_PROJECT_API UOutGameWeaponSelectWidget : public UOutGameWidgetB
 public:
 	virtual void NativeOnInitialized() override;
 
+	UFUNCTION()
+	void EnterWeaponSelect();
+	UFUNCTION()
+	void NavigateWeapon(int32 direction);
+	UFUNCTION()
+	void RequestBack();
+	
 private:
 	UFUNCTION()
 	void HandleNextClicked();
@@ -46,13 +53,18 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> backButton;
 	
-	void UpdateNextWeaponData(bool bIsNext);
 	UFUNCTION()
-	void SetWeaponInfo();
+	void UpdateNextWeaponData(bool bIsNext);
 	UFUNCTION()
 	void ClearWeaponPreview();
 	UFUNCTION()
+	void SetWeaponInfo();
+	UFUNCTION()
 	AOutGameWeaponPreviewManager* GetWeaponPreviewManagerInstance();
 	
+	void UnlockWeaponCameraMove();
+	
 	const FOutGameWeaponPreviewData* currentWeaponData;
+	FTimerHandle weaponCameraMoveTimerHandle;
+	bool bIsWeaponCameraMoving;
 };

@@ -4,6 +4,7 @@
 #include "OutGameUI/Widget/OutGameRootWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Game/TeamGameInstance.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 void AOutGamePlayerController::BeginPlay(){
 	Super::BeginPlay();
@@ -31,15 +32,19 @@ void AOutGamePlayerController::BeginPlay(){
 		}
 	}
 	
-	bShowMouseCursor = true;
-	
-	FInputModeUIOnly inputMode;
+	FInputModeGameAndUI inputMode;
+	inputMode.SetHideCursorDuringCapture(false); // Drag and Click -> don't hide cursor
 	SetInputMode(inputMode);
+	
+	bShowMouseCursor = true;
 }
 
-UOutGameRootWidget* AOutGamePlayerController::GetRootWidget() const{
-	if (IsValid(RootWidgetInstance) == true) return RootWidgetInstance;
-	return nullptr;
+void AOutGamePlayerController::SetupInputComponent(){
+	Super::SetupInputComponent();
+	
+	InputComponent->BindKey(EKeys::A, IE_Pressed, this, &ThisClass::HandleNavigateLeft);
+	InputComponent->BindKey(EKeys::D, IE_Pressed, this, &ThisClass::HandleNavigateRight);
+	InputComponent->BindKey(EKeys::Q, IE_Pressed, this, &ThisClass::HandleEscPressed);
 }
 
 void AOutGamePlayerController::SetViewTargetByTag(FName cameraTag, float blendTime){
@@ -50,4 +55,21 @@ void AOutGamePlayerController::SetViewTargetByTag(FName cameraTag, float blendTi
 	{
 		SetViewTargetWithBlend(foundCameras[0], blendTime,VTBlend_EaseInOut, 2.0f);
 	}
+}
+
+UOutGameRootWidget* AOutGamePlayerController::GetRootWidget() const{
+	if (IsValid(RootWidgetInstance) == true) return RootWidgetInstance;
+	return nullptr;
+}
+
+void AOutGamePlayerController::HandleNavigateLeft(){
+	if (IsValid(RootWidgetInstance) == true) RootWidgetInstance->HandleNavigateHorizontal(-1);
+}
+
+void AOutGamePlayerController::HandleNavigateRight(){
+	if (IsValid(RootWidgetInstance) == true) RootWidgetInstance->HandleNavigateHorizontal(1);
+}
+
+void AOutGamePlayerController::HandleEscPressed(){
+	if (IsValid(RootWidgetInstance) == true) RootWidgetInstance->HandleBackRequested();
 }

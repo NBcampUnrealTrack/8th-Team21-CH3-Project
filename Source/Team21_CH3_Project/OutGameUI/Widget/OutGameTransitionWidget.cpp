@@ -45,6 +45,7 @@ void UOutGameTransitionWidget::HandleFadeOutFinished(){
 }
 
 void UOutGameTransitionWidget::HandleFadeInFinished(){
+	OnFadeInFinished.Broadcast();
 	SetVisibility(ESlateVisibility::Collapsed);
 }
 

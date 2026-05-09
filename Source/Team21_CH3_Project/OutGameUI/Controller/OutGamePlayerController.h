@@ -14,17 +14,25 @@ class TEAM21_CH3_PROJECT_API AOutGamePlayerController : public APlayerController
 	
 protected:
 	virtual void BeginPlay() override;
+	virtual void SetupInputComponent() override;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "OutGame UI")
 	TSubclassOf<UOutGameRootWidget> RootWidgetClass;
-
+	
+public:
+	UFUNCTION()
+	void SetViewTargetByTag(FName cameraTag, float blendTime);
+	
+	UOutGameRootWidget* GetRootWidget() const;
+	
 private:
 	UPROPERTY(Transient)
 	TObjectPtr<UOutGameRootWidget> RootWidgetInstance;
 	
-public:
-	UOutGameRootWidget* GetRootWidget() const;
-	
 	UFUNCTION()
-	void SetViewTargetByTag(FName cameraTag, float blendTime);
+	void HandleNavigateLeft();
+	UFUNCTION()
+	void HandleNavigateRight();
+	UFUNCTION()
+	void HandleEscPressed();
 };

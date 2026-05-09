@@ -95,5 +95,5 @@ bool UTeamGameInstance::GetMatch() const{
 }
 
 void UTeamGameInstance::SetMatch(bool bHasMatch){
-	bIsWin = bHasMatch;
+	bHasMatchResult = bHasMatch;
 }

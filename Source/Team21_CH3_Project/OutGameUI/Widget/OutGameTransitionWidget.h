@@ -6,6 +6,7 @@
 #include "OutGameTransitionWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnFadeOutFinished);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnFadeInFinished);
 
 class UWidgetAnimation;
 
@@ -25,6 +26,8 @@ public:
 	
 	UPROPERTY(BlueprintAssignable, Category = "Transition")
 	FOnFadeOutFinished OnFadeOutFinished;
+	UPROPERTY(BlueprintAssignable, Category = "Transition")
+	FOnFadeInFinished OnFadeInFinished;
 	
 private:
 	UPROPERTY(meta = (BindWidgetAnim), Transient)

@@ -10,6 +10,15 @@
 void UOutGameWeaponSelectWidget::NativeOnInitialized(){
 	Super::NativeOnInitialized();
 
+	if (IsValid(nextWeaponButton) == true) nextWeaponButton->OnClicked.AddUniqueDynamic(this, &ThisClass::UOutGameWeaponSelectWidget::HandleNextClicked);
+	if (IsValid(previousWeaponButton) == true) previousWeaponButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandlePreviousClicked);
+	if (IsValid(applyButton) == true) applyButton->OnClicked.AddUniqueDynamic(this, &ThisClass::UOutGameWeaponSelectWidget::HandleApplyClicked);
+	if (IsValid(backButton) == true) backButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleBackClicked);
+	
+	bIsWeaponCameraMoving = false;
+}
+
+void UOutGameWeaponSelectWidget::EnterWeaponSelect(){
 	AOutGameWeaponPreviewManager* previewManager = GetWeaponPreviewManagerInstance();
 	if (IsValid(previewManager) == false) return;
 	
@@ -21,13 +30,9 @@ void UOutGameWeaponSelectWidget::NativeOnInitialized(){
 		UE_LOG(LogTemp, Warning, TEXT("currentWeaponData not found"));
 		return;
 	}
-
-	SetWeaponInfo();
 	
-	if (IsValid(nextWeaponButton) == true) nextWeaponButton->OnClicked.AddUniqueDynamic(this, &ThisClass::UOutGameWeaponSelectWidget::HandleNextClicked);
-	if (IsValid(previousWeaponButton) == true) previousWeaponButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandlePreviousClicked);
-	if (IsValid(applyButton) == true) applyButton->OnClicked.AddUniqueDynamic(this, &ThisClass::UOutGameWeaponSelectWidget::HandleApplyClicked);
-	if (IsValid(backButton) == true) backButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleBackClicked);
+	bIsWeaponCameraMoving = false;
+	SetWeaponInfo();
 }
 
 void UOutGameWeaponSelectWidget::HandleNextClicked(){
@@ -80,7 +85,6 @@ void UOutGameWeaponSelectWidget::HandleBackClicked(){
 				{
 					GetWeaponPreviewManagerInstance()->SetWeaponIndex(0);
 				}
-				ClearWeaponPreview();
 				RootWidgetInstance->SetHeaderVisible(true);
 				RootWidgetInstance->ShowWidget(EOutGameWidgetType::MainMenu);
 				PC->SetViewTargetByTag("LobbyCamera", 0.0f);
@@ -89,7 +93,30 @@ void UOutGameWeaponSelectWidget::HandleBackClicked(){
 	}
 }
 
+void UOutGameWeaponSelectWidget::NavigateWeapon(int32 direction){
+	if (bIsWeaponCameraMoving == true) return;
+	
+	if (direction > 0) HandleNextClicked();
+	else HandlePreviousClicked();
+	
+	bIsWeaponCameraMoving = true;
+	
+	GetWorld()->GetTimerManager().SetTimer(
+		weaponCameraMoveTimerHandle,
+	this,
+		&ThisClass::UnlockWeaponCameraMove,
+	0.5f,
+	false
+	);
+}
+
+void UOutGameWeaponSelectWidget::RequestBack(){
+	HandleBackClicked();
+}
+
 void UOutGameWeaponSelectWidget::UpdateNextWeaponData(bool bIsNext){
+	
+	
 	AOutGameWeaponPreviewManager* previewManager = GetWeaponPreviewManagerInstance();
 	if (IsValid(previewManager) == false) return;
 	
@@ -120,8 +147,18 @@ void UOutGameWeaponSelectWidget::UpdateNextWeaponData(bool bIsNext){
 			break;
 		}
 	}
-
+	
 	SetWeaponInfo();
+}
+
+
+
+void UOutGameWeaponSelectWidget::ClearWeaponPreview(){
+	GetWeaponPreviewManagerInstance()->ClearPreviewWeapon();
+}
+
+void UOutGameWeaponSelectWidget::UnlockWeaponCameraMove(){
+	bIsWeaponCameraMoving = false;
 }
 
 void UOutGameWeaponSelectWidget::SetWeaponInfo(){
@@ -130,10 +167,6 @@ void UOutGameWeaponSelectWidget::SetWeaponInfo(){
 	ammoCapacityText->SetText(FText::FromString(FString::Printf(TEXT("%d"), currentWeaponData->ammoCapacity)));
 	fireRateText->SetText(FText::FromString(FString::Printf(TEXT("%0.f"), currentWeaponData->firePerMinute)));
 	weaponRangeText->SetText(FText::FromString(FString::Printf(TEXT("%0.f"), currentWeaponData->maxAttackRange)));
-}
-
-void UOutGameWeaponSelectWidget::ClearWeaponPreview(){
-	GetWeaponPreviewManagerInstance()->ClearPreviewWeapon();
 }
 
 AOutGameWeaponPreviewManager* UOutGameWeaponSelectWidget::GetWeaponPreviewManagerInstance(){

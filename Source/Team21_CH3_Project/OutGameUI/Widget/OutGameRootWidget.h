@@ -6,6 +6,7 @@
 #include "OutGameRootWidget.generated.h"
 
 class UWidgetSwitcher;
+class UOutGameQuitConfirmWidget;
 class UOutGameTransitionWidget;
 class UUOutGameCommonHeaderWidget;
 
@@ -45,14 +46,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "OutGame UI")
 	void ShowTransitionFadein();
 	UFUNCTION(BlueprintCallable, Category = "OutGame UI")
+	void ShowQuitConfirm();
+	UFUNCTION(BlueprintCallable, Category = "OutGame UI")
 	void SetHeaderVisible(bool bVisible);
 	UFUNCTION(BlueprintCallable, Category = "OutGame UI")
 	void OpenSelectedLevel();
+	
 	
 	UFUNCTION()
 	EMapLevel GetSelectedLevel();
 	UFUNCTION()
 	void SetSelectedLevel(EMapLevel level);
+	
+	UFUNCTION()
+	void HandleNavigateHorizontal(int32 direction);
+	UFUNCTION()
+	void HandleBackRequested();
 	
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -62,12 +71,18 @@ protected:
 	
 	UFUNCTION()
 	void HandleTransitionFadeOutFinished();
-	
+	UFUNCTION()
+	void HandleTransitionFadeInFinished();
+
 private:
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UOutGameQuitConfirmWidget> quitConfirmWidget;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UOutGameTransitionWidget> TransitionWidget;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UUOutGameCommonHeaderWidget> commonHeaderWidget;
 	
+	EOutGameWidgetType currentWidgetType;
 	EMapLevel selectedMapLevel;
+	bool bIsTransitionPlaying;
 };
