@@ -35,7 +35,6 @@ void UOutGameSettingsWidget::HandleMouseSensitivityChanged(float value){
 }
 
 void UOutGameSettingsWidget::HandleMasterVolumeChanged(float value){
-	value = 70;
 	UGameplayStatics::SetSoundMixClassOverride(
 		this,
 		soundMix,

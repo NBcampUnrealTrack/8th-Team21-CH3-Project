@@ -2,16 +2,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "OutGameWidgetBase.h"
-#include "OutGameUI/Data/OutGameWeaponPreviewData.h"
+#include "OutGameWeaponPreviewWidgetBase.h"
 #include "OutGameWeaponSelectWidget.generated.h"
 
 class UButton;
 class UTextBlock;
-class AOutGameWeaponPreviewManager;
 
 UCLASS()
-class TEAM21_CH3_PROJECT_API UOutGameWeaponSelectWidget : public UOutGameWidgetBase{
+class TEAM21_CH3_PROJECT_API UOutGameWeaponSelectWidget : public UOutGameWeaponPreviewWidgetBase{
 	GENERATED_BODY()
 
 public:
@@ -52,22 +50,14 @@ private:
 	TObjectPtr<UButton> applyButton;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> backButton;
-	UPROPERTY(meta = (BindWidget))
-	FName previewManagerTag;
-	
 	
 	UFUNCTION()
 	void UpdateNextWeaponData(bool bIsNext);
 	UFUNCTION()
-	void ClearWeaponPreview();
-	UFUNCTION()
 	void SetWeaponInfo();
-	UFUNCTION()
-	AOutGameWeaponPreviewManager* GetWeaponPreviewManagerInstance();
 	
 	void UnlockWeaponCameraMove();
 	
-	const FOutGameWeaponPreviewData* currentWeaponData;
 	FTimerHandle weaponCameraMoveTimerHandle;
 	bool bIsWeaponCameraMoving;
 };

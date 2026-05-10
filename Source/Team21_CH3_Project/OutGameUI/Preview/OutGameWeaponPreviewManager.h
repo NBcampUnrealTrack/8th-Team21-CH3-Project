@@ -25,6 +25,9 @@ public:
 	void ClearPreviewWeapon();
 	UFUNCTION()
 	void SetWeaponIndex(int32 index);
+	UFUNCTION()
+	void RotateCurrentWeapon(float deltaYaw, float deltaPitch);
+	
 private:
 	UPROPERTY(EditAnywhere, Category = "Preveiw|Weapon")
 	TArray<FOutGameWeaponPreviewData> weaponPreviews;

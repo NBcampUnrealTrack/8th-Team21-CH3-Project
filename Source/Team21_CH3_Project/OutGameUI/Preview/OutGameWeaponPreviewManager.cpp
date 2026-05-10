@@ -80,3 +80,19 @@ void AOutGameWeaponPreviewManager::ClearPreviewWeapon(){
 void AOutGameWeaponPreviewManager::SetWeaponIndex(int32 index){
 	currentWeaponIndex = index;
 }
+
+void AOutGameWeaponPreviewManager::RotateCurrentWeapon(float deltaYaw, float deltaPitch){
+	if (IsValid(currentWeaponActor) == false) return;
+	
+	FRotator currentRotation = currentWeaponActor->GetActorRotation();
+	
+	currentRotation.Yaw += deltaYaw * 0.2f;
+	currentRotation.Pitch = FMath::Clamp(
+		currentRotation.Pitch + deltaPitch * 0.1f,
+		-20.0f,
+		20.0f
+	);
+	
+	currentWeaponActor->SetActorRotation(currentRotation);
+}
+

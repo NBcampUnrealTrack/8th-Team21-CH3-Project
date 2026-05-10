@@ -10,59 +10,55 @@
 void UOutGameWeaponSelectWidget::NativeOnInitialized(){
 	Super::NativeOnInitialized();
 
-	if (IsValid(nextWeaponButton) == true) nextWeaponButton->OnClicked.AddUniqueDynamic(this, &ThisClass::UOutGameWeaponSelectWidget::HandleNextClicked);
-	if (IsValid(previousWeaponButton) == true) previousWeaponButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandlePreviousClicked);
-	if (IsValid(applyButton) == true) applyButton->OnClicked.AddUniqueDynamic(this, &ThisClass::UOutGameWeaponSelectWidget::HandleApplyClicked);
-	if (IsValid(backButton) == true) backButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleBackClicked);
-	
+	if (IsValid(nextWeaponButton) == true)
+		nextWeaponButton->OnClicked.AddUniqueDynamic(this, &ThisClass::UOutGameWeaponSelectWidget::HandleNextClicked);
+	if (IsValid(previousWeaponButton) == true)
+		previousWeaponButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandlePreviousClicked);
+	if (IsValid(applyButton) == true)
+		applyButton->OnClicked.AddUniqueDynamic(this, &ThisClass::UOutGameWeaponSelectWidget::HandleApplyClicked);
+	if (IsValid(backButton) == true)
+		backButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleBackClicked);
+
 	bIsWeaponCameraMoving = false;
 	previewManagerTag = TEXT("WeaponSelect_PreviewManager");
 }
 
 void UOutGameWeaponSelectWidget::EnterWeaponSelect(){
-	AOutGameWeaponPreviewManager* previewManager = GetWeaponPreviewManagerInstance();
-	if (IsValid(previewManager) == false) return;
-	
-	if (previewManager->ShowWeaponByIndex(0) == false) return;
-	currentWeaponData = previewManager->GetCurrentWeaponData();
-	
-	if (currentWeaponData == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("currentWeaponData not found"));
+	if (EnterWeaponPreview() == false)
 		return;
-	}
-	
+
 	bIsWeaponCameraMoving = false;
 	SetWeaponInfo();
 }
 
 void UOutGameWeaponSelectWidget::HandleNextClicked(){
-	if (bIsWeaponCameraMoving == true) return;
+	if (bIsWeaponCameraMoving == true)
+		return;
 	UpdateNextWeaponData(true);
 	bIsWeaponCameraMoving = true;
-	
+
 	GetWorld()->GetTimerManager().SetTimer(
 		weaponCameraMoveTimerHandle,
-	this,
+		this,
 		&ThisClass::UnlockWeaponCameraMove,
-	0.5f,
-	false
+		0.5f,
+		false
 	);
 }
 
 void UOutGameWeaponSelectWidget::HandlePreviousClicked(){
-	if (bIsWeaponCameraMoving == true) return;
+	if (bIsWeaponCameraMoving == true)
+		return;
 	UpdateNextWeaponData(false);
 	bIsWeaponCameraMoving = true;
-	
+
 	GetWorld()->GetTimerManager().SetTimer(
 		weaponCameraMoveTimerHandle,
-	this,
+		this,
 		&ThisClass::UnlockWeaponCameraMove,
-	0.5f,
-	false
+		0.5f,
+		false
 	);
-	
 }
 
 void UOutGameWeaponSelectWidget::HandleApplyClicked(){
@@ -86,7 +82,7 @@ void UOutGameWeaponSelectWidget::HandleApplyClicked(){
 						GI->SetSelectedWeaponType(EWeaponType::Pistol);
 						break;
 					default:
-					break;
+						break;
 					}
 					ClearWeaponPreview();
 					RootWidgetInstance->OpenSelectedLevel();
@@ -116,39 +112,35 @@ void UOutGameWeaponSelectWidget::HandleBackClicked(){
 }
 
 void UOutGameWeaponSelectWidget::NavigateWeapon(int32 direction){
-	if (bIsWeaponCameraMoving == true) return;
-	
-	if (direction > 0) HandleNextClicked();
-	else HandlePreviousClicked();
-	
+	if (bIsWeaponCameraMoving == true)
+		return;
+
+	if (direction > 0)
+		HandleNextClicked();
+	else
+		HandlePreviousClicked();
+
 	bIsWeaponCameraMoving = true;
-	
+
 	GetWorld()->GetTimerManager().SetTimer(
 		weaponCameraMoveTimerHandle,
-	this,
+		this,
 		&ThisClass::UnlockWeaponCameraMove,
-	0.5f,
-	false
+		0.5f,
+		false
 	);
 }
 
-void UOutGameWeaponSelectWidget::RequestBack(){
-	HandleBackClicked();
-}
+void UOutGameWeaponSelectWidget::RequestBack(){ HandleBackClicked(); }
 
 void UOutGameWeaponSelectWidget::UpdateNextWeaponData(bool bIsNext){
-	AOutGameWeaponPreviewManager* previewManager = GetWeaponPreviewManagerInstance();
-	if (IsValid(previewManager) == false) return;
-	
-	const bool bChanged = bIsNext
-		? previewManager->ShowNextWeapon()
-		: previewManager->ShowPreviousWeapon();
+	const bool bChanged = bIsNext ? ShowNextPreviewWeapon() : ShowPreviousPreviewWeapon();
 
-	if (bChanged == false) return;
-	
-	currentWeaponData = previewManager->GetCurrentWeaponData();
-	if (currentWeaponData == nullptr) return;
-	
+	if (bChanged == false)
+		return;
+	if (currentWeaponData == nullptr)
+		return;
+
 	//Camera logic
 	if (AOutGamePlayerController* PC = GetOwningPlayer<AOutGamePlayerController>())
 	{
@@ -167,19 +159,11 @@ void UOutGameWeaponSelectWidget::UpdateNextWeaponData(bool bIsNext){
 			break;
 		}
 	}
-	
+
 	SetWeaponInfo();
 }
 
-
-
-void UOutGameWeaponSelectWidget::ClearWeaponPreview(){
-	GetWeaponPreviewManagerInstance()->ClearPreviewWeapon();
-}
-
-void UOutGameWeaponSelectWidget::UnlockWeaponCameraMove(){
-	bIsWeaponCameraMoving = false;
-}
+void UOutGameWeaponSelectWidget::UnlockWeaponCameraMove(){ bIsWeaponCameraMoving = false; }
 
 void UOutGameWeaponSelectWidget::SetWeaponInfo(){
 	weaponNameText->SetText(currentWeaponData->displayName);
@@ -187,25 +171,4 @@ void UOutGameWeaponSelectWidget::SetWeaponInfo(){
 	ammoCapacityText->SetText(FText::FromString(FString::Printf(TEXT("%d"), currentWeaponData->ammoCapacity)));
 	fireRateText->SetText(FText::FromString(FString::Printf(TEXT("%0.f"), currentWeaponData->firePerMinute)));
 	weaponRangeText->SetText(FText::FromString(FString::Printf(TEXT("%0.f"), currentWeaponData->maxAttackRange)));
-}
-
-AOutGameWeaponPreviewManager* UOutGameWeaponSelectWidget::GetWeaponPreviewManagerInstance(){
-	TArray<AActor*> foundActors;
-	UGameplayStatics::GetAllActorsWithTag(this, previewManagerTag, foundActors);
-
-	if (foundActors.Num() <= 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PreviewManager not found"));
-		return nullptr;
-	}
-	
-	AOutGameWeaponPreviewManager* PM = Cast<AOutGameWeaponPreviewManager>(foundActors[0]);
-	
-	if (IsValid(PM) == false)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Weapon not found"));
-		return nullptr;
-	}
-	
-	return PM;
 }
