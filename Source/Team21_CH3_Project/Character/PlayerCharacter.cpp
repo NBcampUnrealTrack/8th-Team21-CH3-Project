@@ -16,6 +16,7 @@
 #include "Team21_CH3_Project.h"
 #include "Animation/CharacterAnimInstance.h"
 #include "Interfaces/Interaction.h"
+#include "Game/TeamGameInstance.h"
 
 
 
@@ -122,8 +123,15 @@ void APlayerCharacter::InputLook(const FInputActionValue& InValue)
 {
 	FVector2D LookVector = InValue.Get<FVector2D>();
 
-	AddControllerYawInput(LookVector.X);
-	AddControllerPitchInput(LookVector.Y);
+	float Sensitivity = 1.f;
+	UTeamGameInstance* GameInstance = Cast<UTeamGameInstance>(GetGameInstance());
+	if (IsValid(GameInstance))
+	{
+		Sensitivity = GameInstance->GetMouseSensitivity();
+	}
+
+	AddControllerYawInput(LookVector.X * Sensitivity);
+	AddControllerPitchInput(LookVector.Y * Sensitivity);
 }
 
 void APlayerCharacter::InputAttackRanged(const FInputActionValue& InValue)
