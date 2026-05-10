@@ -60,10 +60,6 @@ void UOutGameRootWidget::ShowTransitionFadein(){
 	if (IsValid(TransitionWidget) == true) TransitionWidget->PlayFadeIn();
 }
 
-void UOutGameRootWidget::ShowQuitConfirm(){
-	if (IsValid(quitConfirmWidget) == true) quitConfirmWidget->SetVisibility(ESlateVisibility::Visible);
-}
-
 void UOutGameRootWidget::SetHeaderVisible(bool bVisible){
 	if (IsValid(commonHeaderWidget) == true)
 	{
@@ -119,8 +115,8 @@ void UOutGameRootWidget::HandleBackRequested(){
 	
 	if (currentWidgetType == EOutGameWidgetType::MainMenu)
 	{
-		ShowQuitConfirm();
-		UE_LOG(LogTemp, Warning, TEXT("ShowQuitConfirm is Confirm"));
+		if (IsValid(quitConfirmWidget) == true) quitConfirmWidget->ToggleQuitConfirm();
+		
 		return;
 	}
 	

@@ -52,6 +52,9 @@ private:
 	TObjectPtr<UButton> applyButton;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> backButton;
+	UPROPERTY(meta = (BindWidget))
+	FName previewManagerTag;
+	
 	
 	UFUNCTION()
 	void UpdateNextWeaponData(bool bIsNext);

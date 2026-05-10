@@ -16,6 +16,7 @@ void UOutGameWeaponSelectWidget::NativeOnInitialized(){
 	if (IsValid(backButton) == true) backButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleBackClicked);
 	
 	bIsWeaponCameraMoving = false;
+	previewManagerTag = TEXT("WeaponSelect_PreviewManager");
 }
 
 void UOutGameWeaponSelectWidget::EnterWeaponSelect(){
@@ -36,11 +37,32 @@ void UOutGameWeaponSelectWidget::EnterWeaponSelect(){
 }
 
 void UOutGameWeaponSelectWidget::HandleNextClicked(){
+	if (bIsWeaponCameraMoving == true) return;
 	UpdateNextWeaponData(true);
+	bIsWeaponCameraMoving = true;
+	
+	GetWorld()->GetTimerManager().SetTimer(
+		weaponCameraMoveTimerHandle,
+	this,
+		&ThisClass::UnlockWeaponCameraMove,
+	0.5f,
+	false
+	);
 }
 
 void UOutGameWeaponSelectWidget::HandlePreviousClicked(){
+	if (bIsWeaponCameraMoving == true) return;
 	UpdateNextWeaponData(false);
+	bIsWeaponCameraMoving = true;
+	
+	GetWorld()->GetTimerManager().SetTimer(
+		weaponCameraMoveTimerHandle,
+	this,
+		&ThisClass::UnlockWeaponCameraMove,
+	0.5f,
+	false
+	);
+	
 }
 
 void UOutGameWeaponSelectWidget::HandleApplyClicked(){
@@ -115,8 +137,6 @@ void UOutGameWeaponSelectWidget::RequestBack(){
 }
 
 void UOutGameWeaponSelectWidget::UpdateNextWeaponData(bool bIsNext){
-	
-	
 	AOutGameWeaponPreviewManager* previewManager = GetWeaponPreviewManagerInstance();
 	if (IsValid(previewManager) == false) return;
 	
@@ -171,11 +191,7 @@ void UOutGameWeaponSelectWidget::SetWeaponInfo(){
 
 AOutGameWeaponPreviewManager* UOutGameWeaponSelectWidget::GetWeaponPreviewManagerInstance(){
 	TArray<AActor*> foundActors;
-	UGameplayStatics::GetAllActorsOfClass(
-		this,
-		AOutGameWeaponPreviewManager::StaticClass(),
-		foundActors
-	);
+	UGameplayStatics::GetAllActorsWithTag(this, previewManagerTag, foundActors);
 
 	if (foundActors.Num() <= 0)
 	{

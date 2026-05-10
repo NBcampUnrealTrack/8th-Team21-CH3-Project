@@ -46,8 +46,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "OutGame UI")
 	void ShowTransitionFadein();
 	UFUNCTION(BlueprintCallable, Category = "OutGame UI")
-	void ShowQuitConfirm();
-	UFUNCTION(BlueprintCallable, Category = "OutGame UI")
 	void SetHeaderVisible(bool bVisible);
 	UFUNCTION(BlueprintCallable, Category = "OutGame UI")
 	void OpenSelectedLevel();
