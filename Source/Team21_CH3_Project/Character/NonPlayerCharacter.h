@@ -7,7 +7,9 @@
 #include "NonPlayerCharacter.generated.h"
 
 
-DECLARE_DELEGATE_TwoParams(FOnAttackMontageEnded, UAnimMontage*, bool bInterrupted)
+DECLARE_DELEGATE_TwoParams(FOnAttackMontageEnded, UAnimMontage*, bool /*bInterrupted*/)
+
+class UStatusComponent;
 /**
  * 
  */
@@ -24,6 +26,13 @@ public:
 	virtual void BeginPlay() override;
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	
+	void InitializeHP(UStatusComponent* InStatusComponent);
+
+	UFUNCTION()
+	void OnMaxHPChange(float InMaxHP);
+	UFUNCTION()
+	void OnCurrentHPChange(float InCurrentHP);
 protected:
 	virtual void BeginAttack();
 
@@ -33,7 +42,7 @@ public:
 	bool bIsNowAttacking;
 
 protected:
-
 	FOnAttackMontageEnded OnAttackMontageEndedDelegate;
-
+	float LastUpdatedMaxHP = 0.f;
+	float LastUpdatedCurrentHP = 0.f;
 };

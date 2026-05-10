@@ -5,8 +5,8 @@
 
 #include "Controller/AI_Controller.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Animation/CharacterAnimInstance.h"
 #include "Component/StatusComponent.h"
+#include "Animation/CharacterAnimInstance.h"
 
 ANonPlayerCharacter::ANonPlayerCharacter() : bIsNowAttacking(false)
 {
@@ -27,6 +27,7 @@ void ANonPlayerCharacter::BeginPlay()
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 		GetCharacterMovement()->bUseControllerDesiredRotation = true;
 		GetCharacterMovement()->RotationRate = FRotator(0.f, 480.f, 0.f);
+
 	}
 }
 
@@ -44,7 +45,7 @@ void ANonPlayerCharacter::BeginAttack()
 
 		if (OnAttackMontageEndedDelegate.IsBound() == false)
 		{
-			OnAttackMontageEndedDelegate.BindUObject(this, &ThisClass::EndAttack);
+			OnAttackMontageEndedDelegate.BindUObject(this, &ANonPlayerCharacter::EndAttack);
 			AnimInstance->Montage_SetEndDelegate(OnAttackMontageEndedDelegate, AttackMeleeMontage);
 		}
 	}
@@ -78,4 +79,29 @@ void ANonPlayerCharacter::EndAttack(UAnimMontage* InMontage, bool bInterruped)
 	{
 		OnAttackMontageEndedDelegate.Unbind();
 	}
+}
+
+void ANonPlayerCharacter::InitializeHP(UStatusComponent* InStatusComponent)
+{
+	OnMaxHPChange(InStatusComponent->GetMaxHP());
+	OnCurrentHPChange(InStatusComponent->GetCurrentHP());
+}
+
+void ANonPlayerCharacter::OnMaxHPChange(float InMaxHP)
+{
+	if (LastUpdatedMaxHP == InMaxHP)
+	{
+		return;
+	}
+
+	LastUpdatedMaxHP = InMaxHP;
+}
+
+void ANonPlayerCharacter::OnCurrentHPChange(float InCurrentHP)
+{
+	if (LastUpdatedCurrentHP == InCurrentHP)
+	{
+		return;
+	}
+	LastUpdatedCurrentHP = InCurrentHP;
 }
