@@ -5,6 +5,7 @@
 #include "OutGameUI/Widget/UOutGameCommonHeaderWidget.h"
 #include "OutGameUI/Widget/OutGameQuitConfirmWidget.h"
 #include "OutGameUI/Widget/OutGameWeaponSelectWidget.h"
+#include "OutGameUI/Widget/OutGameWeaponPreviewWidget.h"
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -21,19 +22,32 @@ void UOutGameRootWidget::NativeOnInitialized(){
 
 void UOutGameRootWidget::ShowWidget(EOutGameWidgetType widgetType)
 {
-	currentWidgetType = widgetType;
-	if (IsValid(ScreenSwitcher) == true)
+	if (IsValid(ScreenSwitcher) == false) return;
+	
+	if (UOutGameWeaponPreviewWidgetBase* weaponPreviewWidget =
+	Cast<UOutGameWeaponPreviewWidgetBase>(ScreenSwitcher->GetActiveWidget()))
 	{
-		ScreenSwitcher->SetActiveWidgetIndex(int32(widgetType));
+		weaponPreviewWidget->ClearWeaponPreview();
+	}
+	
+	currentWidgetType = widgetType;
+	ScreenSwitcher->SetActiveWidgetIndex(int32(widgetType));
 		
-		if (widgetType == EOutGameWidgetType::WeaponSelect)
+	if (widgetType == EOutGameWidgetType::WeaponSelect)
+	{
+		if (UOutGameWeaponSelectWidget* weaponSelectWidget = Cast<UOutGameWeaponSelectWidget>(ScreenSwitcher->GetActiveWidget()))
 		{
-			if (UOutGameWeaponSelectWidget* weaponSelectWidget = Cast<UOutGameWeaponSelectWidget>(ScreenSwitcher->GetActiveWidget()))
-			{
-				weaponSelectWidget->EnterWeaponSelect();
-			}
+			weaponSelectWidget->EnterWeaponSelect();
 		}
 	}
+	if (widgetType == EOutGameWidgetType::WeaponPreview)
+	{
+		if (UOutGameWeaponPreviewWidget* weaponPreviewWidget = Cast<UOutGameWeaponPreviewWidget>(ScreenSwitcher->GetActiveWidget()))
+		{
+			weaponPreviewWidget->EnterWeaponPreview();
+		}
+	}
+	
 }
 
 void UOutGameRootWidget::ShowSelectTransition(){

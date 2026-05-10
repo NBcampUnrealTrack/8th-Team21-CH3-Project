@@ -15,6 +15,7 @@ class TEAM21_CH3_PROJECT_API UOutGameWeaponPreviewWidgetBase : public UOutGameWi
 
 public:
 	bool EnterWeaponPreview();
+	void ClearWeaponPreview();
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Preview")
@@ -25,7 +26,7 @@ protected:
 	bool ShowPreviewWeaponByIndex(int32 weaponIndex);
 	bool ShowNextPreviewWeapon();
 	bool ShowPreviousPreviewWeapon();
-	void ClearWeaponPreview();
+
 	const FOutGameWeaponPreviewData* GetCurrentWeaponData() const;
 	AOutGameWeaponPreviewManager* GetWeaponPreviewManagerInstance() const;
 };

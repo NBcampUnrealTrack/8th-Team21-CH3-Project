@@ -7,9 +7,9 @@
 void UOutGameWeaponPreviewWidget::NativeOnInitialized(){
 	Super::NativeOnInitialized();
 	
-	if (IsValid(firstButton) == true) firstButton->OnClicked.AddUniqueDynamic(this, ThisClass::HandleFirstClicked);
-	if (IsValid(secondButton) == true) firstButton->OnClicked.AddUniqueDynamic(this, ThisClass::HandleSecondClicked);
-	if (IsValid(thirdButton) == true) firstButton->OnClicked.AddUniqueDynamic(this, ThisClass::HandleThirdClicked);
+	if (IsValid(firstButton) == true) firstButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleFirstClicked);
+	if (IsValid(secondButton) == true) secondButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleSecondClicked);
+	if (IsValid(thirdButton) == true) thirdButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleThirdClicked);
 	
 	bIsDraggingPreview = false;
 	previewManagerTag = TEXT("WeaponPreview_PreviewManager");
@@ -68,9 +68,13 @@ bool UOutGameWeaponPreviewWidget::InMouseInsidePreviewArea(const FPointerEvent& 
 }
 
 void UOutGameWeaponPreviewWidget::HandleFirstClicked(){
-	if (EnterWeaponPreview() == false) return;
+	if (ShowPreviewWeaponByIndex(0) == false) return;
 }
 
-void UOutGameWeaponPreviewWidget::HandleSecondClicked(){  }
+void UOutGameWeaponPreviewWidget::HandleSecondClicked(){
+	if (ShowPreviewWeaponByIndex(1) == false) return;
+}
 
-void UOutGameWeaponPreviewWidget::HandleThirdClicked(){  }
+void UOutGameWeaponPreviewWidget::HandleThirdClicked(){
+	if (ShowPreviewWeaponByIndex(2) == false) return;
+}

@@ -14,7 +14,7 @@ UENUM(BlueprintType)
 enum class EOutGameWidgetType : uint8{
 	MainMenu = 0 UMETA(DisplayName = "Main Menu"),
 	MissionSelect = 1 UMETA(DisplayName = "Mission Select"),
-	Weapons = 2 UMETA(DisplayName = "Weapons"),
+	WeaponPreview = 2 UMETA(DisplayName = "WeaponPreview"),
 	Store = 3 UMETA(DisplayName = "Store"),
 	WeaponSelect = 4 UMETA(DisplayName = "WeaponSelect"),
 	Settings = 5 UMETA(DisplayName = "Settings"),

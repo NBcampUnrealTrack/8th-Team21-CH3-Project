@@ -31,6 +31,8 @@ public:
 private:
 	UPROPERTY(EditAnywhere, Category = "Preveiw|Weapon")
 	TArray<FOutGameWeaponPreviewData> weaponPreviews;
+	UPROPERTY(EditAnywhere, Category = "Preview|Weapon")
+	float previewWeaponScale;
 	
 	int32 currentWeaponIndex;
 	AActor* currentWeaponActor;

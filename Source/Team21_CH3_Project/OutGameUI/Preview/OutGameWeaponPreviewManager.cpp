@@ -6,6 +6,7 @@ AOutGameWeaponPreviewManager::AOutGameWeaponPreviewManager(){
 	currentWeaponIndex = 0;
 	currentWeaponActor = nullptr;
 	previewSpawnPoint = nullptr;
+	previewWeaponScale = 1.0f;
 }
 
 const FOutGameWeaponPreviewData* AOutGameWeaponPreviewManager::GetCurrentWeaponData(){
@@ -46,6 +47,11 @@ bool AOutGameWeaponPreviewManager::ShowWeaponByIndex(int32 weaponIndex){
 		spawnTransform
 	);
 
+	if (IsValid(currentWeaponActor) == true)
+	{
+		currentWeaponActor->SetActorScale3D(FVector(previewWeaponScale));
+	}
+	
 	return IsValid(currentWeaponActor);
 }
 
@@ -89,8 +95,8 @@ void AOutGameWeaponPreviewManager::RotateCurrentWeapon(float deltaYaw, float del
 	currentRotation.Yaw += deltaYaw * 0.2f;
 	currentRotation.Pitch = FMath::Clamp(
 		currentRotation.Pitch + deltaPitch * 0.1f,
-		-20.0f,
-		20.0f
+		-45.0f,
+		45.0f
 	);
 	
 	currentWeaponActor->SetActorRotation(currentRotation);
