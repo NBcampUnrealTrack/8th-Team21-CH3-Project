@@ -25,9 +25,14 @@ public:
 	void ClearPreviewWeapon();
 	UFUNCTION()
 	void SetWeaponIndex(int32 index);
+	UFUNCTION()
+	void RotateCurrentWeapon(float deltaYaw, float deltaPitch);
+	
 private:
 	UPROPERTY(EditAnywhere, Category = "Preveiw|Weapon")
 	TArray<FOutGameWeaponPreviewData> weaponPreviews;
+	UPROPERTY(EditAnywhere, Category = "Preview|Weapon")
+	float previewWeaponScale;
 	
 	int32 currentWeaponIndex;
 	AActor* currentWeaponActor;

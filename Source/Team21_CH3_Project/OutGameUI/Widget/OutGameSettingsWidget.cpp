@@ -6,12 +6,7 @@
 #include "Components/TextBlock.h"
 #include "GameFramework/GameUserSettings.h"
 #include "Kismet/GameplayStatics.h"
-#include "Sound/SoundMix.h"
-#include "Sound/SoundClass.h"
 #include "Game/TeamGameInstance.h"
-#include "OutGameUI/Widget/OutGameRootWidget.h"
-#include "OutGameUI/Controller/OutGamePlayerController.h"
-
 
 void UOutGameSettingsWidget::NativeOnInitialized(){
 	Super::NativeOnInitialized();
@@ -22,6 +17,9 @@ void UOutGameSettingsWidget::NativeOnInitialized(){
 	if (IsValid(applyButton)) applyButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleApplyClicked);
 	
 	pendingGraphicsQuality = 2;
+	volume = 70;
+	HandleMasterVolumeChanged(volume);
+
 }
 
 void UOutGameSettingsWidget::HandleMouseSensitivityChanged(float value){

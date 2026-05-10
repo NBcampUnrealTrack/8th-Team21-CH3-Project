@@ -52,6 +52,8 @@ private:
 
 	UFUNCTION()
 	void HandleMasterVolumeChanged(float value);
+	
+	float volume;
 
 #pragma endregion
 };

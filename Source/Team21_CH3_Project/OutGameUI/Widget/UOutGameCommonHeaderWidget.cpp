@@ -27,7 +27,7 @@ void UUOutGameCommonHeaderWidget::HandleWeaponsClicked(){
 	{
 		if (UOutGameRootWidget* RootWidgetInstance = PC->GetRootWidget())
 		{
-			RootWidgetInstance->ShowWidget(EOutGameWidgetType::Weapons);
+			RootWidgetInstance->ShowWidget(EOutGameWidgetType::WeaponPreview);
 			PC->SetViewTargetByTag("SettingsCamera", 0.0f);
 		}
 	}
