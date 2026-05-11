@@ -47,12 +47,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match State")
 	int32 TargetScoreToWin;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Level")
+	FName OutGameLevelName;
+
 	FTimerHandle RoundTransitionTimerHandle;
 
 	void FinishRoundTransition();
+	void RestartCurrentLevel();
 	void RefreshHUDMatchInfo();
 	void ShowRoundTransitionMessage(bool bPlayerWonRound);
-	void RestartCurrentLevel();
+	void MoveToOutGameMap();
 	void StopGameplayInput();
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
@@ -64,4 +68,7 @@ public:
 
 	UFUNCTION(Exec)
 	void CmdAddAIScore();
+
+	UFUNCTION(Exec)
+	void CmdMoveOutGame();
 };

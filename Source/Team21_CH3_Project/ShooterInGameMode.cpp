@@ -20,6 +20,8 @@ AShooterInGameMode::AShooterInGameMode()
 
 	RoundTransitionDuration = 2.0f;
 	TargetScoreToWin = 3;
+
+	OutGameLevelName = TEXT("OutGameMap");
 }
 
 void AShooterInGameMode::BeginPlay()
@@ -41,7 +43,6 @@ void AShooterInGameMode::BeginPlay()
 
 		if (bIsMatchEnded)
 		{
-			StopGameplayInput();
 			TriggerResultUI(GI->GetIsWin());
 			return;
 		}
@@ -58,7 +59,10 @@ void AShooterInGameMode::StartRound()
 	}
 
 	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
-	if (!GI) return;
+	if (!GI)
+	{
+		return;
+	}
 
 	PlayerScore = GI->GetPlayerScore();
 	AIScore = GI->GetAIScore();
@@ -76,7 +80,10 @@ void AShooterInGameMode::OnCharacterDied(bool bIsPlayer)
 	}
 
 	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
-	if (!GI) return;
+	if (!GI)
+	{
+		return;
+	}
 
 	const bool bPlayerWonRound = !bIsPlayer;
 
@@ -105,19 +112,33 @@ void AShooterInGameMode::EndRound(bool bPlayerWonRound)
 	}
 
 	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
-	if (!GI) return;
+	if (!GI)
+	{
+		return;
+	}
 
-	const bool bPlayerMatchWin = GI->GetPlayerScore() >= TargetScoreToWin;
-	const bool bAIMatchWin = GI->GetAIScore() >= TargetScoreToWin;
+	const int32 CurrentPlayerScore = GI->GetPlayerScore();
+	const int32 CurrentAIScore = GI->GetAIScore();
+
+	UE_LOG(LogTemp, Warning, TEXT("EndRound / PlayerScore: %d / AIScore: %d / TargetScore: %d"),
+		CurrentPlayerScore,
+		CurrentAIScore,
+		TargetScoreToWin
+	);
+
+	const bool bPlayerMatchWin = CurrentPlayerScore >= TargetScoreToWin;
+	const bool bAIMatchWin = CurrentAIScore >= TargetScoreToWin;
 
 	if (bPlayerMatchWin)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Player reached target score. EndMatch(true)."));
 		EndMatch(true);
 		return;
 	}
 
 	if (bAIMatchWin)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("AI reached target score. EndMatch(false)."));
 		EndMatch(false);
 		return;
 	}
@@ -164,6 +185,7 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 {
 	if (bIsMatchEnded)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("EndMatch blocked. bIsMatchEnded already true."));
 		return;
 	}
 
@@ -189,24 +211,21 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 		GI->SetMatch(true);
 	}
 
-	StopGameplayInput();
+	UE_LOG(LogTemp, Warning, TEXT("EndMatch Called. bPlayerWon: %s / Move To: %s"),
+		bPlayerWon ? TEXT("true") : TEXT("false"),
+		*OutGameLevelName.ToString()
+	);
 
-	TriggerResultUI(bPlayerWon);
-
-	if (bPlayerWon)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("MATCH END: PLAYER WINS!"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("MATCH END: AI WINS!"));
-	}
+	MoveToOutGameMap();
 }
 
 void AShooterInGameMode::StopGameplayInput()
 {
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	if (!PC) return;
+	if (!PC)
+	{
+		return;
+	}
 
 	APawn* PlayerPawn = PC->GetPawn();
 	if (PlayerPawn)
@@ -227,12 +246,17 @@ void AShooterInGameMode::RestartCurrentLevel()
 	}
 
 	UWorld* World = GetWorld();
-	if (!World) return;
+	if (!World)
+	{
+		return;
+	}
 
 	FString CurrentMapName = World->GetMapName();
 
 	const FString StreamingPrefix = World->StreamingLevelsPrefix;
 	CurrentMapName.RemoveFromStart(StreamingPrefix);
+
+	UE_LOG(LogTemp, Warning, TEXT("RestartCurrentLevel: %s"), *CurrentMapName);
 
 	UGameplayStatics::OpenLevel(this, FName(*CurrentMapName));
 }
@@ -240,10 +264,16 @@ void AShooterInGameMode::RestartCurrentLevel()
 void AShooterInGameMode::RefreshHUDMatchInfo()
 {
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	if (!PC) return;
+	if (!PC)
+	{
+		return;
+	}
 
 	AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
-	if (!MyHUD) return;
+	if (!MyHUD)
+	{
+		return;
+	}
 
 	MyHUD->RefreshMatchUI(PlayerScore, AIScore, CurrentRound);
 }
@@ -251,10 +281,16 @@ void AShooterInGameMode::RefreshHUDMatchInfo()
 void AShooterInGameMode::ShowRoundTransitionMessage(bool bPlayerWonRound)
 {
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	if (!PC) return;
+	if (!PC)
+	{
+		return;
+	}
 
 	AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
-	if (!MyHUD) return;
+	if (!MyHUD)
+	{
+		return;
+	}
 
 	if (MyHUD->IsRoundTransitionUIShowing())
 	{
@@ -270,6 +306,19 @@ void AShooterInGameMode::ShowRoundTransitionMessage(bool bPlayerWonRound)
 	MyHUD->ShowRoundTransitionUI(MainMessage, SubMessage);
 }
 
+void AShooterInGameMode::MoveToOutGameMap()
+{
+	if (OutGameLevelName.IsNone())
+	{
+		UE_LOG(LogTemp, Error, TEXT("OutGameLevelName is None."));
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("MoveToOutGameMap Called. Target Level: %s"), *OutGameLevelName.ToString());
+
+	UGameplayStatics::OpenLevel(this, OutGameLevelName);
+}
+
 void AShooterInGameMode::CmdAddPlayerScore()
 {
 	OnCharacterDied(false);
@@ -278,4 +327,9 @@ void AShooterInGameMode::CmdAddPlayerScore()
 void AShooterInGameMode::CmdAddAIScore()
 {
 	OnCharacterDied(true);
+}
+
+void AShooterInGameMode::CmdMoveOutGame()
+{
+	MoveToOutGameMap();
 }
