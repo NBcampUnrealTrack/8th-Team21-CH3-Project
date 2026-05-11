@@ -1,7 +1,7 @@
 
 #include "Gimmick/Ammo.h"
 #include "Component/PickupComponent.h"
-#include "Character/PlayerCharacter.h"
+#include "Character/CharacterBase.h"
 
 AAmmo::AAmmo()
 {
@@ -19,7 +19,7 @@ void AAmmo::BeginPlay()
 	Pickupcomponent->OnPickUp.AddDynamic(this, &ThisClass::HandleOnPickUp);
 }
 
-void AAmmo::HandleOnPickUp(APlayerCharacter* InPickUpCharacter)
+void AAmmo::HandleOnPickUp(ACharacterBase* InPickUpCharacter)
 {
 	if (IsValid(InPickUpCharacter) == false)
 	{

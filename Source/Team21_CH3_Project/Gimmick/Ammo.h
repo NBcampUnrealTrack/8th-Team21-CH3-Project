@@ -7,7 +7,7 @@
 #include "Ammo.generated.h"
 
 class UPickupComponent;
-class APlayerCharacter;
+class ACharacterBase;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API AAmmo : public AActor
@@ -24,7 +24,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
-	void HandleOnPickUp(APlayerCharacter* InPickUpCharacter);
+	void HandleOnPickUp(ACharacterBase* InPickUpCharacter);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Item")
 	void AmmoOnPickUp();

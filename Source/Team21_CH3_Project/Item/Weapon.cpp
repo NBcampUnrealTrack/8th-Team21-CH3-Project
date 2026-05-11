@@ -2,7 +2,7 @@
 
 #include "Item/Weapon.h"
 #include "Component/PickupComponent.h"
-#include "Character/PlayerCharacter.h"
+#include "Character/CharacterBase.h"
 
 AWeapon::AWeapon()
 {
@@ -20,7 +20,7 @@ void AWeapon::BeginPlay()
 	PickupComponent->OnPickUp.AddDynamic(this, &ThisClass::HandleOnPickUp);
 }
 
-void AWeapon::HandleOnPickUp(APlayerCharacter* InPickUpCharacter)
+void AWeapon::HandleOnPickUp(ACharacterBase* InPickUpCharacter)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("HandleOnPickUp(%s)"), *InPickUpCharacter->GetName());
 	if (IsValid(InPickUpCharacter) == false)

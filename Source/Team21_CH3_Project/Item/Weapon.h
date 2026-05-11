@@ -5,7 +5,7 @@
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
-class APlayerCharacter;
+class ACharacterBase;
 class UPickupComponent;
 class UAnimMontage;
 
@@ -26,7 +26,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
-	void HandleOnPickUp(APlayerCharacter* InPickUpCharacter);
+	void HandleOnPickUp(ACharacterBase* InPickUpCharacter);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

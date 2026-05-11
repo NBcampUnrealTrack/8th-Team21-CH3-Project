@@ -5,7 +5,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "PickupComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPickUp, APlayerCharacter*, InPickUpCharacter);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPickUp, ACharacterBase*, InPickUpCharacter);
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class TEAM21_CH3_PROJECT_API UPickupComponent : public UStaticMeshComponent
