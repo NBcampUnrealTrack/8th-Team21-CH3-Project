@@ -55,5 +55,6 @@ protected:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly)
 	uint8 bIsDead : 1;
 
+	int32 WeaponTypeIndex = 0;
 
 };

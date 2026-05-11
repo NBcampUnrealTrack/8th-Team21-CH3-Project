@@ -87,6 +87,8 @@ void ACharacterBase::BeginPlay()
 	{
 		SelectWeapon = PistolClass;
 	}
+	else
+		SelectWeapon = RifleClass;
 	
 	GetWeapon(SelectWeapon);
 }

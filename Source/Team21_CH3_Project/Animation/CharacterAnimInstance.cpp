@@ -51,6 +51,29 @@ void UCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		{
 			bIsDead = OwnerCharacter->GetStatusComponent()->IsDead();
 		}
+
+		if (bIsUnarmed)
+		{
+			WeaponTypeIndex = 0;
+		}
+		else
+		{
+			switch (OwnerCharacter->CurrentWeaponType)
+			{
+				case EWeaponType::Rifle:
+					WeaponTypeIndex = 1;
+					break;
+				case EWeaponType::Shotgun:
+					WeaponTypeIndex = 2;
+					break;
+				case EWeaponType::Pistol:
+					WeaponTypeIndex = 3;
+					break;
+				default:
+					WeaponTypeIndex = 0;
+					break;
+			}
+		}
 	}
 }
 
