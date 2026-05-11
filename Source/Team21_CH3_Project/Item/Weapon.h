@@ -22,6 +22,8 @@ public:
 	UAnimMontage* GetAttackMontage() const { return AttackMontage; }
 
 	float GetMaxAttackRange() const { return MaxAttackRange; }
+
+	void EquipToCharacter(ACharacterBase* InCharacter);
 protected:
 	virtual void BeginPlay() override;
 

@@ -20,7 +20,7 @@ void UBTTask_Attack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 	ANonPlayerCharacter* NPC = Cast<ANonPlayerCharacter>(AIController->GetPawn());
 	checkf(IsValid(NPC) == true, TEXT("Invalid NPC."));
 
-	if (NPC->bIsNowAttacking == true)
+	if (NPC->bIsNowAttacking == false)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}

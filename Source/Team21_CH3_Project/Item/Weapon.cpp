@@ -13,6 +13,18 @@ AWeapon::AWeapon()
 
 }
 
+void AWeapon::EquipToCharacter(ACharacterBase* InCharacter)
+{
+	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+		//SnapToTarget -> 아이템의 위치,회전,크기를 목표지점과 일치시킴(Snap) /true-> 두 액터를 하나로 붙임
+	AttachToComponent(InCharacter->GetMesh(), AttachmentRules, FName(TEXT("hand_rSocket")));
+		//아이템 주운 캐릭터의 메시를 타켓으로, 언리얼에서 만들어놓은 소켓에 붙임
+	SetActorEnableCollision(false);
+	PickupComponent->SetSimulatePhysics(false);
+	//아이템에 적용되는 피직스 끔
+	InCharacter->CurrentWeapon = this;
+}
+
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
@@ -22,23 +34,11 @@ void AWeapon::BeginPlay()
 
 void AWeapon::HandleOnPickUp(ACharacterBase* InPickUpCharacter)
 {
-	//UE_LOG(LogTemp, Warning, TEXT("HandleOnPickUp(%s)"), *InPickUpCharacter->GetName());
 	if (IsValid(InPickUpCharacter) == false)
 	{
 		return;
 	}
-
-	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-		//SnapToTarget -> 아이템의 위치,회전,크기를 목표지점과 일치시킴(Snap) /true-> 두 액터를 하나로 붙임
-	AttachToComponent(InPickUpCharacter->GetMesh(), AttachmentRules, FName(TEXT("hand_rSocket")));
-		//아이템 주운 캐릭터의 메시를 타켓으로, 언리얼에서 만들어놓은 소켓에 붙임
-		//PickupComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			//픽업컴포넌트(여기서는 Rifle)의 콜리전 기능삭제
-	SetActorEnableCollision(false);
-	PickupComponent->SetSimulatePhysics(false);
-		//아이템에 적용되는 피직스 끔
-
-	InPickUpCharacter->CurrentWeapon = this;
+	EquipToCharacter(InPickUpCharacter);
 }
 
 

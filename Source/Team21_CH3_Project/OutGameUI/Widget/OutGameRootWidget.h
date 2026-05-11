@@ -39,8 +39,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "OutGame UI")
 	void ShowWidget(EOutGameWidgetType widgetType);
 	UFUNCTION(BlueprintCallable, Category = "OutGame UI")
+	void ShowLobby();
+	UFUNCTION(BlueprintCallable, Category = "OutGame UI")
 	void ShowSelectTransition();
+	
 	void ShowTransition(TFunction<void()> action);
+	
 	UFUNCTION(BlueprintCallable, Category = "OutGame UI")
 	void ShowTransitionFadeOut();
 	UFUNCTION(BlueprintCallable, Category = "OutGame UI")

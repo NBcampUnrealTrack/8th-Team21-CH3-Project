@@ -17,6 +17,8 @@
 #include "Animation/CharacterAnimInstance.h"
 #include "Interfaces/Interaction.h"
 #include "Game/TeamGameInstance.h"
+#include "Component/StatusComponent.h"
+#include "ShooterInGameMode.h"
 
 
 
@@ -78,6 +80,18 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 	 
 	//CurrentSpeed = FMath::FInterpTo(CurrentSpeed, TargetSpeed, DeltaSeconds, 20.f);
 	//GetCharacterMovement()->MaxWalkSpeed = CurrentSpeed;
+}
+
+float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float FinalDamageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (StatusComponent->IsDead())
+	{
+		bool bPlayerWin = true;
+		GameMode->OnCharacterDied(bPlayerWin);
+	}
+	return FinalDamageAmount;
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

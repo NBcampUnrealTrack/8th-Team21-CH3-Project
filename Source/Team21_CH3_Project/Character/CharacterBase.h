@@ -3,11 +3,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Game/TeamGameInstance.h"
 #include "CharacterBase.generated.h"
 
 class AWeapon;
 class UAnimMontage;
 class UStatusComponent;
+class AShooterInGameMode;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API ACharacterBase : public ACharacter
@@ -69,7 +71,6 @@ public:
 protected:
 	UFUNCTION()
 	virtual void HandleOnPostCharacterDead(); //개릭터 사망 후 로직
-
 protected:
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	//float MaxHP = 100.f;
@@ -83,8 +84,23 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess))
 	TObjectPtr<UStatusComponent> StatusComponent;
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess))
+	TObjectPtr<AShooterInGameMode> GameMode;
 
 #pragma endregion
 
+
+#pragma region WeaponSetup
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	TSubclassOf<AWeapon> RifleClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	TSubclassOf<AWeapon> ShotgunClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	TSubclassOf<AWeapon> PistolClass;
+
+	void GetWeapon(TSubclassOf<AWeapon> InWeaponClass);
+#pragma endregion
 };

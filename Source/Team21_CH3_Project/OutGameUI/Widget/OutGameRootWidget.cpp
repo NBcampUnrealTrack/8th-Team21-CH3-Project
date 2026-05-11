@@ -1,5 +1,6 @@
 // OutGameRootWidget.cpp
 #include "OutGameUI/Widget/OutGameRootWidget.h"
+#include "OutGameMainMenuWidget.h"
 #include "OutGameUI/Controller/OutGamePlayerController.h"
 #include "OutGameUI/Widget/OutGameTransitionWidget.h"
 #include "OutGameUI/Widget/UOutGameCommonHeaderWidget.h"
@@ -48,6 +49,16 @@ void UOutGameRootWidget::ShowWidget(EOutGameWidgetType widgetType)
 		}
 	}
 	
+}
+
+void UOutGameRootWidget::ShowLobby(){
+	if (IsValid(ScreenSwitcher) == true)
+	{
+		if (UOutGameMainMenuWidget* MainMenuInstance = Cast<UOutGameMainMenuWidget>(ScreenSwitcher->GetActiveWidget()))
+		{
+			MainMenuInstance->ShowLobby();
+		}
+	}
 }
 
 void UOutGameRootWidget::ShowSelectTransition(){

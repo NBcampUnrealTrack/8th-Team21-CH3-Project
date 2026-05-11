@@ -5,6 +5,7 @@
 #include "Game/TeamGameInstance.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "OutGameUI/Widget/OutGameMainMenuWidget.h"
 
 void UOutGameResultWidget::NativeOnInitialized(){
 	Super::NativeOnInitialized();
@@ -15,7 +16,11 @@ void UOutGameResultWidget::NativeOnInitialized(){
 		playerTotalKillText->SetText(FText::FromString(FString::Printf(TEXT("%d"), GameInstance->GetPlayerTotalKillCount())));
 		if (GameInstance->GetIsWin() == true) gameResultText->SetText(FText::FromString(TEXT("Victory")));
 		if (GameInstance->GetIsWin() == false) gameResultText->SetText(FText::FromString(TEXT("Defeat")));
+		
+		GameInstance->ClearScore();
 	}
+	
+	
 }
 
 void UOutGameResultWidget::HandleReturnToLobby(){
@@ -23,12 +28,14 @@ void UOutGameResultWidget::HandleReturnToLobby(){
 	{
 		if (UOutGameRootWidget* rootWidgetInstance = Cast<UOutGameRootWidget>(PC->GetRootWidget()))
 		{
-			rootWidgetInstance->ShowTransition([rootWidgetInstance]
+			rootWidgetInstance->ShowTransition([rootWidgetInstance, PC]
 			{
+				PC->SetViewTargetByTag("LobbyCamera", 0.0f);
 				rootWidgetInstance->ShowWidget(EOutGameWidgetType::MainMenu);
+				rootWidgetInstance->ShowLobby();
 				rootWidgetInstance->SetHeaderVisible(true);
-				// gameInstance->SetIsWin(false);
 			});
+
 		}
 	}
 }

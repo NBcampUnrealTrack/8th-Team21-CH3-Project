@@ -10,6 +10,7 @@
 #include "Team21_CH3_Project.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Component/StatusComponent.h"
+#include "ShooterInGameMode.h"
 
 int32 ACharacterBase::ShowAttackMeleeDebug = 0;
 
@@ -58,11 +59,36 @@ void ACharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 
+	GameMode = Cast<AShooterInGameMode>(GetWorld()->GetAuthGameMode());
+
 	UCharacterAnimInstance* AnimInstance = Cast<UCharacterAnimInstance>(GetMesh()->GetAnimInstance());
 	if (IsValid(AnimInstance))
 	{
 		AnimInstance->OnPostDead.AddDynamic(this, & ThisClass::HandleOnPostCharacterDead);
 	}
+
+	UTeamGameInstance* GameInstance = Cast<UTeamGameInstance>(GetGameInstance());
+	if (IsValid(GameInstance) == false)
+	{
+		return;
+	}
+	TSubclassOf<AWeapon> SelectWeapon = nullptr;
+	EWeaponType SelectType = GameInstance->GetSelectedWeaponType();
+
+	if (SelectType == EWeaponType::Rifle)
+	{
+		SelectWeapon = RifleClass;
+	}
+	else if (SelectType == EWeaponType::Shotgun)
+	{
+		SelectWeapon = ShotgunClass;
+	}
+	else if (SelectType == EWeaponType::Pistol)
+	{
+		SelectWeapon = PistolClass;
+	}
+	
+	GetWeapon(SelectWeapon);
 }
 
 float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -167,5 +193,25 @@ void ACharacterBase::HandleOnPostCharacterDead()
 	//0.1초뒤 메모리에서 삭제(Destroy())
 }
 
+void ACharacterBase::GetWeapon(TSubclassOf<AWeapon> InWeaponClass)
+{
+	if (InWeaponClass == nullptr) //BP에 할당X시 함수 종료
+	{
+		return;
+	}
 
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.Owner = this; //스폰 무기는 현재 이 클래스가 소유자 즉,(Player와 NPC)
 
+	AWeapon* SpawnWeapon = GetWorld()->SpawnActor<AWeapon>( //스폰할 액터 타입
+		InWeaponClass, //어떤 BP클래스로 스폰?
+		GetActorTransform(), // 현재 클래스의 액터의 위치에 스폰
+		SpawnParameters //위 설정 적용
+	);
+
+	if (IsValid(SpawnWeapon) == false) //Spawn실패시 함수 종료
+	{
+		return;
+	}
+	SpawnWeapon->EquipToCharacter(this); //Weapon클래스의 함수
+}
