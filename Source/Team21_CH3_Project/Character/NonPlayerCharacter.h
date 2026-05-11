@@ -40,7 +40,6 @@ protected:
 
 public:
 	bool bIsNowAttacking;
-
 protected:
 	FOnAttackMontageEnded OnAttackMontageEndedDelegate;
 	float LastUpdatedMaxHP = 0.f;

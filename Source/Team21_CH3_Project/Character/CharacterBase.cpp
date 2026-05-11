@@ -10,6 +10,7 @@
 #include "Team21_CH3_Project.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Component/StatusComponent.h"
+#include "ShooterInGameMode.h"
 
 int32 ACharacterBase::ShowAttackMeleeDebug = 0;
 
@@ -166,6 +167,3 @@ void ACharacterBase::HandleOnPostCharacterDead()
 	SetLifeSpan(0.1f);
 	//0.1초뒤 메모리에서 삭제(Destroy())
 }
-
-
-

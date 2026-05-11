@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Component/StatusComponent.h"
 #include "Animation/CharacterAnimInstance.h"
+#include "ShooterInGameMode.h"
 
 ANonPlayerCharacter::ANonPlayerCharacter() : bIsNowAttacking(false)
 {
@@ -64,6 +65,8 @@ float ANonPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 		if (IsValid(AIController) == true)
 		{
 			AIController->EndAI();
+			bool bNPCWin = false;
+			GameMode->OnCharacterDied(bNPCWin);
 		}
 	}
 	return FinalDamageAmount;
