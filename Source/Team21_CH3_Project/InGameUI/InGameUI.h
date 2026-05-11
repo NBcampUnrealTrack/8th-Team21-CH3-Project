@@ -1,4 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 // InGameUI.h
 
 #pragma once
@@ -15,18 +14,20 @@ UCLASS()
 class TEAM21_CH3_PROJECT_API UInGameUI : public UUserWidget
 {
 	GENERATED_BODY()
-	// UI 수치 갱신 호출용 함수
+
 public:
 	void UpdateHealth(float CurrentHealth, float MaxHealth);
 	void UpdateAmmo(int32 CurrentAmmo, int32 MaxAmmo);
 	void UpdateMatchInfo(int32 PlayerScore, int32 AIScore, int32 Round);
 
+	void ShowRoundTransitionMessage(const FText& MainMessage, const FText& SubMessage);
+	void HideRoundTransitionMessage();
+	bool IsRoundTransitionMessageVisible() const;
 
 protected:
 	virtual void NativeConstruct() override;
 
 protected:
-	// 블루프린트 위젯과 연동될 C++ 포인터
 	UPROPERTY(meta = (BindWidget))
 	UProgressBar* HealthBar;
 
@@ -35,14 +36,19 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	UImage* CrosshairImage;
-	
-	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* PlayerScoreText;
 
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* AIScoreText;
+	UTextBlock* PlayerScoreText;
 
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* RoundText;
+	UTextBlock* AIScoreText;
 
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* RoundText;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	UTextBlock* RoundTransitionText;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	UTextBlock* RoundTransitionSubText;
 };

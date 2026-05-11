@@ -1,4 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 // ShooterInGameMode.h
 
 #pragma once
@@ -19,17 +18,14 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	// 캐릭터가 사망했을 때 호출할 함수 (bIsPlayer가 true면 플레이어 사망 -> AI 득점)
 	UFUNCTION(BlueprintCallable, Category = "Match Rules")
 	void OnCharacterDied(bool bIsPlayer);
 
-	// 라운드 제어 함수
 	void StartRound();
-	void EndRound();
+	void EndRound(bool bPlayerWonRound);
 	void EndMatch(bool bPlayerWon);
 
 protected:
-	// 게임 상태를 기억할 변수들
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Match State")
 	int32 CurrentRound;
 
@@ -39,6 +35,33 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Match State")
 	int32 AIScore;
 
-	// 목표 승리 점수 (5판 3선승제)
-	const int32 TargetScoreToWin = 3;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Match State")
+	bool bIsRoundTransitioning;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Match State")
+	bool bIsMatchEnded;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match State")
+	float RoundTransitionDuration;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match State")
+	int32 TargetScoreToWin;
+
+	FTimerHandle RoundTransitionTimerHandle;
+
+	void FinishRoundTransition();
+	void RefreshHUDMatchInfo();
+	void ShowRoundTransitionMessage(bool bPlayerWonRound);
+	void RestartCurrentLevel();
+	void StopGameplayInput();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
+	void TriggerResultUI(bool bPlayerWon);
+
+public:
+	UFUNCTION(Exec)
+	void CmdAddPlayerScore();
+
+	UFUNCTION(Exec)
+	void CmdAddAIScore();
 };
