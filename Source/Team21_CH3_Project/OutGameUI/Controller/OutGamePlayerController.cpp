@@ -28,7 +28,7 @@ void AOutGamePlayerController::BeginPlay(){
 					RootWidgetInstance->SetHeaderVisible(false);
 					RootWidgetInstance->ShowTransitionFadein();
 					RootWidgetInstance->ShowWidget(EOutGameWidgetType::Result);
-					// gameInstance->SetMatch(false);
+					gameInstance->SetMatch(false);
 				}
 			}
 		}

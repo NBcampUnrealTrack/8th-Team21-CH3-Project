@@ -16,7 +16,11 @@ void UOutGameResultWidget::NativeOnInitialized(){
 		playerTotalKillText->SetText(FText::FromString(FString::Printf(TEXT("%d"), GameInstance->GetPlayerTotalKillCount())));
 		if (GameInstance->GetIsWin() == true) gameResultText->SetText(FText::FromString(TEXT("Victory")));
 		if (GameInstance->GetIsWin() == false) gameResultText->SetText(FText::FromString(TEXT("Defeat")));
+		
+		GameInstance->ClearScore();
 	}
+	
+	
 }
 
 void UOutGameResultWidget::HandleReturnToLobby(){
