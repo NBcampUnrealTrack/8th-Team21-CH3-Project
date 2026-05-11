@@ -68,7 +68,7 @@ void APlayerCharacter::BeginPlay()
 		}
 	}
 
-	CurrentWeapon = nullptr;
+	//CurrentWeapon = nullptr;
 }
 
 void APlayerCharacter::Tick(float DeltaSeconds)
@@ -158,14 +158,17 @@ void APlayerCharacter::InputAttackRanged(const FInputActionValue& InValue)
 	
 	if (IsValid(CurrentWeapon) == false) // 무기를 줍지 않았다면
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("CurrentWeapon이 nullptr"));
 		return; //코드 실행 X
 	}
 	
 	if (IsValid(GetCurrentWeaponAttackAnimMontage()) == false) //애님몽타주가 연결X라면
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("AttackMontage가 nullptr"));
 		return; //코드 실행 X
 	}
 	
+	//UE_LOG(LogTemp, Warning, TEXT("사격 조건 통과"));
 	//UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance(); //현재 클래스의 메시(캐릭터)의 애님인스턴스
 	//if (IsValid(AnimInstance) == true) //가 있다면
 	//{

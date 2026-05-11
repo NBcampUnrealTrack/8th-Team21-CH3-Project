@@ -102,5 +102,9 @@ protected:
 	TSubclassOf<AWeapon> PistolClass;
 
 	void GetWeapon(TSubclassOf<AWeapon> InWeaponClass);
+
+public:
+	UPROPERTY(BlueprintReadOnly)
+	EWeaponType CurrentWeaponType = EWeaponType::None;
 #pragma endregion
 };

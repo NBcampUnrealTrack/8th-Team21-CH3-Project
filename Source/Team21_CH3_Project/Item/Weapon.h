@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Game/TeamGameInstance.h"
 #include "Weapon.generated.h"
 
 class ACharacterBase;
@@ -39,5 +40,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (Units = cm))
 	float MaxAttackRange = 25000.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+	EWeaponType WeaponType = EWeaponType::None; //무기 타입 설정
 
 };

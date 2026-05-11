@@ -23,6 +23,7 @@ void AWeapon::EquipToCharacter(ACharacterBase* InCharacter)
 	PickupComponent->SetSimulatePhysics(false);
 	//아이템에 적용되는 피직스 끔
 	InCharacter->CurrentWeapon = this;
+	InCharacter->CurrentWeaponType = WeaponType;
 }
 
 void AWeapon::BeginPlay()
