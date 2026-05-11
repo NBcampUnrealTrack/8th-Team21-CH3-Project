@@ -2,10 +2,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "OutGameUI/Widget/OutGameRootWidget.h"
 #include "OutGameWidgetBase.h"
 #include "UOutGameCommonHeaderWidget.generated.h"
 
 class UButton;
+class UImage;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API UUOutGameCommonHeaderWidget : public UOutGameWidgetBase{
@@ -13,6 +15,9 @@ class TEAM21_CH3_PROJECT_API UUOutGameCommonHeaderWidget : public UOutGameWidget
 	
 public:
 	virtual void NativeOnInitialized() override;
+	
+	UFUNCTION()
+	void SetActiveTab(EOutGameWidgetType widgetType);
 	
 private:
 	UPROPERTY(meta =(BindWidget))
@@ -23,6 +28,20 @@ private:
 	TObjectPtr<UButton> storeButton;
 	UPROPERTY(meta =(BindWidget))
 	TObjectPtr<UButton> settingsButton;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> playSelectedImage;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> weaponsSelectedImage;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> storeSelectedImage;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> settingsSelectedImage;
+	
+	UFUNCTION()
+	void SetSelectedVisible(UImage* image, bool bSelected);
 	
 	UFUNCTION()
 	void HandlePlayClicked();
