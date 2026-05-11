@@ -78,6 +78,7 @@ void UTeamGameInstance::AddAIScore(int32 score){
 }
 
 void UTeamGameInstance::ClearScore(){
+	AddPlayerKillCount(playerScore);
 	playerScore = 0;
 	aiScore = 0;
 }

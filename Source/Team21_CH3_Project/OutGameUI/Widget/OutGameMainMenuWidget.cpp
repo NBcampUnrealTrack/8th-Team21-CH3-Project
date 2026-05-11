@@ -10,7 +10,7 @@ void UOutGameMainMenuWidget::NativeOnInitialized(){
 	Super::NativeOnInitialized();
 
 	if (IsValid(ContinueButton) == true)
-		ContinueButton->OnClicked.AddUniqueDynamic(this, &ThisClass::ShowLobby);
+		ContinueButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleContinueClicked);
 	if (IsValid(PlayButton) == true)
 		PlayButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandlePlayClicked);
 	if (IsValid(QuitButton) == true)
@@ -19,7 +19,26 @@ void UOutGameMainMenuWidget::NativeOnInitialized(){
 }
 
 void UOutGameMainMenuWidget::ShowLobby(){
-	if (IsValid(ScreenSwitcher) == true) { ScreenSwitcher->SetActiveWidgetIndex(1); }
+	if (AOutGamePlayerController* pc = GetOwningPlayer<AOutGamePlayerController>())
+	{
+		if (UOutGameRootWidget* rootWidgetInstance = pc->GetRootWidget())
+		{
+			if (IsValid(ScreenSwitcher) == true) { ScreenSwitcher->SetActiveWidgetIndex(1); }
+		}
+	}
+}
+
+void UOutGameMainMenuWidget::HandleContinueClicked(){
+	if (AOutGamePlayerController* pc = GetOwningPlayer<AOutGamePlayerController>())
+	{
+		if (UOutGameRootWidget* rootWidgetInstance = pc->GetRootWidget())
+		{
+			rootWidgetInstance->ShowTransition([rootWidgetInstance]
+			{
+				rootWidgetInstance->ShowLobby();
+			});
+		}
+	}
 }
 
 void UOutGameMainMenuWidget::HandlePlayClicked(){

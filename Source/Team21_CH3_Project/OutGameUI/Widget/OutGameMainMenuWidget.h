@@ -30,6 +30,8 @@ protected:
 	TObjectPtr<UButton> QuitButton;
 	
 	UFUNCTION()
+	void HandleContinueClicked();
+	UFUNCTION()
 	void HandlePlayClicked();
 	UFUNCTION()
 	void HandleQuitClicked();

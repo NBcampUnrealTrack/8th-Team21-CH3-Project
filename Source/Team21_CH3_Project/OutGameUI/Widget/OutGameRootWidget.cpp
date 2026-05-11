@@ -33,7 +33,7 @@ void UOutGameRootWidget::ShowWidget(EOutGameWidgetType widgetType)
 	
 	currentWidgetType = widgetType;
 	ScreenSwitcher->SetActiveWidgetIndex(int32(widgetType));
-	commonHeaderWidget->SetActiveTab(widgetType);
+	commonHeaderWidget->SetActiveTab(widgetType); // commonHeaderWidget 
 	
 	if (widgetType == EOutGameWidgetType::WeaponSelect)
 	{
