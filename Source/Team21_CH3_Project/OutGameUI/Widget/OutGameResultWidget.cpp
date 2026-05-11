@@ -24,11 +24,14 @@ void UOutGameResultWidget::HandleReturnToLobby(){
 	{
 		if (UOutGameRootWidget* rootWidgetInstance = Cast<UOutGameRootWidget>(PC->GetRootWidget()))
 		{
-			rootWidgetInstance->ShowTransitionFadeOut();
-			PC->SetViewTargetByTag("LobbyCamera", 0.0f);
-			rootWidgetInstance->ShowWidget(EOutGameWidgetType::MainMenu);
-			rootWidgetInstance->ShowLobby();
-			rootWidgetInstance->SetHeaderVisible(true);
+			rootWidgetInstance->ShowTransition([rootWidgetInstance, PC]
+			{
+				PC->SetViewTargetByTag("LobbyCamera", 0.0f);
+				rootWidgetInstance->ShowWidget(EOutGameWidgetType::MainMenu);
+				rootWidgetInstance->ShowLobby();
+				rootWidgetInstance->SetHeaderVisible(true);
+			});
+
 		}
 	}
 }
