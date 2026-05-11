@@ -9,6 +9,7 @@ class UWidgetSwitcher;
 class UOutGameQuitConfirmWidget;
 class UOutGameTransitionWidget;
 class UUOutGameCommonHeaderWidget;
+class AAOutGameCinematicManager;
 
 UENUM(BlueprintType)
 enum class EOutGameWidgetType : uint8{
@@ -18,7 +19,8 @@ enum class EOutGameWidgetType : uint8{
 	Store = 3 UMETA(DisplayName = "Store"),
 	WeaponSelect = 4 UMETA(DisplayName = "WeaponSelect"),
 	Settings = 5 UMETA(DisplayName = "Settings"),
-	Result = 6 UMETA(DisplayName = "Result")
+	Result = 6 UMETA(DisplayName = "Result"),
+	None = 7
 };
 
 UENUM(BlueprintType)
@@ -53,17 +55,22 @@ public:
 	void SetHeaderVisible(bool bVisible);
 	UFUNCTION(BlueprintCallable, Category = "OutGame UI")
 	void OpenSelectedLevel();
-	
-	
 	UFUNCTION()
-	EMapLevel GetSelectedLevel();
-	UFUNCTION()
-	void SetSelectedLevel(EMapLevel level);
+	void PlayResultCinematic(bool bIsWin);
 	
 	UFUNCTION()
 	void HandleNavigateHorizontal(int32 direction);
 	UFUNCTION()
 	void HandleBackRequested();
+	UFUNCTION()
+	void HandleResultCinematicFinished();
+	
+	UFUNCTION()
+	void SetSelectedLevel(EMapLevel level);
+	UFUNCTION()
+	EMapLevel GetSelectedLevel();
+	
+	AAOutGameCinematicManager* GetCinematicManager() const;
 	
 protected:
 	UPROPERTY(meta = (BindWidget))

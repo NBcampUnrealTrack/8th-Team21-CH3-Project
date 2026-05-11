@@ -24,10 +24,9 @@ void AOutGamePlayerController::BeginPlay(){
 			{
 				if (gameInstance->GetMatch() == true)
 				{
-					SetViewTargetByTag("ResultCamera", 0.0f);
 					RootWidgetInstance->SetHeaderVisible(false);
-					RootWidgetInstance->ShowTransitionFadein();
-					RootWidgetInstance->ShowWidget(EOutGameWidgetType::Result);
+					RootWidgetInstance->ShowWidget(EOutGameWidgetType::None);
+					RootWidgetInstance->PlayResultCinematic(gameInstance->GetIsWin());
 					gameInstance->SetMatch(false);
 				}
 			}

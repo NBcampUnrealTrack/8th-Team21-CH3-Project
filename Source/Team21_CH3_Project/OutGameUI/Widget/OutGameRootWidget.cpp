@@ -9,6 +9,7 @@
 #include "OutGameUI/Widget/OutGameWeaponPreviewWidget.h"
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/GameplayStatics.h"
+#include "OutGameUI/Preview/AOutGameCinematicManager.h"
 
 void UOutGameRootWidget::NativeOnInitialized(){
 	Super::NativeOnInitialized();
@@ -110,6 +111,21 @@ void UOutGameRootWidget::OpenSelectedLevel(){
 	}
 }
 
+void UOutGameRootWidget::PlayResultCinematic(bool bIsWin){
+	AAOutGameCinematicManager* cinematicManager = GetCinematicManager();
+	if (IsValid(cinematicManager) == false)
+	{
+		ShowWidget(EOutGameWidgetType::Result);
+		UE_LOG(LogTemp, Warning, TEXT("CinematicManager not found"));
+		return;
+	}
+	
+	cinematicManager->OnCinematicFinished.Clear();
+	cinematicManager->OnCinematicFinished.AddDynamic(this, &ThisClass::HandleResultCinematicFinished);
+	
+	cinematicManager->PlayResultCinematic(bIsWin);
+}
+
 void UOutGameRootWidget::HandleTransitionFadeOutFinished(){
 	if (pendingTransitionAction)
 	{
@@ -164,13 +180,36 @@ void UOutGameRootWidget::HandleBackRequested(){
 	}
 }
 
-EMapLevel UOutGameRootWidget::GetSelectedLevel(){
-	return selectedMapLevel;
+void UOutGameRootWidget::HandleResultCinematicFinished(){
+	UE_LOG(LogTemp, Warning, TEXT("Root HandleResultCinematicFinished"));
+	ShowWidget(EOutGameWidgetType::Result);
 }
 
 void UOutGameRootWidget::SetSelectedLevel(EMapLevel level){
 	selectedMapLevel = level;
 }
+
+EMapLevel UOutGameRootWidget::GetSelectedLevel(){
+	return selectedMapLevel;
+}
+
+AAOutGameCinematicManager* UOutGameRootWidget::GetCinematicManager() const{
+	UE_LOG(LogTemp, Warning, TEXT("Root PlayResultCinematic"));
+
+	TArray<AActor*> foundActors;
+	UGameplayStatics::GetAllActorsOfClass(
+		this,
+		AAOutGameCinematicManager::StaticClass(),
+		foundActors);
+	
+	if (foundActors.Num() <= 0) return nullptr;
+	
+	return Cast<AAOutGameCinematicManager>(foundActors[0]);
+}
+
+
+
+
 
 
 
