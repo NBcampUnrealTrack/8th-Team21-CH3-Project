@@ -59,6 +59,8 @@ void ACharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 
+	GameMode = Cast<AShooterInGameMode>(GetWorld()->GetAuthGameMode());
+
 	UCharacterAnimInstance* AnimInstance = Cast<UCharacterAnimInstance>(GetMesh()->GetAnimInstance());
 	if (IsValid(AnimInstance))
 	{
