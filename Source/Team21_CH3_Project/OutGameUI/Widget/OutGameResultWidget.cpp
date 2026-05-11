@@ -13,11 +13,12 @@ void UOutGameResultWidget::NativeOnInitialized(){
 	if (IsValid(returnToLobbyButton) == true) returnToLobbyButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleReturnToLobby);
 	if (UTeamGameInstance* GameInstance = Cast<UTeamGameInstance>(GetWorld()->GetGameInstance()))
 	{
+		GameInstance->ClearScore();
 		playerTotalKillText->SetText(FText::FromString(FString::Printf(TEXT("%d"), GameInstance->GetPlayerTotalKillCount())));
 		if (GameInstance->GetIsWin() == true) gameResultText->SetText(FText::FromString(TEXT("Victory")));
 		if (GameInstance->GetIsWin() == false) gameResultText->SetText(FText::FromString(TEXT("Defeat")));
 		
-		GameInstance->ClearScore();
+
 	}
 	
 	
