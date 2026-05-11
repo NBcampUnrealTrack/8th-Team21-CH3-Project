@@ -8,7 +8,7 @@
 class AWeapon;
 class UAnimMontage;
 class UStatusComponent;
-class AShooterInGameMode
+class AShooterInGameMode;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API ACharacterBase : public ACharacter
