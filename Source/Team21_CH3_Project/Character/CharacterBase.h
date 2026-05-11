@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Game/TeamGameInstance.h"
 #include "CharacterBase.generated.h"
 
 class AWeapon;
@@ -88,4 +89,18 @@ protected:
 
 #pragma endregion
 
+
+#pragma region WeaponSetup
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	TSubclassOf<AWeapon> RifleClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	TSubclassOf<AWeapon> ShotgunClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	TSubclassOf<AWeapon> PistolClass;
+
+	void GetWeapon(TSubclassOf<AWeapon> InWeaponClass);
+#pragma endregion
 };
