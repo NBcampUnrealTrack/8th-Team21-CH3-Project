@@ -5,6 +5,7 @@
 #include "Game/TeamGameInstance.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "OutGameUI/Widget/OutGameMainMenuWidget.h"
 
 void UOutGameResultWidget::NativeOnInitialized(){
 	Super::NativeOnInitialized();
@@ -23,12 +24,11 @@ void UOutGameResultWidget::HandleReturnToLobby(){
 	{
 		if (UOutGameRootWidget* rootWidgetInstance = Cast<UOutGameRootWidget>(PC->GetRootWidget()))
 		{
-			rootWidgetInstance->ShowTransition([rootWidgetInstance]
-			{
-				rootWidgetInstance->ShowWidget(EOutGameWidgetType::MainMenu);
-				rootWidgetInstance->SetHeaderVisible(true);
-				// gameInstance->SetIsWin(false);
-			});
+			rootWidgetInstance->ShowTransitionFadeOut();
+			PC->SetViewTargetByTag("LobbyCamera", 0.0f);
+			rootWidgetInstance->ShowWidget(EOutGameWidgetType::MainMenu);
+			rootWidgetInstance->ShowLobby();
+			rootWidgetInstance->SetHeaderVisible(true);
 		}
 	}
 }

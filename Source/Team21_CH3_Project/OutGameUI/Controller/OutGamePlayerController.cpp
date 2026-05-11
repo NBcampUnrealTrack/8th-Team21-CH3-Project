@@ -24,6 +24,8 @@ void AOutGamePlayerController::BeginPlay(){
 			{
 				if (gameInstance->GetMatch() == true)
 				{
+					SetViewTargetByTag("ResultCamera", 0.0f);
+					RootWidgetInstance->SetHeaderVisible(false);
 					RootWidgetInstance->ShowTransitionFadein();
 					RootWidgetInstance->ShowWidget(EOutGameWidgetType::Result);
 					// gameInstance->SetMatch(false);
