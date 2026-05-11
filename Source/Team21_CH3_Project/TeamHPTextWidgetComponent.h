@@ -6,8 +6,9 @@
 #include "Components/WidgetComponent.h"
 #include "TeamHPTextWidgetComponent.generated.h"
 
-// AI/캐릭터 머리 위에 HP Text 위젯을 띄우기 위한 WidgetComponent
-UCLASS()
+// AI/캐릭터 머리 위에 HP UI를 표시하기 위한 WidgetComponent
+// BP에서 컴포넌트로 추가할 수 있도록 BlueprintSpawnableComponent 설정
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class TEAM21_CH3_PROJECT_API UTeamHPTextWidgetComponent : public UWidgetComponent
 {
 	GENERATED_BODY()

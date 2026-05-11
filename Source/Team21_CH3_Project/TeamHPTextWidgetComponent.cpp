@@ -7,13 +7,13 @@
 
 UTeamHPTextWidgetComponent::UTeamHPTextWidgetComponent()
 {
-	// 캐릭터 머리 위에 표시할 UI이므로 기본적으로 Screen Space 사용
+	// AI/캐릭터 머리 위에 표시할 UI이므로 Screen Space 사용
 	SetWidgetSpace(EWidgetSpace::Screen);
 
-	// WBP_HPText의 기본 크기
-	SetDrawSize(FVector2D(200.f, 50.f));
+	// WBP_HPText 기준 크기
+	SetDrawSize(FVector2D(200.f, 40.f));
 
-	// 충돌 필요 없음
+	// UI 컴포넌트이므로 충돌은 사용하지 않는다.
 	SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
@@ -45,6 +45,6 @@ void UTeamHPTextWidgetComponent::InitWidget()
 		return;
 	}
 
-	// StatusComponent의 CurrentHP / MaxHP 값을 HP Text 위젯에 연결한다.
+	// StatusComponent의 CurrentHP / MaxHP 값을 HP UI에 연결한다.
 	HPTextWidgetInstance->InitializeHPTextWidget(StatusComponent);
 }
