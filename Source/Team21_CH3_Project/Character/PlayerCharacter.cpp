@@ -19,6 +19,8 @@
 #include "Game/TeamGameInstance.h"
 #include "Component/StatusComponent.h"
 #include "ShooterInGameMode.h"
+#include "InGameUI/InGameHUD.h"
+#include "Kismet/GameplayStatics.h"
 
 
 
@@ -68,7 +70,33 @@ void APlayerCharacter::BeginPlay()
 		}
 	}
 
+	if (IsValid(StatusComponent))
+	{
+		// 최대체력이 변하면 MaxHP에 관련된 함수들에게 알림
+		StatusComponent->OnMaxHPChanged.AddUObject(this, &APlayerCharacter::HandleMaxHPChanged);
+
+		// 현재체력의 변화를 알림
+		StatusComponent->OnCurrentHPChanged.AddUObject(this, &APlayerCharacter::HandleCurrentHPChanged);
+
+		// 체력이 0이 되었음을 알림
+		StatusComponent->OnOutOfCurrentHP.AddUObject(this, &APlayerCharacter::HandleOutOfCurrentHP);
+
+		// 게임 시작 시 현재 HP 값을 HUD에 즉시 반영한다.
+		RefreshPlayerHealthUI();
+	}
 	//CurrentWeapon = nullptr;
+}
+
+void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (IsValid(StatusComponent))
+	{
+		StatusComponent->OnMaxHPChanged.RemoveAll(this);
+		StatusComponent->OnCurrentHPChanged.RemoveAll(this);
+		StatusComponent->OnOutOfCurrentHP.RemoveAll(this);
+	}
+
+	Super::EndPlay(EndPlayReason);
 }
 
 void APlayerCharacter::Tick(float DeltaSeconds)
@@ -84,14 +112,60 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 
 float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	float FinalDamageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	const float FinalDamageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	if (StatusComponent->IsDead())
-	{
-			bool bPlayerWin = true;
-			GameMode->OnCharacterDied(bPlayerWin);
-	}
+	// Super::TakeDamage 내부에서 StatusComponent 체력이 변경되면
+	// OnCurrentHPChanged 델리게이트를 통해 HUD가 자동 갱신된다.
+	RefreshPlayerHealthUI();
+
 	return FinalDamageAmount;
+}
+
+void APlayerCharacter::HandleMaxHPChanged(float InMaxHP)
+{
+	RefreshPlayerHealthUI();
+}
+
+void APlayerCharacter::HandleCurrentHPChanged(float InCurrentHP)
+{
+	RefreshPlayerHealthUI();
+}
+
+void APlayerCharacter::HandleOutOfCurrentHP()
+{
+	RefreshPlayerHealthUI();
+
+	AShooterInGameMode* InGameMode = Cast<AShooterInGameMode>(UGameplayStatics::GetGameMode(this));
+	if (IsValid(InGameMode))
+	{
+		// 플레이어가 사망했으므로 true 전달
+		InGameMode->OnCharacterDied(true);
+	}
+}
+
+void APlayerCharacter::RefreshPlayerHealthUI()
+{
+	if (!IsValid(StatusComponent))
+	{
+		return;
+	}
+
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (!IsValid(PlayerController))
+	{
+		return;
+	}
+
+	AInGameHUD* InGameHUD = Cast<AInGameHUD>(PlayerController->GetHUD());
+	if (!IsValid(InGameHUD))
+	{
+		return;
+	}
+
+	InGameHUD->RefreshHealthUI(
+		StatusComponent->GetCurrentHP(),
+		StatusComponent->GetMaxHP()
+	);
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

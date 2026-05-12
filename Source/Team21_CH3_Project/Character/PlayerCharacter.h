@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -24,6 +23,8 @@ public:
 
 	virtual void BeginPlay() override;
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 	virtual void Tick(float DeltaSeconds) override;
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
@@ -32,7 +33,7 @@ protected:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 protected:
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,meta =(AllowPrivateAccess))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess))
 	TObjectPtr<USpringArmComponent> SpringArmComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess))
@@ -40,7 +41,25 @@ protected:
 
 #pragma endregion
 
+#pragma region Player HP UI
+
+protected:
+	// 최대체력이 변경되었을 때 HUD 체력 UI를 갱신한다.
+	void HandleMaxHPChanged(float InMaxHP);
+
+	// 현재체력이 변경되었을 때 HUD 체력 UI를 갱신한다.
+	void HandleCurrentHPChanged(float InCurrentHP);
+
+	// 체력이 0이 되었을 때 라운드 사망 처리를 호출한다.
+	void HandleOutOfCurrentHP();
+
+	// 현재 StatusComponent 값을 InGameHUD에 반영한다.
+	void RefreshPlayerHealthUI();
+
+#pragma endregion
+
 #pragma region Input
+
 private:
 	void InputMove(const FInputActionValue& InValue);
 	void InputLook(const FInputActionValue& InValue);
@@ -57,12 +76,11 @@ private:
 	void InputStopFullAutoFire(const FInputActionValue& InValue);
 	void InputInteraction(const FInputActionValue& InValue);
 
-
 protected:
-	UPROPERTY(EditAnywhere,BlueprintReadOnly, meta =(AllowPrivateAccess))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess))
 	TObjectPtr<UInputConfig> CharacterInputConfig;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly,meta =(AllowPrivateAccess))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess))
 	TObjectPtr<UInputMappingContext> CharacterIMC;
 
 #pragma endregion
@@ -79,15 +97,19 @@ public:
 
 protected:
 	float TargetFOV = 70.f;
-		//Field Of View 시야 각
+	//Field Of View 시야 각
+
 	float CurrentFOV = 70.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float TargetSpeed = 1200.f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float CurrentSpeed = 500.f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float CurrentAcceleration = 2048.f;
+
 #pragma endregion
 
 #pragma region Selector
@@ -95,13 +117,17 @@ protected:
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float FirePerMinute = 600;
-		//분당 발사
+	//분당 발사
+
 	bool bIsFullAutoFire = false;
-		//연발 상태인가?	
+	//연발 상태인가?
+
 	FTimerHandle FullAutoTimerHandle;
-		// 타이머 핸들 변수 선언
+	// 타이머 핸들 변수 선언
+
 	//float TimeBetweenFire;
-		// 발사 간 타이밍
+	// 발사 간 타이밍
+
 #pragma endregion
 
 #pragma region Interaction
