@@ -61,12 +61,6 @@ void ACharacterBase::BeginPlay()
 
 	GameMode = Cast<AShooterInGameMode>(GetWorld()->GetAuthGameMode());
 
-	UCharacterAnimInstance* AnimInstance = Cast<UCharacterAnimInstance>(GetMesh()->GetAnimInstance());
-	if (IsValid(AnimInstance))
-	{
-		AnimInstance->OnPostDead.AddDynamic(this, & ThisClass::HandleOnPostCharacterDead);
-	}
-
 	UTeamGameInstance* GameInstance = Cast<UTeamGameInstance>(GetGameInstance());
 	if (IsValid(GameInstance) == false)
 	{
@@ -152,7 +146,7 @@ void ACharacterBase::HandleOnCheckHit()
 	{
 		if (HitResults.IsEmpty() == false)
 		{
-			for (FHitResult HitResult : HitResults)
+			for (const FHitResult& HitResult : HitResults)
 			{
 				if (IsValid(HitResult.GetActor()) == true)
 				{

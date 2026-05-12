@@ -88,8 +88,8 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 
 	if (StatusComponent->IsDead())
 	{
-		bool bPlayerWin = true;
-		GameMode->OnCharacterDied(bPlayerWin);
+			bool bPlayerWin = true;
+			GameMode->OnCharacterDied(bPlayerWin);
 	}
 	return FinalDamageAmount;
 }
@@ -193,16 +193,23 @@ void APlayerCharacter::InputAttackRanged(const FInputActionValue& InValue)
 
 void APlayerCharacter::InputAttackMelee(const FInputActionValue& InValue)
 {
-	// UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("Attack()")));
+	UE_LOG(LogTemp, Warning, TEXT("=== InputAttackMelee 호출됨 ==="));
+
 	if (GetCharacterMovement()->IsFalling() == true)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("실패: 공중 상태"));
 		return;
 	}
 	
 	UCharacterAnimInstance* AnimInstance = Cast<UCharacterAnimInstance>(GetMesh()->GetAnimInstance());
+	
+	UE_LOG(LogTemp, Warning, TEXT("AnimInstance 유효: %s"), IsValid(AnimInstance) ? TEXT("O") : TEXT("X"));
+	UE_LOG(LogTemp, Warning, TEXT("AttackMeleeMontage 유효: %s"), IsValid(AttackMeleeMontage) ? TEXT("O") : TEXT("X"));
+
 	if (IsValid(AnimInstance) == true && IsValid(AttackMeleeMontage) == true && AnimInstance->Montage_IsPlaying(AttackMeleeMontage) == false)
 	{
 		AnimInstance->Montage_Play(AttackMeleeMontage);
+		UE_LOG(LogTemp, Warning, TEXT("몽타주 재생 시작"));
 	}
 }
 
@@ -394,7 +401,7 @@ void APlayerCharacter::InputInteraction(const FInputActionValue& InValue)
 		if (Interactable != nullptr)
 		{
 			Interactable->Interact(this);
-			UE_LOG(LogTemp, Warning, TEXT("Interaction Activated"))
+			//UE_LOG(LogTemp, Warning, TEXT("Interaction Activated"))
 		}
 		
 	}
