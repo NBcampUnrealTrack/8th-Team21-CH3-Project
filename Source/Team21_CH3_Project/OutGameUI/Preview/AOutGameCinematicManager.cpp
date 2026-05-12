@@ -9,6 +9,7 @@ void AAOutGameCinematicManager::PlayResultCinematic(bool bIsWin){
 	
 	if (IsValid(sequenceToPlay) == false)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Sequence Is Valid"));
 		OnCinematicFinished.Broadcast();
 		return;
 	}

@@ -26,6 +26,7 @@ void AOutGamePlayerController::BeginPlay(){
 				{
 					RootWidgetInstance->SetHeaderVisible(false);
 					RootWidgetInstance->ShowWidget(EOutGameWidgetType::None);
+					//RootWidgetInstance->ShowTransitionFadein();
 					RootWidgetInstance->PlayResultCinematic(gameInstance->GetIsWin());
 					gameInstance->SetMatch(false);
 				}
