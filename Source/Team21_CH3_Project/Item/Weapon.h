@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -14,8 +13,8 @@ UCLASS()
 class TEAM21_CH3_PROJECT_API AWeapon : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	AWeapon();
 
 	UPickupComponent* GetPickupComponent() const { return PickupComponent; }
@@ -28,9 +27,12 @@ public:
 
 	int32 GetMAxBullets() const { return MaxBullets; }
 
+	int32 GetMaxBullets() const { return MaxBullets; }
+
 	void EquipToCharacter(ACharacterBase* InCharacter);
 
 	bool UseBullets();
+
 protected:
 	virtual void BeginPlay() override;
 

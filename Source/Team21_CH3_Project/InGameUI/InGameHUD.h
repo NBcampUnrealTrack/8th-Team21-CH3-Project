@@ -17,6 +17,7 @@ class TEAM21_CH3_PROJECT_API AInGameHUD : public AHUD
 public:
 	void RefreshMatchUI(int32 PlayerScore, int32 AIScore, int32 Round);
 	void RefreshHealthUI(float CurrentHealth, float MaxHealth);
+	void RefreshAmmoUI(int32 CurrentAmmo, int32 MaxAmmo);
 
 	void ShowRoundTransitionUI(const FText& MainMessage, const FText& SubMessage);
 	void HideRoundTransitionUI();

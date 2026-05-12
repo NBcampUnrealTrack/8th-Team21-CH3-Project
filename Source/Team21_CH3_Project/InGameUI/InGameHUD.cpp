@@ -53,6 +53,14 @@ void AInGameHUD::RefreshHealthUI(float CurrentHealth, float MaxHealth)
 	}
 }
 
+void AInGameHUD::RefreshAmmoUI(int32 CurrentAmmo, int32 MaxAmmo)
+{
+	if (InGameUIInstance)
+	{
+		InGameUIInstance->UpdateAmmo(CurrentAmmo, MaxAmmo);
+	}
+}
+
 void AInGameHUD::ShowRoundTransitionUI(const FText& MainMessage, const FText& SubMessage)
 {
 	// 라운드 전환 UI가 표시될 때는 HP 위험 피드백을 제거한다.
