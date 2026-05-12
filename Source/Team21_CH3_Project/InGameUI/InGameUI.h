@@ -11,7 +11,7 @@ class UTextBlock;
 class UImage;
 
 // 인게임 화면에 표시되는 메인 HUD UI
-// 체력, 탄약, 점수, 라운드 정보, 라운드 전환 메시지를 관리한다.
+// 체력, 탄약, 점수, 라운드 정보, 라운드 전환 메시지, HP 위험 피드백을 관리한다.
 UCLASS()
 class TEAM21_CH3_PROJECT_API UInGameUI : public UUserWidget
 {
@@ -19,7 +19,7 @@ class TEAM21_CH3_PROJECT_API UInGameUI : public UUserWidget
 
 public:
 	// 플레이어 체력 UI 갱신
-	// HealthBar와 PlayerHPText를 함께 갱신한다.
+	// HealthBar, PlayerHPText, HP 위험 피드백을 함께 갱신한다.
 	void UpdateHealth(float CurrentHealth, float MaxHealth);
 
 	// 탄약 UI 갱신
@@ -38,6 +38,10 @@ public:
 	// 라운드 전환 메시지가 현재 표시 중인지 확인
 	bool IsRoundTransitionMessageVisible() const;
 
+	// HP 위험 피드백 제거
+	// 사망, Result UI 표시, 라운드 전환 등에서 강제로 숨길 때 사용한다.
+	void HideHPDangerFeedback();
+
 protected:
 	virtual void NativeConstruct() override;
 
@@ -52,6 +56,11 @@ protected:
 	// WBP_InGameUI 안의 TextBlock 이름이 PlayerHPText여야 연결된다.
 	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* PlayerHPText;
+
+	// HP 30% 이하일 때 화면 가장자리에 표시할 빨간 위험 효과 Image
+	// WBP_InGameUI 안의 Image 이름이 HPDangerVignette여야 연결된다.
+	UPROPERTY(meta = (BindWidgetOptional))
+	UImage* HPDangerVignette;
 
 	// 탄약 Text
 	// 예: 30 / 30
@@ -83,4 +92,8 @@ protected:
 	// 예: Get Ready for the Next Round
 	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* RoundTransitionSubText;
+
+private:
+	// HP 비율을 검사해서 위험 피드백을 표시하거나 숨긴다.
+	void UpdateHPDangerFeedback(float CurrentHealth, float MaxHealth);
 };

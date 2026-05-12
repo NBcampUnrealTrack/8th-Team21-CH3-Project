@@ -135,6 +135,17 @@ void APlayerCharacter::HandleOutOfCurrentHP()
 {
 	RefreshPlayerHealthUI();
 
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (IsValid(PlayerController))
+	{
+		AInGameHUD* InGameHUD = Cast<AInGameHUD>(PlayerController->GetHUD());
+		if (IsValid(InGameHUD))
+		{
+			// 플레이어가 사망하면 위험 피드백을 제거한다.
+			InGameHUD->HideHPDangerFeedback();
+		}
+	}
+
 	AShooterInGameMode* InGameMode = Cast<AShooterInGameMode>(UGameplayStatics::GetGameMode(this));
 	if (IsValid(InGameMode))
 	{

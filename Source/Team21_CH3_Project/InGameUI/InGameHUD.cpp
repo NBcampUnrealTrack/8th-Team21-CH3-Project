@@ -1,4 +1,4 @@
-// InGameHUD.cpp
+//InGameUI.cpp
 
 #include "InGameHUD.h"
 #include "InGameUI.h"
@@ -25,7 +25,10 @@ void AInGameHUD::BeginPlay()
 void AInGameHUD::RefreshMatchUIFromGameInstance()
 {
 	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
-	if (!GI) return;
+	if (!GI)
+	{
+		return;
+	}
 
 	const int32 PlayerScore = GI->GetPlayerScore();
 	const int32 AIScore = GI->GetAIScore();
@@ -52,6 +55,9 @@ void AInGameHUD::RefreshHealthUI(float CurrentHealth, float MaxHealth)
 
 void AInGameHUD::ShowRoundTransitionUI(const FText& MainMessage, const FText& SubMessage)
 {
+	// 라운드 전환 UI가 표시될 때는 HP 위험 피드백을 제거한다.
+	HideHPDangerFeedback();
+
 	if (RoundTransitionWidgetInstance)
 	{
 		RoundTransitionWidgetInstance->SetRoundMessage(MainMessage, SubMessage);
@@ -65,7 +71,10 @@ void AInGameHUD::ShowRoundTransitionUI(const FText& MainMessage, const FText& Su
 	}
 
 	RoundTransitionWidgetInstance = CreateWidget<URoundTransitionWidget>(GetWorld(), RoundTransitionWidgetClass);
-	if (!RoundTransitionWidgetInstance) return;
+	if (!RoundTransitionWidgetInstance)
+	{
+		return;
+	}
 
 	RoundTransitionWidgetInstance->SetRoundMessage(MainMessage, SubMessage);
 	RoundTransitionWidgetInstance->AddToViewport(100);
@@ -83,4 +92,12 @@ void AInGameHUD::HideRoundTransitionUI()
 bool AInGameHUD::IsRoundTransitionUIShowing() const
 {
 	return RoundTransitionWidgetInstance != nullptr;
+}
+
+void AInGameHUD::HideHPDangerFeedback()
+{
+	if (InGameUIInstance)
+	{
+		InGameUIInstance->HideHPDangerFeedback();
+	}
 }

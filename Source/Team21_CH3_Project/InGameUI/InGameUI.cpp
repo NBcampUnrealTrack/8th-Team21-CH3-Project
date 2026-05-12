@@ -20,11 +20,14 @@ void UInGameUI::NativeConstruct()
 
 	// 라운드 전환 메시지는 처음에는 숨겨둔다.
 	HideRoundTransitionMessage();
+
+	// HP 위험 피드백도 처음에는 숨겨둔다.
+	HideHPDangerFeedback();
 }
 
 void UInGameUI::UpdateHealth(float CurrentHealth, float MaxHealth)
 {
-	// MaxHealth가 잘못된 값이면 HP Bar와 Text를 안전하게 0 처리한다.
+	// MaxHealth가 잘못된 값이면 HP Bar, Text, 위험 피드백을 안전하게 0 처리한다.
 	if (MaxHealth <= 0.f)
 	{
 		if (HealthBar)
@@ -37,6 +40,7 @@ void UInGameUI::UpdateHealth(float CurrentHealth, float MaxHealth)
 			PlayerHPText->SetText(FText::FromString(TEXT("0 / 0")));
 		}
 
+		HideHPDangerFeedback();
 		return;
 	}
 
@@ -63,6 +67,9 @@ void UInGameUI::UpdateHealth(float CurrentHealth, float MaxHealth)
 
 		PlayerHPText->SetText(FText::FromString(HPTextString));
 	}
+
+	// HP 위험 피드백 갱신
+	UpdateHPDangerFeedback(SafeHealth, MaxHealth);
 }
 
 void UInGameUI::UpdateAmmo(int32 CurrentAmmo, int32 MaxAmmo)
@@ -102,6 +109,9 @@ void UInGameUI::UpdateMatchInfo(int32 PlayerScore, int32 AIScore, int32 Round)
 
 void UInGameUI::ShowRoundTransitionMessage(const FText& MainMessage, const FText& SubMessage)
 {
+	// 라운드 전환 UI 또는 결과성 메시지가 표시될 때는 위험 피드백을 제거한다.
+	HideHPDangerFeedback();
+
 	// 메인 메시지가 없으면 기본 문구로 Next Round 표시
 	const FText SafeMainMessage = MainMessage.IsEmpty()
 		? FText::FromString(TEXT("Next Round"))
@@ -146,4 +156,45 @@ bool UInGameUI::IsRoundTransitionMessageVisible() const
 	}
 
 	return RoundTransitionText->GetVisibility() != ESlateVisibility::Collapsed;
+}
+
+void UInGameUI::UpdateHPDangerFeedback(float CurrentHealth, float MaxHealth)
+{
+	if (!HPDangerVignette)
+	{
+		return;
+	}
+
+	// HP 값이 비정상적이면 위험 피드백을 표시하지 않는다.
+	if (MaxHealth <= 0.f || CurrentHealth < 0.f)
+	{
+		HideHPDangerFeedback();
+		return;
+	}
+
+	// 플레이어가 사망한 경우에는 Result UI 또는 Death 처리가 우선되므로 위험 피드백을 제거한다.
+	if (CurrentHealth <= 0.f)
+	{
+		HideHPDangerFeedback();
+		return;
+	}
+
+	const float DangerThreshold = MaxHealth * 0.3f;
+
+	if (CurrentHealth <= DangerThreshold)
+	{
+		HPDangerVignette->SetVisibility(ESlateVisibility::HitTestInvisible);
+	}
+	else
+	{
+		HideHPDangerFeedback();
+	}
+}
+
+void UInGameUI::HideHPDangerFeedback()
+{
+	if (HPDangerVignette)
+	{
+		HPDangerVignette->SetVisibility(ESlateVisibility::Collapsed);
+	}
 }

@@ -22,6 +22,10 @@ public:
 	void HideRoundTransitionUI();
 	bool IsRoundTransitionUIShowing() const;
 
+	// HP 위험 피드백 제거
+	// 플레이어 사망, Result UI 표시, 라운드 전환 UI 표시 시 호출한다.
+	void HideHPDangerFeedback();
+
 protected:
 	virtual void BeginPlay() override;
 
