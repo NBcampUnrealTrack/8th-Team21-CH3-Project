@@ -26,6 +26,20 @@ void AWeapon::EquipToCharacter(ACharacterBase* InCharacter)
 	InCharacter->CurrentWeaponType = WeaponType;
 }
 
+bool AWeapon::UseBullets()
+{
+	if (0 >= CurrentBullets)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ReLoading!!"))
+		return false;
+	}
+
+	CurrentBullets--;
+	UE_LOG(LogTemp, Warning, TEXT("Bullets: %d / %d"), CurrentBullets, MaxBullets)
+
+	return true;
+}
+
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();

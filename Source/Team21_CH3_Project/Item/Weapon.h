@@ -24,7 +24,13 @@ public:
 
 	float GetMaxAttackRange() const { return MaxAttackRange; }
 
+	int32 GetCurrentBullets() const { return CurrentBullets; }
+
+	int32 GetMAxBullets() const { return MaxBullets; }
+
 	void EquipToCharacter(ACharacterBase* InCharacter);
+
+	bool UseBullets();
 protected:
 	virtual void BeginPlay() override;
 
@@ -44,4 +50,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	EWeaponType WeaponType = EWeaponType::None; //무기 타입 설정
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullets")
+	int32 MaxBullets = 30;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Bullets")
+	int32 CurrentBullets = 30;
 };

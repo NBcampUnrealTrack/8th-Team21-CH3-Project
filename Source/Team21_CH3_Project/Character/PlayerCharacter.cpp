@@ -289,6 +289,13 @@ void APlayerCharacter::InputAttackMelee(const FInputActionValue& InValue)
 
 void APlayerCharacter::TryFire()
 {
+
+	if (CurrentWeapon->UseBullets() == false)
+	{
+		GetWorldTimerManager().ClearTimer(FullAutoTimerHandle);
+		return;
+	}
+
 	//UE_LOG(LogTemp, Warning, TEXT("TryFire at: %f"), GetWorld()->GetTimeSeconds());
 	APlayerController* PlayerController = GetController<APlayerController>();
 	if (IsValid(PlayerController) == true)
