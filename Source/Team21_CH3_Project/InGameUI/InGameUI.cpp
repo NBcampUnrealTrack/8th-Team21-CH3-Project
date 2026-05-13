@@ -1,5 +1,3 @@
-// InGameUI.cpp
-
 #include "InGameUI.h"
 
 #include "Components/ProgressBar.h"
@@ -14,6 +12,7 @@ void UInGameUI::NativeConstruct()
 	// 실제 게임 중에는 HUD 또는 캐릭터에서 RefreshHealthUI를 통해 다시 갱신된다.
 	UpdateHealth(100.f, 100.f);
 	UpdateAmmo(30, 30);
+	UpdateWaveInfo(1, 0, 0, 0);
 
 	// 점수 / 라운드는 GameInstance 값을 기준으로 HUD에서 갱신하므로
 	// 여기서 0점, 1라운드로 강제 초기화하지 않는다.
@@ -87,23 +86,38 @@ void UInGameUI::UpdateAmmo(int32 CurrentAmmo, int32 MaxAmmo)
 
 void UInGameUI::UpdateMatchInfo(int32 PlayerScore, int32 AIScore, int32 Round)
 {
-	// 플레이어 점수 갱신
+	// 기존 점수제 UI 호환용 함수
 	if (PlayerScoreText)
 	{
 		PlayerScoreText->SetText(FText::AsNumber(PlayerScore));
 	}
 
-	// AI 점수 갱신
 	if (AIScoreText)
 	{
 		AIScoreText->SetText(FText::AsNumber(AIScore));
 	}
 
-	// 현재 라운드 갱신
-	// 예: ROUND 2
 	if (RoundText)
 	{
 		RoundText->SetText(FText::FromString(FString::Printf(TEXT("ROUND %d"), Round)));
+	}
+}
+
+void UInGameUI::UpdateWaveInfo(int32 CurrentWave, int32 CurrentKillCount, int32 TargetKillCount, int32 CurrentGold)
+{
+	if (WaveText)
+	{
+		WaveText->SetText(FText::FromString(FString::Printf(TEXT("WAVE %d"), CurrentWave)));
+	}
+
+	if (KillText)
+	{
+		KillText->SetText(FText::FromString(FString::Printf(TEXT("KILL %d / %d"), CurrentKillCount, TargetKillCount)));
+	}
+
+	if (GoldText)
+	{
+		GoldText->SetText(FText::FromString(FString::Printf(TEXT("GOLD %d"), CurrentGold)));
 	}
 }
 

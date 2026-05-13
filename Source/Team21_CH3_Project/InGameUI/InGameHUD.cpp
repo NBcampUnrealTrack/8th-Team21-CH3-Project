@@ -1,5 +1,3 @@
-//InGameUI.cpp
-
 #include "InGameHUD.h"
 #include "InGameUI.h"
 #include "RoundTransitionWidget.h"
@@ -58,6 +56,14 @@ void AInGameHUD::RefreshAmmoUI(int32 CurrentAmmo, int32 MaxAmmo)
 	if (InGameUIInstance)
 	{
 		InGameUIInstance->UpdateAmmo(CurrentAmmo, MaxAmmo);
+	}
+}
+
+void AInGameHUD::RefreshWaveUI(int32 CurrentWave, int32 CurrentKillCount, int32 TargetKillCount, int32 CurrentGold)
+{
+	if (InGameUIInstance)
+	{
+		InGameUIInstance->UpdateWaveInfo(CurrentWave, CurrentKillCount, TargetKillCount, CurrentGold);
 	}
 }
 

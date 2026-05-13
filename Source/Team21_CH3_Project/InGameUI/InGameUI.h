@@ -1,5 +1,3 @@
-// InGameUI.h
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -11,7 +9,7 @@ class UTextBlock;
 class UImage;
 
 // 인게임 화면에 표시되는 메인 HUD UI
-// 체력, 탄약, 점수, 라운드 정보, 라운드 전환 메시지, HP 위험 피드백을 관리한다.
+// 체력, 탄약, Wave 정보, 라운드 전환 메시지, HP 위험 피드백을 관리한다.
 UCLASS()
 class TEAM21_CH3_PROJECT_API UInGameUI : public UUserWidget
 {
@@ -25,8 +23,12 @@ public:
 	// 탄약 UI 갱신
 	void UpdateAmmo(int32 CurrentAmmo, int32 MaxAmmo);
 
-	// 점수 및 라운드 UI 갱신
+	// 기존 점수 및 라운드 UI 갱신
+	// 기존 코드 호환용으로 유지한다.
 	void UpdateMatchInfo(int32 PlayerScore, int32 AIScore, int32 Round);
+
+	// Wave / Kill / Gold UI 갱신
+	void UpdateWaveInfo(int32 CurrentWave, int32 CurrentKillCount, int32 TargetKillCount, int32 CurrentGold);
 
 	// 라운드 전환 메시지 표시
 	// 예: Round Win / Round Lose
@@ -71,17 +73,35 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UImage* CrosshairImage;
 
-	// 플레이어 점수 Text
-	UPROPERTY(meta = (BindWidget))
+	// 기존 플레이어 점수 Text
+	// 기존 코드 호환용으로 유지한다.
+	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* PlayerScoreText;
 
-	// AI 점수 Text
-	UPROPERTY(meta = (BindWidget))
+	// 기존 AI 점수 Text
+	// 기존 코드 호환용으로 유지한다.
+	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* AIScoreText;
 
-	// 현재 라운드 Text
-	UPROPERTY(meta = (BindWidget))
+	// 기존 라운드 Text
+	// 기존 코드 호환용으로 유지한다.
+	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* RoundText;
+
+	// 현재 Wave Text
+	// WBP_InGameUI 안의 TextBlock 이름이 WaveText여야 연결된다.
+	UPROPERTY(meta = (BindWidgetOptional))
+	UTextBlock* WaveText;
+
+	// 현재 Wave Kill Count Text
+	// WBP_InGameUI 안의 TextBlock 이름이 KillText여야 연결된다.
+	UPROPERTY(meta = (BindWidgetOptional))
+	UTextBlock* KillText;
+
+	// 현재 Gold Text
+	// WBP_InGameUI 안의 TextBlock 이름이 GoldText여야 연결된다.
+	UPROPERTY(meta = (BindWidgetOptional))
+	UTextBlock* GoldText;
 
 	// 라운드 전환 메인 메시지 Text
 	// 예: Round Win, Round Lose

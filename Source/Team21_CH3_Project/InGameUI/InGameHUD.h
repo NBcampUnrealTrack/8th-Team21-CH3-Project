@@ -1,5 +1,3 @@
-// InGameHUD.h
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -18,6 +16,9 @@ public:
 	void RefreshMatchUI(int32 PlayerScore, int32 AIScore, int32 Round);
 	void RefreshHealthUI(float CurrentHealth, float MaxHealth);
 	void RefreshAmmoUI(int32 CurrentAmmo, int32 MaxAmmo);
+
+	// Wave / Kill / Gold UI °»½Å
+	void RefreshWaveUI(int32 CurrentWave, int32 CurrentKillCount, int32 TargetKillCount, int32 CurrentGold);
 
 	void ShowRoundTransitionUI(const FText& MainMessage, const FText& SubMessage);
 	void HideRoundTransitionUI();
