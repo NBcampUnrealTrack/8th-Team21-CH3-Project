@@ -200,6 +200,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		CharacterInputComponent->BindAction(CharacterInputConfig->AttackRanged, ETriggerEvent::Started, this, &ThisClass::InputStartFullAutoFire);
 		CharacterInputComponent->BindAction(CharacterInputConfig->AttackRanged, ETriggerEvent::Completed, this, &ThisClass::InputStopFullAutoFire);
 		CharacterInputComponent->BindAction(CharacterInputConfig->Interaction, ETriggerEvent::Started, this, &ThisClass::InputInteraction);
+		CharacterInputComponent->BindAction(CharacterInputConfig->ReLoad, ETriggerEvent::Started, this, &ThisClass::InputReLoad);
 		//UE_LOG(LogTemp, Warning, TEXT("InputComponent Bind Suceess"));
 	}
 }
@@ -545,7 +546,46 @@ void APlayerCharacter::InputInteraction(const FInputActionValue& InValue)
 
 void APlayerCharacter::InputReLoad(const FInputActionValue& InValue)
 {
+	//UE_LOG(LogTemp, Warning, TEXT("=== InputReload 호출됨 ==="));
 
+	if (bIsReloading == true) //장전중이 아니라면
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("실패: 이미 리로딩 중"));
+		return;
+	}
+
+	if (IsValid(CurrentWeapon) == false) //현재 무기가 할당X라면
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("실패: CurrentWeapon nullptr"));
+		return;
+	}
+
+	if (CurrentWeapon->GetCurrentBullets() == CurrentWeapon->GetMaxBullets()) //현재탄약 == 최대 탄약 이라면
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("실패: 이미 풀탄"));
+		return;
+	}
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	UAnimMontage* ReloadMontage = CurrentWeapon->GetReloadMontage();
+
+	//UE_LOG(LogTemp, Warning, TEXT("AnimInstance 유효: %s"), IsValid(AnimInstance) ? TEXT("O") : TEXT("X"));
+	//UE_LOG(LogTemp, Warning, TEXT("ReloadMontage 유효: %s"), IsValid(ReloadMontage) ? TEXT("O") : TEXT("X"));
+
+	if (IsValid(AnimInstance) == false || IsValid(ReloadMontage) == false)
+	{
+		return;
+	}
+	//UE_LOG(LogTemp, Warning, TEXT("몽타주 재생 시작"));
+
+	bIsReloading = true;
+
+	AnimInstance->Montage_Play(ReloadMontage);
+	//UE_LOG(LogTemp, Warning, TEXT("재생 직후 IsPlaying: %s"), AnimInstance->Montage_IsPlaying(ReloadMontage) ? TEXT("O") : TEXT("X"));
+
+	FOnMontageEnded EndDelegate;
+	EndDelegate.BindUObject(this, &APlayerCharacter::OnReloadMontageEnded);
+	AnimInstance->Montage_SetEndDelegate(EndDelegate, ReloadMontage);
 }
 
 void APlayerCharacter::ApplyAugment_AttackDamage(float InAdd)
@@ -576,4 +616,14 @@ void APlayerCharacter::ApplyAugment_MaxHP(float InAdd)
 void APlayerCharacter::ApplyAugment_ItemCapacity(int32 InAdd)
 {
 	MaxItemCapacity = FMath::Max(1, MaxItemCapacity + InAdd);
+}
+
+void APlayerCharacter::OnReloadMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	bIsReloading = false;
+
+	if (bInterrupted == false && IsValid(CurrentWeapon))
+	{
+		CurrentWeapon->Reload();
+	}
 }

@@ -21,6 +21,8 @@ public:
 
 	UAnimMontage* GetAttackMontage() const { return AttackMontage; }
 
+	UAnimMontage* GetReloadMontage() const { return ReloadMontage; }
+
 	float GetMaxAttackRange() const { return MaxAttackRange; }
 
 	int32 GetCurrentBullets() const { return CurrentBullets; }
@@ -35,6 +37,8 @@ public:
 
 	void EquipToCharacter(ACharacterBase* InCharacter);
 
+	void Reload();
+
 	bool UseBullets();
 
 protected:
@@ -43,12 +47,17 @@ protected:
 	UFUNCTION()
 	void HandleOnPickUp(ACharacterBase* InPickUpCharacter);
 
+
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UPickupComponent> PickupComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UAnimMontage> AttackMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UAnimMontage> ReloadMontage; //리로드 애님몽타주
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Meta = (Units = cm))
 	float MaxAttackRange = 25000.f;

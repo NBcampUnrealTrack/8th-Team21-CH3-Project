@@ -157,4 +157,18 @@ public:
 	int32 MaxItemCapacity = 3;
 
 #pragma endregion
+
+#pragma region Reload
+
+private:
+	// 몽타주 종료 델리게이트에 바인딩할 함수
+	UFUNCTION()
+	void OnReloadMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
+public:
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Reload")
+	bool bIsReloading = false;
+
+#pragma endregion
 };

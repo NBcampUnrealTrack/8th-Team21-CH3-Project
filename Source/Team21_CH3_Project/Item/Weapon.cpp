@@ -45,6 +45,12 @@ void AWeapon::EquipToCharacter(ACharacterBase* InCharacter)
 	}
 }
 
+void AWeapon::Reload()
+{
+	CurrentBullets = MaxBullets;
+	UE_LOG(LogTemp, Warning, TEXT("[리로딩 완료] %d / %d"), CurrentBullets, MaxBullets);
+}
+
 bool AWeapon::UseBullets()
 {
 	if (0 >= CurrentBullets)
