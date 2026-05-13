@@ -37,6 +37,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float GroundSpeed; //걸을때 속력
 
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	float Direction = 0;
+
 	UPROPERTY(BlueprintReadOnly)
 	float NormalizedCurrentPitch; //에임오프셋 Pitch
 
@@ -54,6 +57,9 @@ protected:
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly)
 	uint8 bIsDead : 1;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	uint8 bIsMovingBackward : 1;
 
 	int32 WeaponTypeIndex = 0;
 

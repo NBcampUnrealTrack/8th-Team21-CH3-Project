@@ -381,7 +381,7 @@ void APlayerCharacter::TryFire()
 			if (IsValid(HittedCharacter) == true)
 			{
 				FDamageEvent DamageEvent;
-				HittedCharacter->TakeDamage(10.f, DamageEvent, GetController(), this);
+				HittedCharacter->TakeDamage(10.f * AttackDamageMul, DamageEvent, GetController(), this);
 			}
 		}
 
@@ -492,4 +492,34 @@ void APlayerCharacter::InputInteraction(const FInputActionValue& InValue)
 		// 아무것도 안 맞았을 때: 시작점 → 끝점까지 빨간선
 		DrawDebugLine(GetWorld(), CameraLocation, TraceViewPoint, FColor::Red, false, 3.f, 0, 2.f);
 	}
+}
+
+void APlayerCharacter::ApplyAugment_AttackDamage(float InAdd)
+{
+	AttackDamageMul += InAdd;
+}
+
+void APlayerCharacter::ApplyAugment_MoveSpeed(float InAdd)
+{
+	CurrentSpeed = FMath::Max(100.f, CurrentSpeed + InAdd);
+	GetCharacterMovement()->MaxWalkSpeed = CurrentSpeed;
+}
+
+void APlayerCharacter::ApplyAugment_MaxHP(float InAdd)
+{
+	if (IsValid(StatusComponent) == false)
+	{
+		return;
+	}
+
+	float NewMaxHP = StatusComponent->GetMaxHP() + InAdd;
+	StatusComponent->SetMaxHP(NewMaxHP);
+
+	float NewCurrentHP = FMath::Min(StatusComponent->GetCurrentHP() + InAdd, NewMaxHP);
+	StatusComponent->SetCurrentHP(NewCurrentHP);
+}
+
+void APlayerCharacter::ApplyAugment_ItemCapacity(int32 InAdd)
+{
+	MaxItemCapacity = FMath::Max(1, MaxItemCapacity + InAdd);
 }

@@ -201,7 +201,7 @@ void ACharacterBase::GetWeapon(TSubclassOf<AWeapon> InWeaponClass)
 
 	AWeapon* SpawnWeapon = GetWorld()->SpawnActor<AWeapon>( //스폰할 액터 타입
 		InWeaponClass, //어떤 BP클래스로 스폰?
-		GetActorTransform(), // 현재 클래스의 액터의 위치에 스폰
+		GetActorTransform(), // 현재 클래스의 액터의 위치에 스폰 
 		SpawnParameters //위 설정 적용
 	);
 
