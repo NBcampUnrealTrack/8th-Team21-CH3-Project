@@ -4,57 +4,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Engine/DataTable.h"
+
 #include "AugmentationCard.generated.h"
-
-
-
-UENUM(BlueprintType)
-enum class EAugmentType : uint8
-{
-    AttackDamage,
-    MoveSpeed,
-    MaxHP,
-    ItemCapacity
-};
-
-USTRUCT(BlueprintType)
-struct FAugmentTableData : public FTableRowBase
-{
-    GENERATED_BODY()
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    EAugmentType Type;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString StatName;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float MinValue;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float MaxValue;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString UnitText;
-};
-
-USTRUCT(BlueprintType)
-struct FAugmentResult
-{
-    GENERATED_BODY()
-
-    UPROPERTY(BlueprintReadWrite)
-    EAugmentType Type;
-
-    UPROPERTY(BlueprintReadWrite)
-    FString DisplayTitle;
-
-    UPROPERTY(BlueprintReadWrite)
-    FString Description;
-
-    UPROPERTY(BlueprintReadWrite)
-    float FinalValue;
-};
 
 
 class UAugmentWidget; 
