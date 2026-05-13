@@ -1,11 +1,11 @@
-﻿// OutGameQuitConfirmWidget.cpp
-#include "OutGameQuitConfirmWidget.h"
+// OutGameConfirmDialogWidget.cpp
+#include "OutGameConfirmDialogWidget.h"
 #include "Components/Button.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Animation/WidgetAnimation.h"
 
 
-void UOutGameQuitConfirmWidget::NativeOnInitialized(){
+void UOutGameConfirmDialogWidget::NativeOnInitialized(){
 	Super::NativeOnInitialized();
 	
 	if (IsValid(confirmButton) == true) confirmButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleConfirmClicked);
@@ -29,7 +29,7 @@ void UOutGameQuitConfirmWidget::NativeOnInitialized(){
 	State = EQuitConfirmState::Closed;
 }
 
-void UOutGameQuitConfirmWidget::ToggleQuitConfirm(){
+void UOutGameConfirmDialogWidget::ToggleQuitConfirm(){
 	if (State == EQuitConfirmState::Closed)
 	{
 		ShowQuitConfirm();
@@ -40,7 +40,7 @@ void UOutGameQuitConfirmWidget::ToggleQuitConfirm(){
 	}
 }
 
-void UOutGameQuitConfirmWidget::ShowQuitConfirm(){
+void UOutGameConfirmDialogWidget::ShowQuitConfirm(){
 	if (bIsPlay == true) return;
 	bIsPlay = true;
 	
@@ -48,30 +48,30 @@ void UOutGameQuitConfirmWidget::ShowQuitConfirm(){
 	if (IsValid(FadeOutAnim) == true) PlayAnimation(FadeOutAnim);
 }
 
-void UOutGameQuitConfirmWidget::HideQuitConfirm(){
+void UOutGameConfirmDialogWidget::HideQuitConfirm(){
 	if (bIsPlay == true) return;
 	bIsPlay = true;
 	
 	if (IsValid(FadeOutAnim) == true) PlayAnimation(FadeOutAnim);
 }
 
-void UOutGameQuitConfirmWidget::HandleConfirmClicked(){
+void UOutGameConfirmDialogWidget::HandleConfirmClicked(){
 	UKismetSystemLibrary::QuitGame(this, GetOwningPlayer(), EQuitPreference::Quit, true);
 }
 
-void UOutGameQuitConfirmWidget::HandleCancelClicked(){
+void UOutGameConfirmDialogWidget::HandleCancelClicked(){
 	if (bIsPlay == true) return;
 	bIsPlay = true;
 	
 	if (IsValid(FadeInAnim) == true) PlayAnimation(FadeInAnim);
 }
 
-void UOutGameQuitConfirmWidget::HandleFadeOutFinished(){
+void UOutGameConfirmDialogWidget::HandleFadeOutFinished(){
 	bIsPlay = false;
 	State = EQuitConfirmState::Opened;
 }
 
-void UOutGameQuitConfirmWidget::HandleFadeInFinished(){
+void UOutGameConfirmDialogWidget::HandleFadeInFinished(){
 	bIsPlay = false;
 	State = EQuitConfirmState::Closed;
 	SetVisibility(ESlateVisibility::Collapsed);

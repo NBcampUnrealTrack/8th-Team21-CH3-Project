@@ -1,9 +1,9 @@
-﻿// OutGameQuitConfirmWidget.h
+// OutGameConfirmDialogWidget.h
 #pragma once
 
 #include "CoreMinimal.h"
 #include "OutGameWidgetBase.h"
-#include "OutGameQuitConfirmWidget.generated.h"
+#include "OutGameConfirmDialogWidget.generated.h"
 
 enum class EQuitConfirmState : uint8
 {
@@ -17,7 +17,7 @@ class UButton;
 class UWidgetAnimation;
 
 UCLASS()
-class TEAM21_CH3_PROJECT_API UOutGameQuitConfirmWidget : public UOutGameWidgetBase{
+class TEAM21_CH3_PROJECT_API UOutGameConfirmDialogWidget : public UOutGameWidgetBase{
 	GENERATED_BODY()
 
 public:

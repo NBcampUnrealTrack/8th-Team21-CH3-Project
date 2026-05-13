@@ -5,7 +5,7 @@
 #include "OutGameUI/Controller/OutGamePlayerController.h"
 #include "OutGameUI/Widget/OutGameTransitionWidget.h"
 #include "OutGameUI/Widget/UOutGameCommonHeaderWidget.h"
-#include "OutGameUI/Widget/OutGameQuitConfirmWidget.h"
+#include "OutGameUI/Widget/OutGameConfirmDialogWidget.h"
 #include "OutGameUI/Widget/OutGameWeaponSelectWidget.h"
 #include "OutGameUI/Widget/OutGameWeaponPreviewWidget.h"
 #include "Components/WidgetSwitcher.h"

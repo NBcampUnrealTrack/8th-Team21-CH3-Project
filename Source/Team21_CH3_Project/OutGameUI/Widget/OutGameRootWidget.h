@@ -6,7 +6,7 @@
 #include "OutGameRootWidget.generated.h"
 
 class UWidgetSwitcher;
-class UOutGameQuitConfirmWidget;
+class UOutGameConfirmDialogWidget;
 class UOutGameTransitionWidget;
 class UUOutGameCommonHeaderWidget;
 class AAOutGameCinematicManager;
@@ -85,7 +85,7 @@ protected:
 
 private:
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UOutGameQuitConfirmWidget> quitConfirmWidget;
+	TObjectPtr<UOutGameConfirmDialogWidget> quitConfirmWidget;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UOutGameTransitionWidget> TransitionWidget;
 	UPROPERTY(meta = (BindWidget))
