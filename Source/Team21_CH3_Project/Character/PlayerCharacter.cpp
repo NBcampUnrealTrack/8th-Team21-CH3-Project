@@ -370,67 +370,83 @@ void APlayerCharacter::TryFire()
 
 #pragma region PerformLineTracing
 
-	FVector BulletDirection = TargetTransform.GetUnitAxis(EAxis::X);
-	FVector StartLocation = WeaponMuzzleLocation;
-	FVector EndLocation = TargetTransform.GetLocation() + BulletDirection * CurrentWeapon->GetMaxAttackRange();
 
-	FHitResult HitResult;
-	FCollisionQueryParams TraceParams(NAME_None, false, this);
-	TraceParams.AddIgnoredActor(CurrentWeapon);
+	int32 BulletsCount = CurrentWeapon->GetBulletsCount();
+	float SpreadAngle = CurrentWeapon->GetSpreadAngle();
 
-	bool IsCollided = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_ATTACK, TraceParams);
-	if (IsCollided == false)
+	for (int32 i = 0; i < BulletsCount; i++)
 	{
-		HitResult.TraceStart = StartLocation;
-		HitResult.TraceEnd = EndLocation;
-	}
+		FVector BulletDirection = TargetTransform.GetUnitAxis(EAxis::X);
 
-	if (2 == ShowAttackRangedDebug)
-	{
-		if (IsCollided == true)
+		if (SpreadAngle > 0.f)
 		{
-			DrawDebugSphere(GetWorld(), StartLocation, 2.f, 16, FColor::Red, false, 60.f);
-
-			DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 2.f, 16, FColor::Green, false, 60.f);
-
-			DrawDebugLine(GetWorld(), StartLocation, HitResult.ImpactPoint, FColor::Blue, false, 60.f, 0, 2.f);
+			float RandYaw = FMath::FRandRange(-SpreadAngle, SpreadAngle);
+			float RandPitch = FMath::FRandRange(-SpreadAngle, SpreadAngle);
+			FRotator SpreadRot(RandPitch, RandYaw, 0.f);
+			BulletDirection = SpreadRot.RotateVector(BulletDirection);
 		}
-		else
+
+		FVector StartLocation = WeaponMuzzleLocation;
+		FVector EndLocation = TargetTransform.GetLocation() + BulletDirection * CurrentWeapon->GetMaxAttackRange();
+
+		FHitResult HitResult;
+		FCollisionQueryParams TraceParams(NAME_None, false, this);
+		TraceParams.AddIgnoredActor(CurrentWeapon);
+
+		bool IsCollided = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_ATTACK, TraceParams);
+		if (IsCollided == false)
 		{
-			DrawDebugSphere(GetWorld(), StartLocation, 2.f, 16, FColor::Red, false, 60.f);
-
-			DrawDebugSphere(GetWorld(), EndLocation, 2.f, 16, FColor::Green, false, 60.f);
-
-			DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Blue, false, 60.f, 0, 2.f);
+			HitResult.TraceStart = StartLocation;
+			HitResult.TraceEnd = EndLocation;
 		}
-	}
+
+		if (2 == ShowAttackRangedDebug)
+		{
+			if (IsCollided == true)
+			{
+				DrawDebugSphere(GetWorld(), StartLocation, 2.f, 16, FColor::Red, false, 60.f);
+
+				DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 2.f, 16, FColor::Green, false, 60.f);
+
+				DrawDebugLine(GetWorld(), StartLocation, HitResult.ImpactPoint, FColor::Blue, false, 60.f, 0, 2.f);
+			}
+			else
+			{
+				DrawDebugSphere(GetWorld(), StartLocation, 2.f, 16, FColor::Red, false, 60.f);
+
+				DrawDebugSphere(GetWorld(), EndLocation, 2.f, 16, FColor::Green, false, 60.f);
+
+				DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Blue, false, 60.f, 0, 2.f);
+			}
+		}
 
 #pragma endregion
 
-	if (IsCollided == true)
-	{
+		if (IsCollided == true)
+		{
 			ACharacterBase* HittedCharacter = Cast<ACharacterBase>(HitResult.GetActor());
 			if (IsValid(HittedCharacter) == true)
 			{
 				FDamageEvent DamageEvent;
 				HittedCharacter->TakeDamage(10.f * AttackDamageMul, DamageEvent, GetController(), this);
 			}
-	}
-
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (IsValid(AnimInstance) == true)
-	{
-		if (AnimInstance->Montage_IsPlaying(GetCurrentWeaponAttackAnimMontage()) == false)
-		{
-			float MontageLength = GetCurrentWeaponAttackAnimMontage()->GetPlayLength();
-			float PlayRate = MontageLength / (60.f / FirePerMinute);
-			AnimInstance->Montage_Play(GetCurrentWeaponAttackAnimMontage(), PlayRate);
 		}
-	}
 
-	if (IsValid(AttackRangedCameraShake) == true)
-	{
-		PlayerController->ClientStartCameraShake(AttackRangedCameraShake);
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (IsValid(AnimInstance) == true)
+		{
+			if (AnimInstance->Montage_IsPlaying(GetCurrentWeaponAttackAnimMontage()) == false)
+			{
+				float MontageLength = GetCurrentWeaponAttackAnimMontage()->GetPlayLength();
+				float PlayRate = MontageLength / (60.f / FirePerMinute);
+				AnimInstance->Montage_Play(GetCurrentWeaponAttackAnimMontage(), PlayRate);
+			}
+		}
+
+		if (IsValid(AttackRangedCameraShake) == true)
+		{
+			PlayerController->ClientStartCameraShake(AttackRangedCameraShake);
+		}
 	}
 }
 
@@ -464,7 +480,9 @@ void APlayerCharacter::InputToggleSelector(const FInputActionValue& InValue)
 
 void APlayerCharacter::InputStartFullAutoFire(const FInputActionValue& InValue)
 {
-	if (true == bIsFullAutoFire)
+	if (IsValid(CurrentWeapon) == false) return;
+
+	if (bIsFullAutoFire && CurrentWeapon->GetCanFullAuto())
 	{
 		if (GetWorldTimerManager().IsTimerActive(FullAutoTimerHandle) == false)
 		{
