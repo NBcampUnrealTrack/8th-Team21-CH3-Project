@@ -17,9 +17,30 @@ void UOutGameSettingsWidget::NativeOnInitialized(){
 	if (IsValid(applyButton)) applyButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleApplyClicked);
 	
 	pendingGraphicsQuality = 2;
-	volume = 70;
-	HandleMasterVolumeChanged(volume);
+	
+	UpdateSettings();
+}
 
+void UOutGameSettingsWidget::UpdateSettings(){
+	if (UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetWorld()->GetGameInstance()))
+	{
+		const float mouseSensitivity = GI->GetMouseSensitivity();
+		const float masterVolume = GI->GetMasterVolume();
+		if (IsValid(mouseSensitivitySlider) == true) mouseSensitivitySlider->SetValue(mouseSensitivity);
+		if (IsValid(mouseSensitivityText) == true) mouseSensitivityText->SetText(FText::FromString(FString::Printf(TEXT("%.1f"), mouseSensitivity)));
+		if (IsValid(masterVolumeSlider) == true) masterVolumeSlider->SetValue(masterVolume);
+		if (IsValid(masterVolumeText) == true) masterVolumeText->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), masterVolume)));
+		
+		UGameplayStatics::SetSoundMixClassOverride(
+			this,
+			soundMix,
+			masterSoundClass,
+			masterVolume / 100.0f,
+			1.0f,
+			0.0f,
+			true
+			);
+	}
 }
 
 void UOutGameSettingsWidget::HandleMouseSensitivityChanged(float value){
@@ -35,11 +56,19 @@ void UOutGameSettingsWidget::HandleMouseSensitivityChanged(float value){
 }
 
 void UOutGameSettingsWidget::HandleMasterVolumeChanged(float value){
+	if (UGameInstance* GameInstance = GetWorld()->GetGameInstance())
+	{
+		if (UTeamGameInstance* TeamGameInstance = Cast<UTeamGameInstance>(GameInstance))
+		{
+			TeamGameInstance->SetMasterVolume(value);
+		}
+	}
+	
 	UGameplayStatics::SetSoundMixClassOverride(
 		this,
 		soundMix,
 		masterSoundClass,
-		value,
+		value / 100.0f,
 		1.0f,
 		0.0f,
 		true

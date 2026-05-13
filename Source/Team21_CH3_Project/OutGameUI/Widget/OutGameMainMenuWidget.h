@@ -23,12 +23,16 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UWidgetSwitcher> ScreenSwitcher;
 	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> NewGameButton;
+	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> ContinueButton;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> PlayButton;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> QuitButton;
 	
+	UFUNCTION()
+	void HandleNewGameClicked();
 	UFUNCTION()
 	void HandleContinueClicked();
 	UFUNCTION()
