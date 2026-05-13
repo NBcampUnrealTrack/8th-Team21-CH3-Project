@@ -15,8 +15,9 @@ void UInGameUI::NativeConstruct()
 	UpdateHealth(100.f, 100.f);
 	UpdateAmmo(30, 30);
 
-	// 점수 / 라운드는 GameInstance 값을 기준으로 HUD에서 갱신하므로
-	// 여기서 0점, 1라운드로 강제 초기화하지 않는다.
+	// Wave UI 기본값
+	// 실제 게임 중에는 ShooterInGameMode에서 RefreshWaveUI를 통해 다시 갱신된다.
+	UpdateWaveInfo(1, 0, 0, 0);
 
 	// 라운드 전환 메시지는 처음에는 숨겨둔다.
 	HideRoundTransitionMessage();
@@ -87,23 +88,40 @@ void UInGameUI::UpdateAmmo(int32 CurrentAmmo, int32 MaxAmmo)
 
 void UInGameUI::UpdateMatchInfo(int32 PlayerScore, int32 AIScore, int32 Round)
 {
-	// 플레이어 점수 갱신
+	// 기존 3선승 점수제 UI 호환용
+	// WBP에서 삭제된 경우 Optional이므로 아무 동작도 하지 않는다.
+
 	if (PlayerScoreText)
 	{
 		PlayerScoreText->SetText(FText::AsNumber(PlayerScore));
 	}
 
-	// AI 점수 갱신
 	if (AIScoreText)
 	{
 		AIScoreText->SetText(FText::AsNumber(AIScore));
 	}
 
-	// 현재 라운드 갱신
-	// 예: ROUND 2
 	if (RoundText)
 	{
 		RoundText->SetText(FText::FromString(FString::Printf(TEXT("ROUND %d"), Round)));
+	}
+}
+
+void UInGameUI::UpdateWaveInfo(int32 CurrentWave, int32 CurrentKillCount, int32 TargetKillCount, int32 CurrentGold)
+{
+	if (WaveText)
+	{
+		WaveText->SetText(FText::FromString(FString::Printf(TEXT("WAVE %d"), CurrentWave)));
+	}
+
+	if (KillText)
+	{
+		KillText->SetText(FText::FromString(FString::Printf(TEXT("KILL %d / %d"), CurrentKillCount, TargetKillCount)));
+	}
+
+	if (GoldText)
+	{
+		GoldText->SetText(FText::FromString(FString::Printf(TEXT("GOLD %d"), CurrentGold)));
 	}
 }
 

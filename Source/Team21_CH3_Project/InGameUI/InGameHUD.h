@@ -16,6 +16,8 @@ class TEAM21_CH3_PROJECT_API AInGameHUD : public AHUD
 
 public:
 	void RefreshMatchUI(int32 PlayerScore, int32 AIScore, int32 Round);
+	void RefreshWaveUI(int32 CurrentWave, int32 CurrentKillCount, int32 TargetKillCount, int32 CurrentGold);
+
 	void RefreshHealthUI(float CurrentHealth, float MaxHealth);
 	void RefreshAmmoUI(int32 CurrentAmmo, int32 MaxAmmo);
 
@@ -29,8 +31,6 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
-	void RefreshMatchUIFromGameInstance();
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI", meta = (AllowPrivateAccess = "true"))
