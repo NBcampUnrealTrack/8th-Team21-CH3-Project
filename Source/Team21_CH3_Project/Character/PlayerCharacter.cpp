@@ -543,6 +543,11 @@ void APlayerCharacter::InputInteraction(const FInputActionValue& InValue)
 	}
 }
 
+void APlayerCharacter::InputReLoad(const FInputActionValue& InValue)
+{
+
+}
+
 void APlayerCharacter::ApplyAugment_AttackDamage(float InAdd)
 {
 	AttackDamageMul += InAdd;

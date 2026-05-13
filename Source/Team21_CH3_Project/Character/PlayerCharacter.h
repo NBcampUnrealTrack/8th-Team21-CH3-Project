@@ -75,6 +75,7 @@ private:
 	void InputStartFullAutoFire(const FInputActionValue& InValue);
 	void InputStopFullAutoFire(const FInputActionValue& InValue);
 	void InputInteraction(const FInputActionValue& InValue);
+	void InputReLoad(const FInputActionValue& InValue);
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess))
