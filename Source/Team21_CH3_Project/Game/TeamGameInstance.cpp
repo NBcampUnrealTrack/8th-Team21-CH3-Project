@@ -12,6 +12,12 @@ UTeamGameInstance::UTeamGameInstance(){
 	bHasMatchResult = false;
 }
 
+void UTeamGameInstance::Init(){
+	Super::Init();
+	
+	LoadSaveGame();
+}
+
 EWeaponType UTeamGameInstance::GetSelectedWeaponType() const{
 	return selectedWeaponType;
 }
@@ -79,8 +85,6 @@ void UTeamGameInstance::AddAIScore(int32 score){
 
 void UTeamGameInstance::ClearScore(){
 	AddPlayerKillCount(playerScore);
-	playerScore = 0;
-	aiScore = 0;
 }
 
 bool UTeamGameInstance::GetIsWin() const{

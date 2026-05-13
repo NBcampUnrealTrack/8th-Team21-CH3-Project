@@ -19,6 +19,8 @@ class TEAM21_CH3_PROJECT_API UTeamGameInstance : public UGameInstance{
 	
 public:
 	UTeamGameInstance();
+	
+	virtual void Init() override;
 
 	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Weapon")
 	EWeaponType GetSelectedWeaponType() const;
@@ -79,4 +81,14 @@ private:
 	bool bIsWin;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Team Game Instance|Result", meta = (AllowPrivateAccess = "true"))
 	bool bHasMatchResult;
+	
+#pragma region SaveGame
+	
+private:
+	UFUNCTION()
+	void LoadSaveGame();
+
+	
+	
+#pragma endregion
 };
