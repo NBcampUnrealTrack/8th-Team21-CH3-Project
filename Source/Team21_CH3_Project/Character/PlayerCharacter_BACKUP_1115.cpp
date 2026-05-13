@@ -412,12 +412,17 @@ void APlayerCharacter::TryFire()
 		ACharacterBase* HittedCharacter = Cast<ACharacterBase>(HitResult.GetActor());
 		if (IsValid(HittedCharacter) == true)
 		{
+<<<<<<< HEAD
+			FDamageEvent DamageEvent;
+			HittedCharacter->TakeDamage(10.f, DamageEvent, GetController(), this);
+=======
 			ACharacterBase* HittedCharacter = Cast<ACharacterBase>(HitResult.GetActor());
 			if (IsValid(HittedCharacter) == true)
 			{
 				FDamageEvent DamageEvent;
 				HittedCharacter->TakeDamage(10.f * AttackDamageMul, DamageEvent, GetController(), this);
 			}
+>>>>>>> Character
 		}
 	}
 
