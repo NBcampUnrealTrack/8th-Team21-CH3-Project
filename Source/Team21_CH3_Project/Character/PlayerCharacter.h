@@ -137,4 +137,23 @@ public:
 	float InteractionRange = 1000.f;
 
 #pragma endregion
+
+#pragma region Augment
+
+public:
+	void ApplyAugment_AttackDamage(float InAdd);
+	void ApplyAugment_MoveSpeed(float InAdd);
+	void ApplyAugment_MaxHP(float InAdd);
+	void ApplyAugment_ItemCapacity(int32 InAdd);
+
+public:
+	// 공격력 배율 (기본 1.0 = 100%)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Augment")
+	float AttackDamageMul = 1.0f;
+
+	// 아이템 최대 보유 개수
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Augment")
+	int32 MaxItemCapacity = 3;
+
+#pragma endregion
 };
