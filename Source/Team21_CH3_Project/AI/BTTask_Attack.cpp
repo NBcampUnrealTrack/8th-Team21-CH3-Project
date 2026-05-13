@@ -5,6 +5,7 @@
 #include "Controller/AI_Controller.h"
 #include "Character/NonPlayerCharacter.h"
 
+
 UBTTask_Attack::UBTTask_Attack()
 {
 	bNotifyTick = true;
@@ -19,6 +20,7 @@ void UBTTask_Attack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 
 	ANonPlayerCharacter* NPC = Cast<ANonPlayerCharacter>(AIController->GetPawn());
 	checkf(IsValid(NPC) == true, TEXT("Invalid NPC."));
+
 
 	if (NPC->bIsNowAttacking == false)
 	{
@@ -37,6 +39,5 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	checkf(IsValid(NPC) == true, TEXT("Invalid NPC."));
 
 	NPC->BeginAttack();
-
 	return EBTNodeResult::InProgress;
 }

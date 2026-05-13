@@ -36,12 +36,16 @@ public:
 protected:
 	virtual void BeginAttack();
 
+	void TryFire();
+	//АјАн
+
 	virtual void EndAttack(UAnimMontage* InMontage, bool bInterruped);
 
 public:
 	bool bIsNowAttacking;
 protected:
 	FOnAttackMontageEnded OnAttackMontageEndedDelegate;
+
 	float LastUpdatedMaxHP = 0.f;
 	float LastUpdatedCurrentHP = 0.f;
 };
