@@ -1,5 +1,3 @@
-// InGameUI.h
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -24,10 +22,6 @@ public:
 
 	// 탄약 UI 갱신
 	void UpdateAmmo(int32 CurrentAmmo, int32 MaxAmmo);
-
-	// 기존 점수 및 라운드 UI 갱신
-	// 기존 코드 호환용으로 유지한다.
-	void UpdateMatchInfo(int32 PlayerScore, int32 AIScore, int32 Round);
 
 	// Wave / Kill / Gold UI 갱신
 	void UpdateWaveInfo(int32 CurrentWave, int32 CurrentKillCount, int32 TargetKillCount, int32 CurrentGold);
@@ -96,7 +90,7 @@ protected:
 	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* AIScoreText;
 
-	// 기존 현재 라운드 Text
+	// 기존 라운드 Text
 	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* RoundText;
 
