@@ -18,7 +18,7 @@
 #include "Interfaces/Interaction.h"
 #include "Game/TeamGameInstance.h"
 #include "Component/StatusComponent.h"
-#include "ShooterInGameMode.h"
+#include "InGameUI/ShooterInGameMode.h"
 #include "InGameUI/InGameHUD.h"
 #include "Kismet/GameplayStatics.h"
 
