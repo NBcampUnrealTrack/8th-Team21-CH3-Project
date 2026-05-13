@@ -55,6 +55,22 @@ void AShooterInGameMode::BeginPlay()
 	StartWave();
 }
 
+void AShooterInGameMode::OnCharacterDied(bool bIsPlayer)
+{
+	if (bIsMatchEnded)
+	{
+		return;
+	}
+
+	if (bIsPlayer)
+	{
+		EndMatch(false);
+		return;
+	}
+
+	HandleEnemyDied();
+}
+
 void AShooterInGameMode::StartWave()
 {
 	if (bIsMatchEnded || bIsWaveInProgress)
@@ -68,33 +84,14 @@ void AShooterInGameMode::StartWave()
 	CurrentWaveKillCount = 0;
 	TargetKillCount = CalculateTargetKillCountForWave(CurrentWave);
 
+	RefreshHUDWaveInfo();
+
 	UE_LOG(LogTemp, Warning, TEXT("StartWave / Wave: %d / TargetKillCount: %d"),
 		CurrentWave,
 		TargetKillCount
 	);
 
-	RefreshHUDWaveInfo();
-
-	// EnemySpawner 실제 C++ 연결 전까지는 BP 이벤트로 스폰 요청을 보낸다.
 	RequestSpawnWave(CurrentWave, TargetKillCount);
-}
-
-void AShooterInGameMode::OnCharacterDied(bool bIsPlayer)
-{
-	if (bIsMatchEnded)
-	{
-		return;
-	}
-
-	if (bIsPlayer)
-	{
-		// 플레이어가 사망하면 즉시 패배 Result 처리
-		EndMatch(false);
-		return;
-	}
-
-	// Enemy 사망
-	HandleEnemyDied();
 }
 
 void AShooterInGameMode::HandleEnemyDied()
@@ -107,6 +104,7 @@ void AShooterInGameMode::HandleEnemyDied()
 	CurrentWaveKillCount++;
 
 	AddGold(GoldPerEnemyKill);
+	RefreshHUDWaveInfo();
 
 	UE_LOG(LogTemp, Warning, TEXT("EnemyDied / Wave: %d / Kill: %d / Target: %d / Gold: %d"),
 		CurrentWave,
@@ -114,8 +112,6 @@ void AShooterInGameMode::HandleEnemyDied()
 		TargetKillCount,
 		CurrentGold
 	);
-
-	RefreshHUDWaveInfo();
 
 	if (CurrentWaveKillCount >= TargetKillCount)
 	{
@@ -132,12 +128,12 @@ void AShooterInGameMode::ClearWave()
 
 	bIsWaveInProgress = false;
 
+	RefreshHUDWaveInfo();
+
 	UE_LOG(LogTemp, Warning, TEXT("ClearWave / Wave: %d / MaxWave: %d"),
 		CurrentWave,
 		MaxWave
 	);
-
-	RefreshHUDWaveInfo();
 
 	if (CurrentWave >= MaxWave)
 	{
@@ -147,19 +143,12 @@ void AShooterInGameMode::ClearWave()
 
 	bIsShopOpen = true;
 
-	// Shop UI Open 요청
-	// 실제 Shop UI 연결은 다음 단계에서 처리
 	RequestOpenShop(CurrentWave, CurrentGold);
 }
 
 void AShooterInGameMode::StartNextWave()
 {
-	if (bIsMatchEnded || bIsWaveInProgress)
-	{
-		return;
-	}
-
-	if (!bIsShopOpen)
+	if (bIsMatchEnded || bIsWaveInProgress || !bIsShopOpen)
 	{
 		return;
 	}

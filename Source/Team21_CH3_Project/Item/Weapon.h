@@ -25,9 +25,13 @@ public:
 
 	int32 GetCurrentBullets() const { return CurrentBullets; }
 
-	int32 GetMAxBullets() const { return MaxBullets; }
-
 	int32 GetMaxBullets() const { return MaxBullets; }
+
+	bool GetCanFullAuto() const { return bCanFullAuto; }
+
+	int32 GetBulletsCount() const { return BulletsCount; }
+
+	float GetSpreadAngle() const { return SpreadAngle; }
 
 	void EquipToCharacter(ACharacterBase* InCharacter);
 
@@ -55,6 +59,18 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullets")
 	int32 MaxBullets = 30;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Bullets")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Bullets")
 	int32 CurrentBullets = 30;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
+	uint8 bCanFullAuto : 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
+	int32 BulletsCount = 1; //한번에 발사되는 탄환 수
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
+	float SpreadAngle = 0.f; // 탄환 퍼지는 각도
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
+	float FirePerMinute = 600.f;
 };

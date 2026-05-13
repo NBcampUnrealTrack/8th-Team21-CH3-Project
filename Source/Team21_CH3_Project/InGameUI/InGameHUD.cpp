@@ -2,7 +2,6 @@
 #include "InGameUI.h"
 #include "RoundTransitionWidget.h"
 #include "Blueprint/UserWidget.h"
-#include "Game/TeamGameInstance.h"
 
 void AInGameHUD::BeginPlay()
 {
@@ -15,31 +14,15 @@ void AInGameHUD::BeginPlay()
 		if (InGameUIInstance)
 		{
 			InGameUIInstance->AddToViewport();
-			RefreshMatchUIFromGameInstance();
 		}
 	}
 }
 
-void AInGameHUD::RefreshMatchUIFromGameInstance()
-{
-	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
-	if (!GI)
-	{
-		return;
-	}
-
-	const int32 PlayerScore = GI->GetPlayerScore();
-	const int32 AIScore = GI->GetAIScore();
-	const int32 CurrentRound = PlayerScore + AIScore + 1;
-
-	RefreshMatchUI(PlayerScore, AIScore, CurrentRound);
-}
-
-void AInGameHUD::RefreshMatchUI(int32 PlayerScore, int32 AIScore, int32 Round)
+void AInGameHUD::RefreshWaveUI(int32 CurrentWave, int32 CurrentKillCount, int32 TargetKillCount, int32 CurrentGold)
 {
 	if (InGameUIInstance)
 	{
-		InGameUIInstance->UpdateMatchInfo(PlayerScore, AIScore, Round);
+		InGameUIInstance->UpdateWaveInfo(CurrentWave, CurrentKillCount, TargetKillCount, CurrentGold);
 	}
 }
 
@@ -56,14 +39,6 @@ void AInGameHUD::RefreshAmmoUI(int32 CurrentAmmo, int32 MaxAmmo)
 	if (InGameUIInstance)
 	{
 		InGameUIInstance->UpdateAmmo(CurrentAmmo, MaxAmmo);
-	}
-}
-
-void AInGameHUD::RefreshWaveUI(int32 CurrentWave, int32 CurrentKillCount, int32 TargetKillCount, int32 CurrentGold)
-{
-	if (InGameUIInstance)
-	{
-		InGameUIInstance->UpdateWaveInfo(CurrentWave, CurrentKillCount, TargetKillCount, CurrentGold);
 	}
 }
 

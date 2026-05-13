@@ -3,6 +3,7 @@
 #include "Character/CharacterBase.h"
 #include "GameFramework/PlayerController.h"
 #include "InGameUI/InGameHUD.h"
+#include "Character/PlayerCharacter.h"
 
 AWeapon::AWeapon()
 {
@@ -10,6 +11,8 @@ AWeapon::AWeapon()
 
 	PickupComponent = CreateDefaultSubobject<UPickupComponent>(TEXT("PickupComponent"));
 	SetRootComponent(PickupComponent);
+
+	bCanFullAuto = true;
 }
 
 void AWeapon::EquipToCharacter(ACharacterBase* InCharacter)
@@ -23,6 +26,12 @@ void AWeapon::EquipToCharacter(ACharacterBase* InCharacter)
 	//아이템에 적용되는 피직스 끔
 	InCharacter->CurrentWeapon = this;
 	InCharacter->CurrentWeaponType = WeaponType;
+
+	APlayerCharacter* Player = Cast<APlayerCharacter>(InCharacter);
+	if (IsValid(Player))
+	{
+		Player->FirePerMinute = FirePerMinute;
+	}
 
 	APlayerController* PlayerController = Cast<APlayerController>(InCharacter->GetController());
 	if (IsValid(PlayerController))
