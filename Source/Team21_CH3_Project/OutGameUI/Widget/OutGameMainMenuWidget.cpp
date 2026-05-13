@@ -3,12 +3,15 @@
 #include "OutGameUI/Widget/OutGameRootWidget.h"
 #include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
+#include "Game/TeamGameInstance.h"
 #include "OutGameUI/Controller/OutGamePlayerController.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 void UOutGameMainMenuWidget::NativeOnInitialized(){
 	Super::NativeOnInitialized();
 
+	if (IsValid(NewGameButton) == true)
+		NewGameButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleNewGameClicked);
 	if (IsValid(ContinueButton) == true)
 		ContinueButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleContinueClicked);
 	if (IsValid(PlayButton) == true)
@@ -26,6 +29,15 @@ void UOutGameMainMenuWidget::ShowLobby(){
 			if (IsValid(ScreenSwitcher) == true) { ScreenSwitcher->SetActiveWidgetIndex(1); }
 		}
 	}
+}
+
+void UOutGameMainMenuWidget::HandleNewGameClicked(){
+	if (UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetWorld()->GetGameInstance()))
+	{
+		GI->StartNewGame();
+	}
+	
+	HandleContinueClicked();
 }
 
 void UOutGameMainMenuWidget::HandleContinueClicked(){

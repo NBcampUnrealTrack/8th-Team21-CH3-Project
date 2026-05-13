@@ -14,13 +14,13 @@ class TEAM21_CH3_PROJECT_API UTeamSaveGame : public USaveGame{
 	
 public: 
 	UPROPERTY()
-	int32 mouseSensitivity;
+	float mouseSensitivity = 1.0f;
 	UPROPERTY()
-	float masterVolume;
+	float masterVolume = 100.0f;
 	UPROPERTY()
-	int32 playerTotalKillCount;
+	int32 playerTotalKillCount = 0;
 	UPROPERTY()
-	int32 playerGold;
+	int32 playerGold = 0;
 	
 	// Trait System save and load 
 	//TArray<OutGameTraitMananger> applyTrait; 

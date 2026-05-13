@@ -13,6 +13,8 @@ enum class EWeaponType : uint8{
 	None
 };
 
+class UTeamSaveGame;
+
 UCLASS(BlueprintType)
 class TEAM21_CH3_PROJECT_API UTeamGameInstance : public UGameInstance{
 	GENERATED_BODY()
@@ -84,11 +86,17 @@ private:
 	
 #pragma region SaveGame
 	
-private:
+public:
 	UFUNCTION()
-	void LoadSaveGame();
-
+	void LoadGameData();
+	UFUNCTION()
+	void SaveGameData();
+	UFUNCTION()
+	void StartNewGame();
 	
+private:
+	UPROPERTY()
+	TObjectPtr<UTeamSaveGame> CurrentSaveGame;
 	
 #pragma endregion
 };
