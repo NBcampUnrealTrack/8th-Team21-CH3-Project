@@ -1,6 +1,7 @@
 // OutGameRootWidget.cpp
 #include "OutGameUI/Widget/OutGameRootWidget.h"
 #include "OutGameMainMenuWidget.h"
+#include "OutGameSettingsWidget.h"
 #include "OutGameUI/Controller/OutGamePlayerController.h"
 #include "OutGameUI/Widget/OutGameTransitionWidget.h"
 #include "OutGameUI/Widget/UOutGameCommonHeaderWidget.h"
@@ -48,6 +49,13 @@ void UOutGameRootWidget::ShowWidget(EOutGameWidgetType widgetType)
 		if (UOutGameWeaponPreviewWidget* weaponPreviewWidget = Cast<UOutGameWeaponPreviewWidget>(ScreenSwitcher->GetActiveWidget()))
 		{
 			weaponPreviewWidget->EnterWeaponPreview();
+		}
+	}
+	if (widgetType == EOutGameWidgetType::Settings)
+	{
+		if (UOutGameSettingsWidget* settingsWidget = Cast<UOutGameSettingsWidget>(ScreenSwitcher->GetActiveWidget()))
+		{
+			settingsWidget->UpdateSettings();
 		}
 	}
 	
