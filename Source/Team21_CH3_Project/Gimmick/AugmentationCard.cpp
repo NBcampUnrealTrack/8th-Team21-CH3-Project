@@ -1,8 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 
 #include "Gimmick/AugmentationCard.h"
-//#include "AugmentWidget.h" // 전용 위젯 클래스 헤더
+//#include "AugmentWidget.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -12,20 +10,15 @@ AAugmentCard::AAugmentCard()
 {
     PrimaryActorTick.bCanEverTick = false;
 
-    // 1. 충돌체 설정
     CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
     SetRootComponent(CollisionBox);
     
-    // 오버랩만 감지하도록 설정
     CollisionBox->SetCollisionProfileName(TEXT("Trigger"));
 
-    // 2. 외형 메시 설정
     CardMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
     CardMesh->SetupAttachment(RootComponent);
-    // 메시는 충돌에 영향을 주지 않도록 설정 (충돌은 구체가 담당)
     CardMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-    // 3. 이벤트 바인딩
     CollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AAugmentCard::OnOverlapBegin);
 }
 
