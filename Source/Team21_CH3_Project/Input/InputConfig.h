@@ -32,4 +32,6 @@ public:
 	TObjectPtr<UInputAction> ToggleSelector;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UInputAction> Interaction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UInputAction> ReLoad;
 };
