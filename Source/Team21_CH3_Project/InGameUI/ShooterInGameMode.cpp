@@ -7,19 +7,23 @@
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
-#include "TimerManager.h"
 
 AShooterInGameMode::AShooterInGameMode()
 {
-	CurrentRound = 0;
-	PlayerScore = 0;
-	AIScore = 0;
+	CurrentWave = 1;
+	CurrentWaveKillCount = 0;
+	TargetKillCount = 0;
 
-	bIsRoundTransitioning = false;
+	MaxWave = 5;
+	BaseTargetKillCount = 5;
+	TargetKillCountIncreasePerWave = 2;
+
+	CurrentGold = 0;
+	GoldPerEnemyKill = 10;
+
+	bIsWaveInProgress = false;
+	bIsShopOpen = false;
 	bIsMatchEnded = false;
-
-	RoundTransitionDuration = 2.0f;
-	TargetScoreToWin = 3;
 
 	OutGameLevelName = TEXT("OutGameMap");
 }
@@ -48,137 +52,111 @@ void AShooterInGameMode::BeginPlay()
 		}
 	}
 
-	StartRound();
-}
-
-void AShooterInGameMode::StartRound()
-{
-	if (bIsRoundTransitioning || bIsMatchEnded)
-	{
-		return;
-	}
-
-	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
-	if (!GI)
-	{
-		return;
-	}
-
-	PlayerScore = GI->GetPlayerScore();
-	AIScore = GI->GetAIScore();
-
-	CurrentRound = PlayerScore + AIScore + 1;
-
-	RefreshHUDMatchInfo();
+	StartWave();
 }
 
 void AShooterInGameMode::OnCharacterDied(bool bIsPlayer)
 {
-	if (bIsRoundTransitioning || bIsMatchEnded)
-	{
-		return;
-	}
-
-	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
-	if (!GI)
-	{
-		return;
-	}
-
-	const bool bPlayerWonRound = !bIsPlayer;
-
-	if (bPlayerWonRound)
-	{
-		GI->AddPlayerScore(1);
-	}
-	else
-	{
-		GI->AddAIScore(1);
-	}
-
-	PlayerScore = GI->GetPlayerScore();
-	AIScore = GI->GetAIScore();
-
-	RefreshHUDMatchInfo();
-
-	EndRound(bPlayerWonRound);
-}
-
-void AShooterInGameMode::EndRound(bool bPlayerWonRound)
-{
 	if (bIsMatchEnded)
 	{
 		return;
 	}
 
-	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
-	if (!GI)
+	if (bIsPlayer)
 	{
-		return;
-	}
-
-	const int32 CurrentPlayerScore = GI->GetPlayerScore();
-	const int32 CurrentAIScore = GI->GetAIScore();
-
-	UE_LOG(LogTemp, Warning, TEXT("EndRound / PlayerScore: %d / AIScore: %d / TargetScore: %d"),
-		CurrentPlayerScore,
-		CurrentAIScore,
-		TargetScoreToWin
-	);
-
-	const bool bPlayerMatchWin = CurrentPlayerScore >= TargetScoreToWin;
-	const bool bAIMatchWin = CurrentAIScore >= TargetScoreToWin;
-
-	if (bPlayerMatchWin)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Player reached target score. EndMatch(true)."));
-		EndMatch(true);
-		return;
-	}
-
-	if (bAIMatchWin)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("AI reached target score. EndMatch(false)."));
 		EndMatch(false);
 		return;
 	}
 
-	bIsRoundTransitioning = true;
-
-	ShowRoundTransitionMessage(bPlayerWonRound);
-
-	GetWorldTimerManager().ClearTimer(RoundTransitionTimerHandle);
-	GetWorldTimerManager().SetTimer(
-		RoundTransitionTimerHandle,
-		this,
-		&AShooterInGameMode::FinishRoundTransition,
-		RoundTransitionDuration,
-		false
-	);
+	HandleEnemyDied();
 }
 
-void AShooterInGameMode::FinishRoundTransition()
+void AShooterInGameMode::StartWave()
 {
-	if (bIsMatchEnded)
+	if (bIsMatchEnded || bIsWaveInProgress)
 	{
 		return;
 	}
 
-	GetWorldTimerManager().ClearTimer(RoundTransitionTimerHandle);
+	bIsShopOpen = false;
+	bIsWaveInProgress = true;
 
-	APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	if (PC)
+	CurrentWaveKillCount = 0;
+	TargetKillCount = CalculateTargetKillCountForWave(CurrentWave);
+
+	RefreshHUDWaveInfo();
+
+	UE_LOG(LogTemp, Warning, TEXT("StartWave / Wave: %d / TargetKillCount: %d"),
+		CurrentWave,
+		TargetKillCount
+	);
+
+	RequestSpawnWave(CurrentWave, TargetKillCount);
+}
+
+void AShooterInGameMode::HandleEnemyDied()
+{
+	if (bIsMatchEnded || !bIsWaveInProgress)
 	{
-		AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
-		if (MyHUD)
-		{
-			MyHUD->HideRoundTransitionUI();
-		}
+		return;
 	}
 
-	bIsRoundTransitioning = false;
+	CurrentWaveKillCount++;
 
-	RestartCurrentLevel();
+	AddGold(GoldPerEnemyKill);
+	RefreshHUDWaveInfo();
+
+	UE_LOG(LogTemp, Warning, TEXT("EnemyDied / Wave: %d / Kill: %d / Target: %d / Gold: %d"),
+		CurrentWave,
+		CurrentWaveKillCount,
+		TargetKillCount,
+		CurrentGold
+	);
+
+	if (CurrentWaveKillCount >= TargetKillCount)
+	{
+		ClearWave();
+	}
+}
+
+void AShooterInGameMode::ClearWave()
+{
+	if (bIsMatchEnded || !bIsWaveInProgress)
+	{
+		return;
+	}
+
+	bIsWaveInProgress = false;
+
+	RefreshHUDWaveInfo();
+
+	UE_LOG(LogTemp, Warning, TEXT("ClearWave / Wave: %d / MaxWave: %d"),
+		CurrentWave,
+		MaxWave
+	);
+
+	if (CurrentWave >= MaxWave)
+	{
+		EndMatch(true);
+		return;
+	}
+
+	bIsShopOpen = true;
+
+	RequestOpenShop(CurrentWave, CurrentGold);
+}
+
+void AShooterInGameMode::StartNextWave()
+{
+	if (bIsMatchEnded || bIsWaveInProgress || !bIsShopOpen)
+	{
+		return;
+	}
+
+	bIsShopOpen = false;
+	CurrentWave++;
+
+	StartWave();
 }
 
 void AShooterInGameMode::EndMatch(bool bPlayerWon)
@@ -190,9 +168,8 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 	}
 
 	bIsMatchEnded = true;
-	bIsRoundTransitioning = false;
-
-	GetWorldTimerManager().ClearTimer(RoundTransitionTimerHandle);
+	bIsWaveInProgress = false;
+	bIsShopOpen = false;
 
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	if (PC)
@@ -201,6 +178,7 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 		if (MyHUD)
 		{
 			MyHUD->HideRoundTransitionUI();
+			MyHUD->HideHPDangerFeedback();
 		}
 	}
 
@@ -217,6 +195,45 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 	);
 
 	MoveToOutGameMap();
+}
+
+int32 AShooterInGameMode::CalculateTargetKillCountForWave(int32 InWave) const
+{
+	const int32 SafeWave = FMath::Max(1, InWave);
+
+	return BaseTargetKillCount + ((SafeWave - 1) * TargetKillCountIncreasePerWave);
+}
+
+void AShooterInGameMode::AddGold(int32 GoldAmount)
+{
+	if (GoldAmount <= 0)
+	{
+		return;
+	}
+
+	CurrentGold += GoldAmount;
+}
+
+void AShooterInGameMode::RefreshHUDWaveInfo()
+{
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (!PC)
+	{
+		return;
+	}
+
+	AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
+	if (!MyHUD)
+	{
+		return;
+	}
+
+	MyHUD->RefreshWaveUI(
+		CurrentWave,
+		CurrentWaveKillCount,
+		TargetKillCount,
+		CurrentGold
+	);
 }
 
 void AShooterInGameMode::StopGameplayInput()
@@ -238,74 +255,6 @@ void AShooterInGameMode::StopGameplayInput()
 	PC->bShowMouseCursor = true;
 }
 
-void AShooterInGameMode::RestartCurrentLevel()
-{
-	if (bIsMatchEnded)
-	{
-		return;
-	}
-
-	UWorld* World = GetWorld();
-	if (!World)
-	{
-		return;
-	}
-
-	FString CurrentMapName = World->GetMapName();
-
-	const FString StreamingPrefix = World->StreamingLevelsPrefix;
-	CurrentMapName.RemoveFromStart(StreamingPrefix);
-
-	UE_LOG(LogTemp, Warning, TEXT("RestartCurrentLevel: %s"), *CurrentMapName);
-
-	UGameplayStatics::OpenLevel(this, FName(*CurrentMapName));
-}
-
-void AShooterInGameMode::RefreshHUDMatchInfo()
-{
-	APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	if (!PC)
-	{
-		return;
-	}
-
-	AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
-	if (!MyHUD)
-	{
-		return;
-	}
-
-	MyHUD->RefreshMatchUI(PlayerScore, AIScore, CurrentRound);
-}
-
-void AShooterInGameMode::ShowRoundTransitionMessage(bool bPlayerWonRound)
-{
-	APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	if (!PC)
-	{
-		return;
-	}
-
-	AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
-	if (!MyHUD)
-	{
-		return;
-	}
-
-	if (MyHUD->IsRoundTransitionUIShowing())
-	{
-		return;
-	}
-
-	const FText MainMessage = bPlayerWonRound
-		? FText::FromString(TEXT("Round Win"))
-		: FText::FromString(TEXT("Round Lose"));
-
-	const FText SubMessage = FText::FromString(TEXT("Get Ready for the Next Round"));
-
-	MyHUD->ShowRoundTransitionUI(MainMessage, SubMessage);
-}
-
 void AShooterInGameMode::MoveToOutGameMap()
 {
 	if (OutGameLevelName.IsNone())
@@ -319,14 +268,19 @@ void AShooterInGameMode::MoveToOutGameMap()
 	UGameplayStatics::OpenLevel(this, OutGameLevelName);
 }
 
-void AShooterInGameMode::CmdAddPlayerScore()
+void AShooterInGameMode::CmdKillEnemy()
 {
 	OnCharacterDied(false);
 }
 
-void AShooterInGameMode::CmdAddAIScore()
+void AShooterInGameMode::CmdClearWave()
 {
-	OnCharacterDied(true);
+	ClearWave();
+}
+
+void AShooterInGameMode::CmdStartNextWave()
+{
+	StartNextWave();
 }
 
 void AShooterInGameMode::CmdMoveOutGame()

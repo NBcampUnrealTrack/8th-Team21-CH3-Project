@@ -10,7 +10,7 @@
 #include "Team21_CH3_Project.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Component/StatusComponent.h"
-#include "ShooterInGameMode.h"
+#include "InGameUI/ShooterInGameMode.h"
 
 int32 ACharacterBase::ShowAttackMeleeDebug = 0;
 

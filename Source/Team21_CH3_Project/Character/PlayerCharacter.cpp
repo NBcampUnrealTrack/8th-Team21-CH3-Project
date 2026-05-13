@@ -18,7 +18,7 @@
 #include "Interfaces/Interaction.h"
 #include "Game/TeamGameInstance.h"
 #include "Component/StatusComponent.h"
-#include "ShooterInGameMode.h"
+#include "InGameUI/ShooterInGameMode.h"
 #include "InGameUI/InGameHUD.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -541,6 +541,11 @@ void APlayerCharacter::InputInteraction(const FInputActionValue& InValue)
 		// 아무것도 안 맞았을 때: 시작점 → 끝점까지 빨간선
 		DrawDebugLine(GetWorld(), CameraLocation, TraceViewPoint, FColor::Red, false, 3.f, 0, 2.f);
 	}
+}
+
+void APlayerCharacter::InputReLoad(const FInputActionValue& InValue)
+{
+
 }
 
 void APlayerCharacter::ApplyAugment_AttackDamage(float InAdd)
