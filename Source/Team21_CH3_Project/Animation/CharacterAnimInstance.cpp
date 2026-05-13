@@ -18,6 +18,7 @@ void UCharacterAnimInstance::NativeInitializeAnimation()
 		OwnerCharacterMovement = OwnerCharacter->GetCharacterMovement();
 	}
 	bIsUnarmed = true;
+	bIsMovingBackward = false;
 }
 
 void UCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -30,12 +31,15 @@ void UCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		// Z는 무시하고XY값만 사용
 		// 점프 중에도 XY값만 적용
 
+		Direction = CalculateDirection(OwnerCharacter->GetVelocity(), OwnerCharacter->GetActorRotation());
+
 		bIsMove = (KINDA_SMALL_NUMBER < GroundSpeed);
 		bIsFalling = OwnerCharacterMovement->IsFalling();
 		bIsUnarmed = OwnerCharacter->GetCurrentWeaponAttackAnimMontage() == nullptr ? true : false;
 		float GroundAcceleration = UKismetMathLibrary::VSizeXY(OwnerCharacterMovement->GetCurrentAcceleration());
 		bool bIsAccelerated = FMath::IsNearlyZero(GroundAcceleration) == false;
 		bShouldMove = (KINDA_SMALL_NUMBER < GroundSpeed) && (bIsAccelerated == true);
+		bIsMovingBackward = Direction > 135.f || Direction < -135.f;
 		if (ANonPlayerCharacter* OwnerNPC = Cast<ANonPlayerCharacter>(OwnerCharacter))
 		{
 			bShouldMove = KINDA_SMALL_NUMBER < GroundSpeed;

@@ -135,17 +135,6 @@ void APlayerCharacter::HandleOutOfCurrentHP()
 {
 	RefreshPlayerHealthUI();
 
-	APlayerController* PlayerController = Cast<APlayerController>(GetController());
-	if (IsValid(PlayerController))
-	{
-		AInGameHUD* InGameHUD = Cast<AInGameHUD>(PlayerController->GetHUD());
-		if (IsValid(InGameHUD))
-		{
-			// 플레이어가 사망하면 위험 피드백을 제거한다.
-			InGameHUD->HideHPDangerFeedback();
-		}
-	}
-
 	AShooterInGameMode* InGameMode = Cast<AShooterInGameMode>(UGameplayStatics::GetGameMode(this));
 	if (IsValid(InGameMode))
 	{
@@ -300,117 +289,93 @@ void APlayerCharacter::InputAttackMelee(const FInputActionValue& InValue)
 
 void APlayerCharacter::TryFire()
 {
-	if (IsValid(CurrentWeapon) == false)
-	{
-		return;
-	}
-
-	APlayerController* PlayerController = GetController<APlayerController>();
-	if (IsValid(PlayerController) == false)
-	{
-		return;
-	}
 
 	if (CurrentWeapon->UseBullets() == false)
 	{
-		AInGameHUD* InGameHUD = Cast<AInGameHUD>(PlayerController->GetHUD());
-		if (IsValid(InGameHUD))
-		{
-			// 탄약이 부족해서 발사하지 못해도 현재 탄약 정보를 UI에 반영한다.
-			InGameHUD->RefreshAmmoUI(CurrentWeapon->GetCurrentBullets(), CurrentWeapon->GetMaxBullets());
-		}
-
 		GetWorldTimerManager().ClearTimer(FullAutoTimerHandle);
 		return;
 	}
 
-	AInGameHUD* InGameHUD = Cast<AInGameHUD>(PlayerController->GetHUD());
-	if (IsValid(InGameHUD))
-	{
-		// 탄약 소비 후 현재 탄약 정보를 UI에 반영한다.
-		InGameHUD->RefreshAmmoUI(CurrentWeapon->GetCurrentBullets(), CurrentWeapon->GetMaxBullets());
-	}
-
 	//UE_LOG(LogTemp, Warning, TEXT("TryFire at: %f"), GetWorld()->GetTimeSeconds());
-#pragma region CaculateTargetTransform
-	float FocalDistance = 400.f;
-	FVector FocalLocation;
-	FVector CameraLocation;
-	FRotator CameraRotation;
-
-	PlayerController->GetPlayerViewPoint(CameraLocation, CameraRotation);
-
-	FVector AimDirectionFromCamera = CameraRotation.Vector().GetSafeNormal();
-	FocalLocation = CameraLocation + (AimDirectionFromCamera * FocalDistance);
-
-	FVector WeaponMuzzleLocation = CurrentWeapon->GetPickupComponent()->GetSocketLocation(TEXT("MuzzleFlash"));
-	FVector FinalFocalLocation = FocalLocation + (((WeaponMuzzleLocation - FocalLocation) | AimDirectionFromCamera) * AimDirectionFromCamera);
-
-	FTransform TargetTransform = FTransform(CameraRotation, FinalFocalLocation);
-
-	if (1 == ShowAttackRangedDebug)
+	APlayerController* PlayerController = GetController<APlayerController>();
+	if (IsValid(PlayerController) == true)
 	{
-		DrawDebugSphere(GetWorld(), WeaponMuzzleLocation, 2.f, 16, FColor::Red, false, 60.f);
+#pragma region CaculateTargetTransform
+		float FocalDistance = 400.f;
+		FVector FocalLocation;
+		FVector CameraLocation;
+		FRotator CameraRotation;
 
-		DrawDebugSphere(GetWorld(), CameraLocation, 2.f, 16, FColor::Yellow, false, 60.f);
+		PlayerController->GetPlayerViewPoint(CameraLocation, CameraRotation);
 
-		DrawDebugSphere(GetWorld(), FinalFocalLocation, 2.f, 16, FColor::Magenta, false, 60.f);
+		FVector AimDirectionFromCamera = CameraRotation.Vector().GetSafeNormal();
+		FocalLocation = CameraLocation + (AimDirectionFromCamera * FocalDistance);
 
-		// (WeaponLoc - FocalLoc)
-		DrawDebugLine(GetWorld(), FocalLocation, WeaponMuzzleLocation, FColor::Yellow, false, 60.f, 0, 2.f);
+		FVector WeaponMuzzleLocation = CurrentWeapon->GetPickupComponent()->GetSocketLocation(TEXT("MuzzleFlash"));
+		FVector FinalFocalLocation = FocalLocation + (((WeaponMuzzleLocation - FocalLocation) | AimDirectionFromCamera) * AimDirectionFromCamera);
 
-		// AimDir
-		DrawDebugLine(GetWorld(), CameraLocation, FinalFocalLocation, FColor::Blue, false, 60.f, 0, 2.f);
+		FTransform TargetTransform = FTransform(CameraRotation, FinalFocalLocation);
 
-		// Project Direction Line
-		DrawDebugLine(GetWorld(), WeaponMuzzleLocation, FinalFocalLocation, FColor::Red, false, 60.f, 0, 2.f);
-	}
+		if (1 == ShowAttackRangedDebug)
+		{
+			DrawDebugSphere(GetWorld(), WeaponMuzzleLocation, 2.f, 16, FColor::Red, false, 60.f);
+
+			DrawDebugSphere(GetWorld(), CameraLocation, 2.f, 16, FColor::Yellow, false, 60.f);
+
+			DrawDebugSphere(GetWorld(), FinalFocalLocation, 2.f, 16, FColor::Magenta, false, 60.f);
+
+			// (WeaponLoc - FocalLoc)
+			DrawDebugLine(GetWorld(), FocalLocation, WeaponMuzzleLocation, FColor::Yellow, false, 60.f, 0, 2.f);
+
+			// AimDir
+			DrawDebugLine(GetWorld(), CameraLocation, FinalFocalLocation, FColor::Blue, false, 60.f, 0, 2.f);
+
+			// Project Direction Line
+			DrawDebugLine(GetWorld(), WeaponMuzzleLocation, FinalFocalLocation, FColor::Red, false, 60.f, 0, 2.f);
+		}
 
 #pragma endregion
 
 #pragma region PerformLineTracing
 
-	FVector BulletDirection = TargetTransform.GetUnitAxis(EAxis::X);
-	FVector StartLocation = WeaponMuzzleLocation;
-	FVector EndLocation = TargetTransform.GetLocation() + BulletDirection * CurrentWeapon->GetMaxAttackRange();
+		FVector BulletDirection = TargetTransform.GetUnitAxis(EAxis::X);
+		FVector StartLocation = WeaponMuzzleLocation;
+		FVector EndLocation = TargetTransform.GetLocation() + BulletDirection * CurrentWeapon->GetMaxAttackRange();
 
-	FHitResult HitResult;
-	FCollisionQueryParams TraceParams(NAME_None, false, this);
-	TraceParams.AddIgnoredActor(CurrentWeapon);
+		FHitResult HitResult;
+		FCollisionQueryParams TraceParams(NAME_None, false, this);
+		TraceParams.AddIgnoredActor(CurrentWeapon);
 
-	bool IsCollided = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_ATTACK, TraceParams);
-	if (IsCollided == false)
-	{
-		HitResult.TraceStart = StartLocation;
-		HitResult.TraceEnd = EndLocation;
-	}
-
-	if (2 == ShowAttackRangedDebug)
-	{
-		if (IsCollided == true)
+		bool IsCollided = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_ATTACK, TraceParams);
+		if (IsCollided == false)
 		{
-			DrawDebugSphere(GetWorld(), StartLocation, 2.f, 16, FColor::Red, false, 60.f);
-
-			DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 2.f, 16, FColor::Green, false, 60.f);
-
-			DrawDebugLine(GetWorld(), StartLocation, HitResult.ImpactPoint, FColor::Blue, false, 60.f, 0, 2.f);
+			HitResult.TraceStart = StartLocation;
+			HitResult.TraceEnd = EndLocation;
 		}
-		else
+
+		if (2 == ShowAttackRangedDebug)
 		{
-			DrawDebugSphere(GetWorld(), StartLocation, 2.f, 16, FColor::Red, false, 60.f);
+			if (IsCollided == true)
+			{
+				DrawDebugSphere(GetWorld(), StartLocation, 2.f, 16, FColor::Red, false, 60.f);
 
-			DrawDebugSphere(GetWorld(), EndLocation, 2.f, 16, FColor::Green, false, 60.f);
+				DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 2.f, 16, FColor::Green, false, 60.f);
 
-			DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Blue, false, 60.f, 0, 2.f);
+				DrawDebugLine(GetWorld(), StartLocation, HitResult.ImpactPoint, FColor::Blue, false, 60.f, 0, 2.f);
+			}
+			else
+			{
+				DrawDebugSphere(GetWorld(), StartLocation, 2.f, 16, FColor::Red, false, 60.f);
+
+				DrawDebugSphere(GetWorld(), EndLocation, 2.f, 16, FColor::Green, false, 60.f);
+
+				DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Blue, false, 60.f, 0, 2.f);
+			}
 		}
-	}
 
 #pragma endregion
 
-	if (IsCollided == true)
-	{
-		ACharacterBase* HittedCharacter = Cast<ACharacterBase>(HitResult.GetActor());
-		if (IsValid(HittedCharacter) == true)
+		if (IsCollided == true)
 		{
 			ACharacterBase* HittedCharacter = Cast<ACharacterBase>(HitResult.GetActor());
 			if (IsValid(HittedCharacter) == true)
@@ -419,22 +384,22 @@ void APlayerCharacter::TryFire()
 				HittedCharacter->TakeDamage(10.f * AttackDamageMul, DamageEvent, GetController(), this);
 			}
 		}
-	}
 
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (IsValid(AnimInstance) == true)
-	{
-		if (AnimInstance->Montage_IsPlaying(GetCurrentWeaponAttackAnimMontage()) == false)
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (IsValid(AnimInstance) == true)
 		{
-			float MontageLength = GetCurrentWeaponAttackAnimMontage()->GetPlayLength();
-			float PlayRate = MontageLength / (60.f / FirePerMinute);
-			AnimInstance->Montage_Play(GetCurrentWeaponAttackAnimMontage(), PlayRate);
+			if (AnimInstance->Montage_IsPlaying(GetCurrentWeaponAttackAnimMontage()) == false)
+			{
+				float MontageLength = GetCurrentWeaponAttackAnimMontage()->GetPlayLength();
+				float PlayRate = MontageLength / (60.f / FirePerMinute);
+				AnimInstance->Montage_Play(GetCurrentWeaponAttackAnimMontage(), PlayRate);
+			}
 		}
-	}
 
-	if (IsValid(AttackRangedCameraShake) == true)
-	{
-		PlayerController->ClientStartCameraShake(AttackRangedCameraShake);
+		if (IsValid(AttackRangedCameraShake) == true)
+		{
+			PlayerController->ClientStartCameraShake(AttackRangedCameraShake);
+		}
 	}
 }
 
