@@ -7,6 +7,9 @@
 #include "TimerManager.h"
 #include "ShooterInGameMode.generated.h"
 
+class UAugmentCardSelectWidget;
+struct FAugmentCardData;
+
 UCLASS()
 class TEAM21_CH3_PROJECT_API AShooterInGameMode : public AGameModeBase
 {
@@ -32,7 +35,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Wave Rules")
 	void ContinueToNextWaveWithLevelReload();
 
-	// InGameHUD에서 위젯 생성 직후 Wave/Kill/Gold UI 갱신 요청용
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void RequestHUDWaveInfoRefreshRetry();
 
@@ -85,7 +87,6 @@ protected:
 
 	FTimerHandle EndMatchReturnTimerHandle;
 
-	// HUD 생성 타이밍 보정용
 	FTimerHandle HUDWaveRefreshRetryTimerHandle;
 
 	int32 HUDWaveRefreshRetryCount;
@@ -95,6 +96,22 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	float HUDWaveRefreshRetryInterval;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Augment")
+	TSubclassOf<UAugmentCardSelectWidget> AugmentCardSelectWidgetClass;
+
+	UPROPERTY()
+	UAugmentCardSelectWidget* ActiveAugmentCardSelectWidget;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Augment")
+	int32 AugmentKillInterval;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Augment")
+	bool bIsAugmentSelectOpen;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Augment")
+	bool bPendingClearWaveAfterAugment;
 
 protected:
 	int32 CalculateTargetKillCountForWave(int32 InWave) const;
@@ -108,9 +125,16 @@ protected:
 	void ReloadCurrentLevel();
 	void MoveToOutGameMap();
 	void StopGameplayInput();
+	void ResumeGameplayInput();
 
 	void HandleAutoStartNextWaveWithLevelReload();
 	void HandleEndMatchReturnToOutGame();
+
+	void ShowAugmentCardSelectUI();
+	void HideAugmentCardSelectUI();
+
+	UFUNCTION()
+	void HandleAugmentSelected(FAugmentCardData SelectedCardData);
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Wave")

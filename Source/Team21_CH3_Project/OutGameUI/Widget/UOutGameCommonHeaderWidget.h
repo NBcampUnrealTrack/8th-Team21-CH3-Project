@@ -8,6 +8,7 @@
 
 class UButton;
 class UImage;
+class UTextBlock;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API UUOutGameCommonHeaderWidget : public UOutGameWidgetBase{
@@ -18,6 +19,8 @@ public:
 	
 	UFUNCTION()
 	void SetActiveTab(EOutGameWidgetType widgetType);
+	UFUNCTION()
+	void UpdateCommonUI();
 	
 private:
 	UPROPERTY(meta =(BindWidget))
@@ -28,17 +31,23 @@ private:
 	TObjectPtr<UButton> storeButton;
 	UPROPERTY(meta =(BindWidget))
 	TObjectPtr<UButton> settingsButton;
+	UPROPERTY(meta =(BindWidget))
+	TObjectPtr<UButton> traitButton;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> playSelectedImage;
-
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> weaponsSelectedImage;
-
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> storeSelectedImage;
-
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> settingsSelectedImage;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> traitSelectedImage;
+	
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> playerTotalKillCount;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> playerGold;
 	
 	UFUNCTION()
 	void SetSelectedVisible(UImage* image, bool bSelected);
@@ -51,5 +60,7 @@ private:
 	void HandleStoreButton();
 	UFUNCTION()
 	void HandleSettingsClicked();
+	UFUNCTION()
+	void HandleTraitClicked();
 	
 };

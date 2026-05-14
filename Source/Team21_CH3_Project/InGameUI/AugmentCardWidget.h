@@ -25,6 +25,8 @@ public:
 	FText CardEffect;
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAugmentCardClickedSignature, FAugmentCardData, SelectedCardData);
+
 UCLASS()
 class TEAM21_CH3_PROJECT_API UAugmentCardWidget : public UUserWidget
 {
@@ -36,6 +38,10 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Augment")
 	const FAugmentCardData& GetAugmentCardData() const;
+
+public:
+	UPROPERTY(BlueprintAssignable, Category = "Augment")
+	FAugmentCardClickedSignature OnAugmentCardClicked;
 
 protected:
 	virtual void NativeConstruct() override;
@@ -56,4 +62,8 @@ protected:
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Augment")
 	FAugmentCardData CurrentCardData;
+
+private:
+	UFUNCTION()
+	void HandleSelectButtonClicked();
 };

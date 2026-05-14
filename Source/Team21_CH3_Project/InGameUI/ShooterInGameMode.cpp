@@ -2,8 +2,10 @@
 
 #include "ShooterInGameMode.h"
 #include "InGameUI/InGameHUD.h"
+#include "InGameUI/AugmentCardSelectWidget.h"
 #include "Game/TeamGameInstance.h"
 
+#include "Blueprint/UserWidget.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
@@ -33,6 +35,11 @@ AShooterInGameMode::AShooterInGameMode()
 	HUDWaveRefreshRetryCount = 0;
 	MaxHUDWaveRefreshRetryCount = 10;
 	HUDWaveRefreshRetryInterval = 0.05f;
+
+	ActiveAugmentCardSelectWidget = nullptr;
+	AugmentKillInterval = 5;
+	bIsAugmentSelectOpen = false;
+	bPendingClearWaveAfterAugment = false;
 }
 
 void AShooterInGameMode::BeginPlay()
@@ -72,7 +79,6 @@ void AShooterInGameMode::BeginPlay()
 
 	StartWave();
 
-	// HUD 생성 순서 때문에 첫 갱신이 누락될 수 있어 재시도
 	RequestHUDWaveInfoRefreshRetry();
 }
 
@@ -105,6 +111,9 @@ void AShooterInGameMode::StartWave()
 	CurrentWaveKillCount = 0;
 	TargetKillCount = CalculateTargetKillCountForWave(CurrentWave);
 
+	bIsAugmentSelectOpen = false;
+	bPendingClearWaveAfterAugment = false;
+
 	RefreshHUDWaveInfo();
 	RequestHUDWaveInfoRefreshRetry();
 
@@ -123,6 +132,11 @@ void AShooterInGameMode::HandleEnemyDied()
 		return;
 	}
 
+	if (bIsAugmentSelectOpen)
+	{
+		return;
+	}
+
 	CurrentWaveKillCount++;
 
 	AddGold(GoldPerEnemyKill);
@@ -135,7 +149,20 @@ void AShooterInGameMode::HandleEnemyDied()
 		CurrentGold
 	);
 
-	if (CurrentWaveKillCount >= TargetKillCount)
+	const bool bShouldClearWave = CurrentWaveKillCount >= TargetKillCount;
+	const bool bShouldShowAugment =
+		AugmentKillInterval > 0 &&
+		CurrentWaveKillCount > 0 &&
+		CurrentWaveKillCount % AugmentKillInterval == 0;
+
+	if (bShouldShowAugment)
+	{
+		bPendingClearWaveAfterAugment = bShouldClearWave;
+		ShowAugmentCardSelectUI();
+		return;
+	}
+
+	if (bShouldClearWave)
 	{
 		ClearWave();
 	}
@@ -255,9 +282,13 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 	GetWorldTimerManager().ClearTimer(NextWaveStartTimerHandle);
 	GetWorldTimerManager().ClearTimer(HUDWaveRefreshRetryTimerHandle);
 
+	HideAugmentCardSelectUI();
+
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	if (PC)
 	{
+		PC->SetPause(false);
+
 		AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
 		if (MyHUD)
 		{
@@ -271,6 +302,12 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 	{
 		GI->SetIsWin(bPlayerWon);
 		GI->SetMatch(true);
+
+		// 게임 종료 직전 마지막 Wave / Gold 값을 한 번 저장한다.
+		// 팀원 쪽에서 SaveInGameWaveData 내부 또는 이후 흐름에서 PlayerGold 반영용으로 사용할 수 있음.
+		GI->SaveInGameWaveData(CurrentWave, CurrentGold);
+
+		// 인게임 웨이브 복구용 임시 데이터 초기화
 		GI->ClearInGameWaveData();
 	}
 
@@ -278,8 +315,10 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 
 	TriggerResultUI(bPlayerWon);
 
-	UE_LOG(LogTemp, Warning, TEXT("EndMatch Called. bPlayerWon: %s / Move To: %s After %.2f seconds"),
+	UE_LOG(LogTemp, Warning, TEXT("EndMatch Called. bPlayerWon: %s / FinalWave: %d / FinalGold: %d / Move To: %s After %.2f seconds"),
 		bPlayerWon ? TEXT("true") : TEXT("false"),
+		CurrentWave,
+		CurrentGold,
 		*OutGameLevelName.ToString(),
 		EndMatchReturnDelay
 	);
@@ -386,6 +425,83 @@ void AShooterInGameMode::HandleHUDWaveInfoRefreshRetry()
 	);
 }
 
+void AShooterInGameMode::ShowAugmentCardSelectUI()
+{
+	if (bIsMatchEnded || bIsAugmentSelectOpen)
+	{
+		return;
+	}
+
+	if (!AugmentCardSelectWidgetClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("AugmentCardSelectWidgetClass is not set."));
+		return;
+	}
+
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (!PC)
+	{
+		return;
+	}
+
+	ActiveAugmentCardSelectWidget = CreateWidget<UAugmentCardSelectWidget>(PC, AugmentCardSelectWidgetClass);
+	if (!ActiveAugmentCardSelectWidget)
+	{
+		return;
+	}
+
+	ActiveAugmentCardSelectWidget->OnAugmentSelected.RemoveDynamic(this, &AShooterInGameMode::HandleAugmentSelected);
+	ActiveAugmentCardSelectWidget->OnAugmentSelected.AddDynamic(this, &AShooterInGameMode::HandleAugmentSelected);
+
+	ActiveAugmentCardSelectWidget->AddToViewport(200);
+
+	bIsAugmentSelectOpen = true;
+
+	FInputModeUIOnly InputModeData;
+	InputModeData.SetWidgetToFocus(ActiveAugmentCardSelectWidget->TakeWidget());
+	PC->SetInputMode(InputModeData);
+	PC->bShowMouseCursor = true;
+	PC->SetPause(true);
+
+	UE_LOG(LogTemp, Warning, TEXT("Augment Card Select UI Opened."));
+}
+
+void AShooterInGameMode::HideAugmentCardSelectUI()
+{
+	if (ActiveAugmentCardSelectWidget)
+	{
+		ActiveAugmentCardSelectWidget->RemoveFromParent();
+		ActiveAugmentCardSelectWidget = nullptr;
+	}
+
+	bIsAugmentSelectOpen = false;
+}
+
+void AShooterInGameMode::HandleAugmentSelected(FAugmentCardData SelectedCardData)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Augment Selected: %s"),
+		*SelectedCardData.CardName.ToString()
+	);
+
+	HideAugmentCardSelectUI();
+
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (PC)
+	{
+		PC->SetPause(false);
+	}
+
+	ResumeGameplayInput();
+
+	const bool bShouldClearWave = bPendingClearWaveAfterAugment;
+	bPendingClearWaveAfterAugment = false;
+
+	if (bShouldClearWave)
+	{
+		ClearWave();
+	}
+}
+
 void AShooterInGameMode::StopGameplayInput()
 {
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
@@ -403,6 +519,25 @@ void AShooterInGameMode::StopGameplayInput()
 	FInputModeUIOnly InputModeData;
 	PC->SetInputMode(InputModeData);
 	PC->bShowMouseCursor = true;
+}
+
+void AShooterInGameMode::ResumeGameplayInput()
+{
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (!PC)
+	{
+		return;
+	}
+
+	APawn* PlayerPawn = PC->GetPawn();
+	if (PlayerPawn)
+	{
+		PlayerPawn->EnableInput(PC);
+	}
+
+	FInputModeGameOnly InputModeData;
+	PC->SetInputMode(InputModeData);
+	PC->bShowMouseCursor = false;
 }
 
 void AShooterInGameMode::ReloadCurrentLevel()
