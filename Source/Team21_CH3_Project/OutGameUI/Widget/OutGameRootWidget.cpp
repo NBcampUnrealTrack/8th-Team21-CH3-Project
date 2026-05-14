@@ -106,6 +106,7 @@ void UOutGameRootWidget::ShowTransitionFadein(){
 void UOutGameRootWidget::SetHeaderVisible(bool bVisible){
 	if (IsValid(commonHeaderWidget) == true)
 	{
+		commonHeaderWidget->UpdateCommonUI();
 		commonHeaderWidget->SetVisibility(bVisible ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
 	}
 }
