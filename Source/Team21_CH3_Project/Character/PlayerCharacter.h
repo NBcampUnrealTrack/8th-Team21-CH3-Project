@@ -170,6 +170,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Reload")
 	bool bIsReloading = false;
 
+	UFUNCTION()
+	void OnAmmoChanged(int32 CurrentBullets, int32 MaxBullets);
+
 #pragma endregion
 
 #pragma region Attribute

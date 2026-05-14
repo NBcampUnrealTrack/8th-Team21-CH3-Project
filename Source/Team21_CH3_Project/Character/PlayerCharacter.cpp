@@ -627,3 +627,14 @@ void APlayerCharacter::OnReloadMontageEnded(UAnimMontage* Montage, bool bInterru
 		CurrentWeapon->Reload();
 	}
 }
+
+void APlayerCharacter::OnAmmoChanged(int32 CurrentBullets, int32 MaxBullets)
+{
+	APlayerController* PlayerController = GetController<APlayerController>();
+	if (IsValid(PlayerController) == false) return;
+
+	AInGameHUD* InGameHUD = Cast<AInGameHUD>(PlayerController->GetHUD());
+	if (IsValid(InGameHUD) == false) return;
+
+	InGameHUD->RefreshAmmoUI(CurrentBullets, MaxBullets);
+}
