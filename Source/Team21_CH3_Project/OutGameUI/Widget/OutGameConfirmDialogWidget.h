@@ -5,6 +5,7 @@
 #include "OutGameWidgetBase.h"
 #include "OutGameConfirmDialogWidget.generated.h"
 
+UENUM()
 enum class EQuitConfirmState : uint8
 {
 	Closed,
@@ -13,8 +14,11 @@ enum class EQuitConfirmState : uint8
 	Closing
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnConfirmDialogAction);
+
 class UButton;
 class UWidgetAnimation;
+class UTextBlock;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API UOutGameConfirmDialogWidget : public UOutGameWidgetBase{
@@ -24,13 +28,22 @@ public:
 	virtual void NativeOnInitialized() override;
 
 	UFUNCTION()
-	void ToggleQuitConfirm();
+	bool IsOpend();
 	UFUNCTION()
-	void ShowQuitConfirm();
+	void ShowConfirmDialog(const FText& InTitle, const FText& InMessage);
 	UFUNCTION()
-	void HideQuitConfirm();
+	void HideConfirmDialog();
+	
+	UPROPERTY()
+	FOnConfirmDialogAction OnConfirmed;
+	UPROPERTY()
+	FOnConfirmDialogAction OnCanceled;
 
 private:
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> titleText;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> messageText;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> confirmButton;
 	UPROPERTY(meta = (BindWidget))
@@ -49,6 +62,8 @@ private:
 	UFUNCTION()
 	void HandleFadeInFinished();
 	
+	FText pendingTitleText;
+	FText pendingMessageText;
 	bool bIsPlay;
 	EQuitConfirmState State;
 };
