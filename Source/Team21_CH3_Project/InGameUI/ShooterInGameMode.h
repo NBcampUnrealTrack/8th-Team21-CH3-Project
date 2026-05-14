@@ -32,6 +32,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Wave Rules")
 	void ContinueToNextWaveWithLevelReload();
 
+	// InGameHUD에서 위젯 생성 직후 Wave/Kill/Gold UI 갱신 요청용
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void RequestHUDWaveInfoRefreshRetry();
+
 	void EndMatch(bool bPlayerWon);
 
 protected:
@@ -81,10 +85,25 @@ protected:
 
 	FTimerHandle EndMatchReturnTimerHandle;
 
+	// HUD 생성 타이밍 보정용
+	FTimerHandle HUDWaveRefreshRetryTimerHandle;
+
+	int32 HUDWaveRefreshRetryCount;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	int32 MaxHUDWaveRefreshRetryCount;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	float HUDWaveRefreshRetryInterval;
+
 protected:
 	int32 CalculateTargetKillCountForWave(int32 InWave) const;
 	void AddGold(int32 GoldAmount);
+
 	void RefreshHUDWaveInfo();
+	bool TryRefreshHUDWaveInfo();
+
+	void HandleHUDWaveInfoRefreshRetry();
 
 	void ReloadCurrentLevel();
 	void MoveToOutGameMap();

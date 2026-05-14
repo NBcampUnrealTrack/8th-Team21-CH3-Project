@@ -29,6 +29,10 @@ AShooterInGameMode::AShooterInGameMode()
 
 	OutGameLevelName = TEXT("OutGameMap");
 	EndMatchReturnDelay = 3.0f;
+
+	HUDWaveRefreshRetryCount = 0;
+	MaxHUDWaveRefreshRetryCount = 10;
+	HUDWaveRefreshRetryInterval = 0.05f;
 }
 
 void AShooterInGameMode::BeginPlay()
@@ -67,6 +71,9 @@ void AShooterInGameMode::BeginPlay()
 	}
 
 	StartWave();
+
+	// HUD 생성 순서 때문에 첫 갱신이 누락될 수 있어 재시도
+	RequestHUDWaveInfoRefreshRetry();
 }
 
 void AShooterInGameMode::OnCharacterDied(bool bIsPlayer)
@@ -99,6 +106,7 @@ void AShooterInGameMode::StartWave()
 	TargetKillCount = CalculateTargetKillCountForWave(CurrentWave);
 
 	RefreshHUDWaveInfo();
+	RequestHUDWaveInfoRefreshRetry();
 
 	UE_LOG(LogTemp, Warning, TEXT("StartWave / Wave: %d / TargetKillCount: %d"),
 		CurrentWave,
@@ -245,6 +253,7 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 	bIsShopOpen = false;
 
 	GetWorldTimerManager().ClearTimer(NextWaveStartTimerHandle);
+	GetWorldTimerManager().ClearTimer(HUDWaveRefreshRetryTimerHandle);
 
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	if (PC)
@@ -316,16 +325,21 @@ void AShooterInGameMode::AddGold(int32 GoldAmount)
 
 void AShooterInGameMode::RefreshHUDWaveInfo()
 {
+	TryRefreshHUDWaveInfo();
+}
+
+bool AShooterInGameMode::TryRefreshHUDWaveInfo()
+{
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	if (!PC)
 	{
-		return;
+		return false;
 	}
 
 	AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
 	if (!MyHUD)
 	{
-		return;
+		return false;
 	}
 
 	MyHUD->RefreshWaveUI(
@@ -333,6 +347,42 @@ void AShooterInGameMode::RefreshHUDWaveInfo()
 		CurrentWaveKillCount,
 		TargetKillCount,
 		CurrentGold
+	);
+
+	return true;
+}
+
+void AShooterInGameMode::RequestHUDWaveInfoRefreshRetry()
+{
+	HUDWaveRefreshRetryCount = 0;
+
+	GetWorldTimerManager().ClearTimer(HUDWaveRefreshRetryTimerHandle);
+
+	HandleHUDWaveInfoRefreshRetry();
+}
+
+void AShooterInGameMode::HandleHUDWaveInfoRefreshRetry()
+{
+	if (TryRefreshHUDWaveInfo())
+	{
+		GetWorldTimerManager().ClearTimer(HUDWaveRefreshRetryTimerHandle);
+		return;
+	}
+
+	HUDWaveRefreshRetryCount++;
+
+	if (HUDWaveRefreshRetryCount >= MaxHUDWaveRefreshRetryCount)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("HUD Wave Refresh Retry Failed."));
+		return;
+	}
+
+	GetWorldTimerManager().SetTimer(
+		HUDWaveRefreshRetryTimerHandle,
+		this,
+		&AShooterInGameMode::HandleHUDWaveInfoRefreshRetry,
+		HUDWaveRefreshRetryInterval,
+		false
 	);
 }
 

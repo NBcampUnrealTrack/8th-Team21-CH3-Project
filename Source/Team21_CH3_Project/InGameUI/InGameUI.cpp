@@ -1,3 +1,5 @@
+// InGameUI.cpp
+
 #include "InGameUI.h"
 
 #include "Components/ProgressBar.h"
@@ -13,9 +15,12 @@ void UInGameUI::NativeConstruct()
 	UpdateHealth(100.f, 100.f);
 	UpdateAmmo(30, 30);
 
-	// Wave UI 기본값
-	// 실제 게임 중에는 ShooterInGameMode에서 RefreshWaveUI를 통해 다시 갱신된다.
-	UpdateWaveInfo(1, 0, 0, 0);
+	// Wave UI는 여기서 기본값으로 세팅하지 않는다.
+	// 이유:
+	// 레벨 리로드 후 GameMode에서 복구한 Wave / Kill / Gold 값을
+	// NativeConstruct의 기본값이 다시 덮어쓸 수 있기 때문이다.
+	//
+	// Wave / Kill / Gold는 ShooterInGameMode -> InGameHUD -> UpdateWaveInfo 흐름으로만 갱신한다.
 
 	// 라운드 전환 메시지는 처음에는 숨겨둔다.
 	HideRoundTransitionMessage();
