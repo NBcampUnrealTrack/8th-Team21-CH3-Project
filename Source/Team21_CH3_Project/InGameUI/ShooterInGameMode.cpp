@@ -14,7 +14,7 @@ AShooterInGameMode::AShooterInGameMode()
 	CurrentWaveKillCount = 0;
 	TargetKillCount = 0;
 
-	MaxWave = 5;
+	MaxWave = 3;
 	BaseTargetKillCount = 5;
 	TargetKillCountIncreasePerWave = 2;
 
@@ -213,9 +213,20 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 
 int32 AShooterInGameMode::CalculateTargetKillCountForWave(int32 InWave) const
 {
-	const int32 SafeWave = FMath::Max(1, InWave);
+	switch (InWave)
+	{
+	case 1:
+		return 5;
 
-	return BaseTargetKillCount + ((SafeWave - 1) * TargetKillCountIncreasePerWave);
+	case 2:
+		return 7;
+
+	case 3:
+		return 10;
+
+	default:
+		return 10;
+	}
 }
 
 void AShooterInGameMode::AddGold(int32 GoldAmount)

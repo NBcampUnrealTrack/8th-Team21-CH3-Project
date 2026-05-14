@@ -1,109 +1,364 @@
-// ShooterInGameMode.h
+// ShooterInGameMode.cpp
 
-#pragma once
+#include "ShooterInGameMode.h"
+#include "InGameUI/InGameHUD.h"
+#include "Game/TeamGameInstance.h"
 
-#include "CoreMinimal.h"
-#include "GameFramework/GameModeBase.h"
-#include "TimerManager.h"
-#include "ShooterInGameMode.generated.h"
+#include "Engine/World.h"
+#include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h"
 
-UCLASS()
-class TEAM21_CH3_PROJECT_API AShooterInGameMode : public AGameModeBase
+AShooterInGameMode::AShooterInGameMode()
 {
-	GENERATED_BODY()
+	CurrentWave = 1;
+	CurrentWaveKillCount = 0;
+	TargetKillCount = 0;
 
-public:
-	AShooterInGameMode();
+	MaxWave = 3;
+	BaseTargetKillCount = 5;
+	TargetKillCountIncreasePerWave = 2;
 
-protected:
-	virtual void BeginPlay() override;
+	CurrentGold = 0;
+	GoldPerEnemyKill = 10;
 
-public:
-	UFUNCTION(BlueprintCallable, Category = "Wave Rules")
-	void OnCharacterDied(bool bIsPlayer);
+	bIsWaveInProgress = false;
+	bIsShopOpen = false;
+	bIsMatchEnded = false;
 
-	void StartWave();
-	void HandleEnemyDied();
-	void ClearWave();
+	NextWaveStartDelay = 2.0f;
 
-	UFUNCTION(BlueprintCallable, Category = "Wave Rules")
-	void StartNextWave();
+	OutGameLevelName = TEXT("OutGameMap");
+	EndMatchReturnDelay = 3.0f;
+}
 
-	void EndMatch(bool bPlayerWon);
+void AShooterInGameMode::BeginPlay()
+{
+	Super::BeginPlay();
 
-protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Wave State")
-	int32 CurrentWave;
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (PC)
+	{
+		FInputModeGameOnly InputModeData;
+		PC->SetInputMode(InputModeData);
+		PC->bShowMouseCursor = false;
+	}
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Wave State")
-	int32 CurrentWaveKillCount;
+	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
+	if (GI)
+	{
+		bIsMatchEnded = GI->GetMatch();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Wave State")
-	int32 TargetKillCount;
+		if (bIsMatchEnded)
+		{
+			TriggerResultUI(GI->GetIsWin());
+			return;
+		}
+	}
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave State")
-	int32 MaxWave;
+	StartWave();
+}
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave State")
-	int32 BaseTargetKillCount;
+void AShooterInGameMode::OnCharacterDied(bool bIsPlayer)
+{
+	if (bIsMatchEnded)
+	{
+		return;
+	}
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave State")
-	int32 TargetKillCountIncreasePerWave;
+	if (bIsPlayer)
+	{
+		EndMatch(false);
+		return;
+	}
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Reward")
-	int32 CurrentGold;
+	HandleEnemyDied();
+}
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Reward")
-	int32 GoldPerEnemyKill;
+void AShooterInGameMode::StartWave()
+{
+	if (bIsMatchEnded || bIsWaveInProgress)
+	{
+		return;
+	}
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Wave State")
-	bool bIsWaveInProgress;
+	bIsShopOpen = false;
+	bIsWaveInProgress = true;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Wave State")
-	bool bIsShopOpen;
+	CurrentWaveKillCount = 0;
+	TargetKillCount = CalculateTargetKillCountForWave(CurrentWave);
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Match State")
-	bool bIsMatchEnded;
+	RefreshHUDWaveInfo();
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Level")
-	FName OutGameLevelName;
+	UE_LOG(LogTemp, Warning, TEXT("StartWave / Wave: %d / TargetKillCount: %d"),
+		CurrentWave,
+		TargetKillCount
+	);
 
-	// EndMatch 후 결과 UI를 보여준 뒤 OutGameMap으로 이동하기까지의 대기 시간
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match State")
-	float EndMatchReturnDelay;
+	RequestSpawnWave(CurrentWave, TargetKillCount);
+}
 
-	FTimerHandle EndMatchReturnTimerHandle;
+void AShooterInGameMode::HandleEnemyDied()
+{
+	if (bIsMatchEnded || !bIsWaveInProgress)
+	{
+		return;
+	}
 
-protected:
-	int32 CalculateTargetKillCountForWave(int32 InWave) const;
-	void AddGold(int32 GoldAmount);
-	void RefreshHUDWaveInfo();
+	CurrentWaveKillCount++;
 
-	void MoveToOutGameMap();
-	void StopGameplayInput();
+	AddGold(GoldPerEnemyKill);
+	RefreshHUDWaveInfo();
 
-	void HandleEndMatchReturnToOutGame();
+	UE_LOG(LogTemp, Warning, TEXT("EnemyDied / Wave: %d / Kill: %d / Target: %d / Gold: %d"),
+		CurrentWave,
+		CurrentWaveKillCount,
+		TargetKillCount,
+		CurrentGold
+	);
 
-protected:
-	UFUNCTION(BlueprintImplementableEvent, Category = "Wave")
-	void RequestSpawnWave(int32 InWave, int32 InTargetKillCount);
+	if (CurrentWaveKillCount >= TargetKillCount)
+	{
+		ClearWave();
+	}
+}
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Shop")
-	void RequestOpenShop(int32 ClearedWave, int32 CurrentGoldAmount);
+void AShooterInGameMode::ClearWave()
+{
+	if (bIsMatchEnded || !bIsWaveInProgress)
+	{
+		return;
+	}
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
-	void TriggerResultUI(bool bPlayerWon);
+	bIsWaveInProgress = false;
 
-public:
-	UFUNCTION(Exec)
-	void CmdKillEnemy();
+	RefreshHUDWaveInfo();
 
-	UFUNCTION(Exec)
-	void CmdClearWave();
+	UE_LOG(LogTemp, Warning, TEXT("ClearWave / Wave: %d / MaxWave: %d"),
+		CurrentWave,
+		MaxWave
+	);
 
-	UFUNCTION(Exec)
-	void CmdStartNextWave();
+	if (CurrentWave >= MaxWave)
+	{
+		EndMatch(true);
+		return;
+	}
 
-	UFUNCTION(Exec)
-	void CmdMoveOutGame();
-};
+	bIsShopOpen = true;
+
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (PC)
+	{
+		AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
+		if (MyHUD)
+		{
+			MyHUD->ShowRoundTransitionUI(
+				FText::FromString(TEXT("WAVE CLEAR")),
+				FText::FromString(FString::Printf(TEXT("WAVE %d STARTING..."), CurrentWave + 1))
+			);
+		}
+	}
+
+	GetWorldTimerManager().ClearTimer(NextWaveStartTimerHandle);
+
+	GetWorldTimerManager().SetTimer(
+		NextWaveStartTimerHandle,
+		this,
+		&AShooterInGameMode::HandleAutoStartNextWave,
+		NextWaveStartDelay,
+		false
+	);
+}
+
+void AShooterInGameMode::StartNextWave()
+{
+	if (bIsMatchEnded || bIsWaveInProgress || !bIsShopOpen)
+	{
+		return;
+	}
+
+	bIsShopOpen = false;
+	CurrentWave++;
+
+	StartWave();
+}
+
+void AShooterInGameMode::HandleAutoStartNextWave()
+{
+	if (bIsMatchEnded)
+	{
+		return;
+	}
+
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (PC)
+	{
+		AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
+		if (MyHUD)
+		{
+			MyHUD->HideRoundTransitionUI();
+		}
+	}
+
+	StartNextWave();
+}
+
+void AShooterInGameMode::EndMatch(bool bPlayerWon)
+{
+	if (bIsMatchEnded)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EndMatch blocked. bIsMatchEnded already true."));
+		return;
+	}
+
+	bIsMatchEnded = true;
+	bIsWaveInProgress = false;
+	bIsShopOpen = false;
+
+	GetWorldTimerManager().ClearTimer(NextWaveStartTimerHandle);
+
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (PC)
+	{
+		AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
+		if (MyHUD)
+		{
+			MyHUD->HideRoundTransitionUI();
+			MyHUD->HideHPDangerFeedback();
+		}
+	}
+
+	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
+	if (GI)
+	{
+		GI->SetIsWin(bPlayerWon);
+		GI->SetMatch(true);
+	}
+
+	StopGameplayInput();
+
+	TriggerResultUI(bPlayerWon);
+
+	UE_LOG(LogTemp, Warning, TEXT("EndMatch Called. bPlayerWon: %s / Move To: %s After %.2f seconds"),
+		bPlayerWon ? TEXT("true") : TEXT("false"),
+		*OutGameLevelName.ToString(),
+		EndMatchReturnDelay
+	);
+
+	GetWorldTimerManager().ClearTimer(EndMatchReturnTimerHandle);
+
+	GetWorldTimerManager().SetTimer(
+		EndMatchReturnTimerHandle,
+		this,
+		&AShooterInGameMode::HandleEndMatchReturnToOutGame,
+		EndMatchReturnDelay,
+		false
+	);
+}
+
+int32 AShooterInGameMode::CalculateTargetKillCountForWave(int32 InWave) const
+{
+	switch (InWave)
+	{
+	case 1:
+		return 5;
+
+	case 2:
+		return 7;
+
+	case 3:
+		return 10;
+
+	default:
+		return 10;
+	}
+}
+
+void AShooterInGameMode::AddGold(int32 GoldAmount)
+{
+	if (GoldAmount <= 0)
+	{
+		return;
+	}
+
+	CurrentGold += GoldAmount;
+}
+
+void AShooterInGameMode::RefreshHUDWaveInfo()
+{
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (!PC)
+	{
+		return;
+	}
+
+	AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
+	if (!MyHUD)
+	{
+		return;
+	}
+
+	MyHUD->RefreshWaveUI(
+		CurrentWave,
+		CurrentWaveKillCount,
+		TargetKillCount,
+		CurrentGold
+	);
+}
+
+void AShooterInGameMode::StopGameplayInput()
+{
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (!PC)
+	{
+		return;
+	}
+
+	APawn* PlayerPawn = PC->GetPawn();
+	if (PlayerPawn)
+	{
+		PlayerPawn->DisableInput(PC);
+	}
+
+	FInputModeUIOnly InputModeData;
+	PC->SetInputMode(InputModeData);
+	PC->bShowMouseCursor = true;
+}
+
+void AShooterInGameMode::HandleEndMatchReturnToOutGame()
+{
+	MoveToOutGameMap();
+}
+
+void AShooterInGameMode::MoveToOutGameMap()
+{
+	if (OutGameLevelName.IsNone())
+	{
+		UE_LOG(LogTemp, Error, TEXT("OutGameLevelName is None."));
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("MoveToOutGameMap Called. Target Level: %s"), *OutGameLevelName.ToString());
+
+	UGameplayStatics::OpenLevel(this, OutGameLevelName);
+}
+
+void AShooterInGameMode::CmdKillEnemy()
+{
+	OnCharacterDied(false);
+}
+
+void AShooterInGameMode::CmdClearWave()
+{
+	ClearWave();
+}
+
+void AShooterInGameMode::CmdStartNextWave()
+{
+	StartNextWave();
+}
+
+void AShooterInGameMode::CmdMoveOutGame()
+{
+	MoveToOutGameMap();
+}
