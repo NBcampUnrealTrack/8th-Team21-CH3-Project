@@ -61,6 +61,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	uint8 bIsMovingBackward : 1;
 
+	UPROPERTY(BlueprintReadOnly)
 	int32 WeaponTypeIndex = 0;
 
 };
