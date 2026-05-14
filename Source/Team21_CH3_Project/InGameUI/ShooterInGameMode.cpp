@@ -25,6 +25,8 @@ AShooterInGameMode::AShooterInGameMode()
 	bIsShopOpen = false;
 	bIsMatchEnded = false;
 
+	NextWaveStartDelay = 2.0f;
+
 	OutGameLevelName = TEXT("OutGameMap");
 	EndMatchReturnDelay = 3.0f;
 }
@@ -144,13 +146,43 @@ void AShooterInGameMode::ClearWave()
 
 	bIsShopOpen = true;
 
-	RequestOpenShop(CurrentWave, CurrentGold);
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (PC)
+	{
+		AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
+		if (MyHUD)
+		{
+			MyHUD->ShowRoundTransitionUI(
+				FText::FromString(TEXT("WAVE CLEAR")),
+				FText::FromString(FString::Printf(TEXT("WAVE %d STARTING..."), CurrentWave + 1))
+			);
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Next Wave Timer Start / Delay: %.2f"), NextWaveStartDelay);
+
+	GetWorldTimerManager().ClearTimer(NextWaveStartTimerHandle);
+
+	GetWorldTimerManager().SetTimer(
+		NextWaveStartTimerHandle,
+		this,
+		&AShooterInGameMode::HandleAutoStartNextWave,
+		NextWaveStartDelay,
+		false
+	);
 }
 
 void AShooterInGameMode::StartNextWave()
 {
+	UE_LOG(LogTemp, Warning, TEXT("StartNextWave Called / MatchEnded: %s / WaveInProgress: %s / ShopOpen: %s"),
+		bIsMatchEnded ? TEXT("true") : TEXT("false"),
+		bIsWaveInProgress ? TEXT("true") : TEXT("false"),
+		bIsShopOpen ? TEXT("true") : TEXT("false")
+	);
+
 	if (bIsMatchEnded || bIsWaveInProgress || !bIsShopOpen)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("StartNextWave Blocked"));
 		return;
 	}
 
@@ -158,6 +190,28 @@ void AShooterInGameMode::StartNextWave()
 	CurrentWave++;
 
 	StartWave();
+}
+
+void AShooterInGameMode::HandleAutoStartNextWave()
+{
+	UE_LOG(LogTemp, Warning, TEXT("HandleAutoStartNextWave Called"));
+
+	if (bIsMatchEnded)
+	{
+		return;
+	}
+
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (PC)
+	{
+		AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
+		if (MyHUD)
+		{
+			MyHUD->HideRoundTransitionUI();
+		}
+	}
+
+	StartNextWave();
 }
 
 void AShooterInGameMode::EndMatch(bool bPlayerWon)
@@ -171,6 +225,8 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 	bIsMatchEnded = true;
 	bIsWaveInProgress = false;
 	bIsShopOpen = false;
+
+	GetWorldTimerManager().ClearTimer(NextWaveStartTimerHandle);
 
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	if (PC)
