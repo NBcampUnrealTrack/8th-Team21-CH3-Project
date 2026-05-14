@@ -302,6 +302,12 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 	{
 		GI->SetIsWin(bPlayerWon);
 		GI->SetMatch(true);
+
+		// 게임 종료 직전 마지막 Wave / Gold 값을 한 번 저장한다.
+		// 팀원 쪽에서 SaveInGameWaveData 내부 또는 이후 흐름에서 PlayerGold 반영용으로 사용할 수 있음.
+		GI->SaveInGameWaveData(CurrentWave, CurrentGold);
+
+		// 인게임 웨이브 복구용 임시 데이터 초기화
 		GI->ClearInGameWaveData();
 	}
 
@@ -309,8 +315,10 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 
 	TriggerResultUI(bPlayerWon);
 
-	UE_LOG(LogTemp, Warning, TEXT("EndMatch Called. bPlayerWon: %s / Move To: %s After %.2f seconds"),
+	UE_LOG(LogTemp, Warning, TEXT("EndMatch Called. bPlayerWon: %s / FinalWave: %d / FinalGold: %d / Move To: %s After %.2f seconds"),
 		bPlayerWon ? TEXT("true") : TEXT("false"),
+		CurrentWave,
+		CurrentGold,
 		*OutGameLevelName.ToString(),
 		EndMatchReturnDelay
 	);
