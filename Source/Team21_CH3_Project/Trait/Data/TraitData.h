@@ -6,11 +6,28 @@
 
 class UTexture2D;
 
+UENUM(BlueprintType)
+enum class ETraitCategory : uint8
+{
+	Attack,
+	Survival,
+	Mobility
+};
+
 USTRUCT(BlueprintType)
 struct TEAM21_CH3_PROJECT_API FTraitData : public FTableRowBase
 {
 	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	ETraitCategory TraitCategory;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 Tier = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FName RequiredTraitId;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Trait")
 	FText traitName;
 
