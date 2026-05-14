@@ -49,6 +49,7 @@ void UCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		if (APlayerController* OwnerPlayerController = Cast<APlayerController>(OwnerCharacter->GetController()))
 		{
 			NormalizedCurrentPitch = UKismetMathLibrary::NormalizeAxis(OwnerPlayerController->GetControlRotation().Pitch);
+			NormalizedCurrentYaw = UKismetMathLibrary::NormalizeAxis(OwnerPlayerController->GetControlRotation().Yaw);
 		}
 		//bIsDead = OwnerCharacter->IsDead();
 		if (IsValid(OwnerCharacter->GetStatusComponent()) == true)
