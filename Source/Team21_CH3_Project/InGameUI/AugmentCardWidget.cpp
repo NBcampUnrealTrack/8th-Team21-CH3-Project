@@ -9,6 +9,12 @@ void UAugmentCardWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	if (Button_Select)
+	{
+		Button_Select->OnClicked.RemoveDynamic(this, &UAugmentCardWidget::HandleSelectButtonClicked);
+		Button_Select->OnClicked.AddDynamic(this, &UAugmentCardWidget::HandleSelectButtonClicked);
+	}
+
 	SetAugmentCardData(CurrentCardData);
 }
 
@@ -35,4 +41,9 @@ void UAugmentCardWidget::SetAugmentCardData(const FAugmentCardData& InCardData)
 const FAugmentCardData& UAugmentCardWidget::GetAugmentCardData() const
 {
 	return CurrentCardData;
+}
+
+void UAugmentCardWidget::HandleSelectButtonClicked()
+{
+	OnAugmentCardClicked.Broadcast(CurrentCardData);
 }
