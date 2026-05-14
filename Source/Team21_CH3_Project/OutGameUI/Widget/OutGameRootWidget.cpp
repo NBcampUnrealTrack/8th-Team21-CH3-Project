@@ -74,6 +74,7 @@ void UOutGameRootWidget::ShowLobby(){
 	{
 		if (UOutGameMainMenuWidget* MainMenuInstance = Cast<UOutGameMainMenuWidget>(ScreenSwitcher->GetActiveWidget()))
 		{
+			
 			MainMenuInstance->ShowLobby();
 		}
 	}
@@ -106,6 +107,7 @@ void UOutGameRootWidget::ShowTransitionFadein(){
 void UOutGameRootWidget::SetHeaderVisible(bool bVisible){
 	if (IsValid(commonHeaderWidget) == true)
 	{
+		commonHeaderWidget->UpdateCommonUI();
 		commonHeaderWidget->SetVisibility(bVisible ? ESlateVisibility::Visible : ESlateVisibility::Collapsed);
 	}
 }
@@ -267,7 +269,7 @@ void UOutGameRootWidget::HandleConfirmAccepted(){
 	case EConfirmAction::NewGame:
 		if (UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetWorld()->GetGameInstance()))
 			GI->StartNewGame();
-		
+		if (IsValid(commonHeaderWidget) == true) commonHeaderWidget->UpdateCommonUI();
 		ShowTransition([this]
 		{
 			ShowLobby();

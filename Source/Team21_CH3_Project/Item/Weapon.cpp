@@ -36,6 +36,7 @@ void AWeapon::EquipToCharacter(ACharacterBase* InCharacter)
 	if (IsValid(Player))
 	{
 		Player->FirePerMinute = FirePerMinute;
+		OnAmmoChanged.AddUObject(Player, &APlayerCharacter::OnAmmoChanged);
 	}
 
 	APlayerController* PlayerController = Cast<APlayerController>(InCharacter->GetController());
@@ -53,6 +54,7 @@ void AWeapon::EquipToCharacter(ACharacterBase* InCharacter)
 void AWeapon::Reload()
 {
 	CurrentBullets = MaxBullets;
+	OnAmmoChanged.Broadcast(CurrentBullets, MaxBullets);
 	UE_LOG(LogTemp, Warning, TEXT("[리로딩 완료] %d / %d"), CurrentBullets, MaxBullets);
 }
 
@@ -60,14 +62,15 @@ bool AWeapon::UseBullets()
 {
 	if (0 >= CurrentBullets)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ReLoading!!"));
+		//UE_LOG(LogTemp, Warning, TEXT("ReLoading!!"));
 			return false;
 	}
 
 	CurrentBullets--;
+	OnAmmoChanged.Broadcast(CurrentBullets, MaxBullets);
 	UE_LOG(LogTemp, Warning, TEXT("Bullets: %d / %d"), CurrentBullets, MaxBullets);
 
-		return true;
+	return true;
 }
 
 void AWeapon::BeginPlay()

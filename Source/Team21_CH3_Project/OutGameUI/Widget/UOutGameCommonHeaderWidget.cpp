@@ -2,14 +2,23 @@
 #include "UOutGameCommonHeaderWidget.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
+#include "Components/TextBlock.h"
 #include "OutGameUI/Controller/OutGamePlayerController.h"
 #include "OutGameUI/Widget/OutGameRootWidget.h"
+#include "Game/TeamGameInstance.h"
 
 void UUOutGameCommonHeaderWidget::NativeOnInitialized(){
 	if (IsValid(playButton) == true) playButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandlePlayClicked);
 	if (IsValid(weaponsButton) == true) weaponsButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleWeaponsClicked);
 	if (IsValid(storeButton) == true) storeButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleStoreButton);
 	if (IsValid(settingsButton) == true) settingsButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleSettingsClicked);
+	if (IsValid(traitButton) == true) traitButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleTraitClicked);
+	
+	if (UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetWorld()->GetGameInstance()))
+	{
+		if (IsValid(playerTotalKillCount) == true) playerTotalKillCount->SetText(FText::FromString(FString::Printf(TEXT("%d"), GI->GetPlayerTotalKillCount())));
+		if (IsValid(playerGold) == true) playerGold->SetText(FText::FromString(FString::Printf(TEXT("%d"), GI->GetPlayerGold())));
+	}
 }
 
 void UUOutGameCommonHeaderWidget::SetActiveTab(EOutGameWidgetType widgetType){
@@ -23,6 +32,15 @@ void UUOutGameCommonHeaderWidget::SetActiveTab(EOutGameWidgetType widgetType){
 	SetSelectedVisible(weaponsSelectedImage, widgetType == EOutGameWidgetType::WeaponPreview);
 	SetSelectedVisible(storeSelectedImage, widgetType == EOutGameWidgetType::Store);
 	SetSelectedVisible(settingsSelectedImage, widgetType == EOutGameWidgetType::Settings);
+	//SetSelectedVisible(traitSelectedImage, widgetType == EOutGameWidgetType::Trait);
+}
+
+void UUOutGameCommonHeaderWidget::UpdateCommonUI(){
+	if (UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetWorld()->GetGameInstance()))
+	{
+		if (IsValid(playerTotalKillCount) == true) playerTotalKillCount->SetText(FText::FromString(FString::Printf(TEXT("%d"), GI->GetPlayerTotalKillCount())));
+		if (IsValid(playerGold) == true) playerGold->SetText(FText::FromString(FString::Printf(TEXT("%d"), GI->GetPlayerGold())));
+	}
 }
 
 void UUOutGameCommonHeaderWidget::SetSelectedVisible(UImage* image, bool bSelected){
@@ -36,7 +54,7 @@ void UUOutGameCommonHeaderWidget::SetSelectedVisible(UImage* image, bool bSelect
 	);
 	*/
 	if (IsValid(image) == false) return;
-
+	
 	image->SetVisibility(bSelected ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
 }
 
@@ -83,3 +101,5 @@ void UUOutGameCommonHeaderWidget::HandleSettingsClicked(){
 		}
 	}
 }
+
+void UUOutGameCommonHeaderWidget::HandleTraitClicked(){  }
