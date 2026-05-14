@@ -4,12 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Character/CharacterBase.h"
+#include "AI/Monster/MonsterStat.h"
 #include "NonPlayerCharacter.generated.h"
 
 
 DECLARE_DELEGATE_TwoParams(FOnAttackMontageEnded, UAnimMontage*, bool /*bInterrupted*/)
 
 class UStatusComponent;
+
 /**
  * 
  */
@@ -41,11 +43,25 @@ protected:
 
 	virtual void EndAttack(UAnimMontage* InMontage, bool bInterruped);
 
+	void SpawnMonster(TSubclassOf<ACharacterBase> InSpawnMonster);
+
 public:
 	bool bIsNowAttacking;
 protected:
-	FOnAttackMontageEnded OnAttackMontageEndedDelegate;
 
-	float LastUpdatedMaxHP = 0.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Monster")
+	TSubclassOf<ACharacterBase> Normal;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Monster")
+	TSubclassOf<ACharacterBase> Rusher;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Monster")
+	TSubclassOf<ACharacterBase> Shooter;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Monster")
+	FMonsterStat SetMonster;
+
+	FOnAttackMontageEnded OnAttackMontageEndedDelegate;
+	float LastUpdatedMaxHP = SetMonster.MaxHP;
 	float LastUpdatedCurrentHP = 0.f;
 };

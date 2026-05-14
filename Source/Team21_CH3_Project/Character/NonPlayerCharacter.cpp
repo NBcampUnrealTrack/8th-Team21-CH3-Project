@@ -20,6 +20,7 @@ ANonPlayerCharacter::ANonPlayerCharacter() : bIsNowAttacking(false)
 
 	AIControllerClass = AAI_Controller::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+	SetMonster.MonsterName = EMonsterType::None;
 }
 
 void ANonPlayerCharacter::BeginPlay()
@@ -33,19 +34,40 @@ void ANonPlayerCharacter::BeginPlay()
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 		GetCharacterMovement()->bUseControllerDesiredRotation = true;
 		GetCharacterMovement()->RotationRate = FRotator(0.f, 480.f, 0.f);
+		
+		if (SetMonster.MonsterName == EMonsterType::Normal)
+		{
+			SetMonster.Speed = 350.f;
+			SetMonster.MaxHP = 50.f;
+			SetMonster.bRange = false;
+			SetMonster.Damage = 10.f;
+		}
+		if (SetMonster.MonsterName == EMonsterType::Rusher)
+		{
+			SetMonster.Speed = 500.f;
+			SetMonster.MaxHP = 30.f;
+			SetMonster.bRange = false;
+			SetMonster.Damage = 5.f;
+		}
+		if (SetMonster.MonsterName == EMonsterType::Shooter)
+		{
+			SetMonster.Speed = 150.f;
+			SetMonster.MaxHP = 20.f;
+			SetMonster.bRange = true;
+			SetMonster.Damage = 10.f;
+		}
 
-		GetWeapon(RifleClass);
 	}
 }
 
 void ANonPlayerCharacter::BeginAttack()
 {
-/*
+
 	UAnimInstance* AnimInstance = Cast<UAnimInstance>(GetMesh()->GetAnimInstance());
 	checkf(IsValid(AnimInstance) == true, TEXT("Invalid AnimInstance"));
 
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-	if (IsValid(AnimInstance) == true && IsValid(AttackMeleeMontage) == true && AnimInstance->Montage_IsPlaying(AttackMeleeMontage) == false)
+	if (IsValid(AnimInstance) == true && IsValid(AttackMeleeMontage) == true && AnimInstance->Montage_IsPlaying(AttackMeleeMontage) == false && SetMonster.bRange == false)
 	{
 
 		AnimInstance->Montage_Play(AttackMeleeMontage);
@@ -55,15 +77,16 @@ void ANonPlayerCharacter::BeginAttack()
 
 		if (OnAttackMontageEndedDelegate.IsBound() == false)
 		{
-			OnAttackMontageEndedDelegate.BindUObject(this, &ThisClass::EndAttack);
+			OnAttackMontageEndedDelegate.BindUObject(this, &ANonPlayerCharacter::EndAttack);
 			AnimInstance->Montage_SetEndDelegate(OnAttackMontageEndedDelegate, AttackMeleeMontage);
 
 		}
 	}
-	*/
 
-	TryFire();
-	
+	if (SetMonster.bRange == true)
+	{
+		TryFire();
+	}
 }
 
 float ANonPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -79,7 +102,9 @@ float ANonPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 			AIController->EndAI();
 			bool bNPCWin = false;
 			GameMode->OnCharacterDied(bNPCWin);
+			SetLifeSpan(0.1f);
 		}
+
 	}
 
 	return FinalDamageAmount;
@@ -109,7 +134,7 @@ void ANonPlayerCharacter::OnMaxHPChange(float InMaxHP)
 	{
 		return;
 	}
-
+	
 	LastUpdatedMaxHP = InMaxHP;
 }
 
@@ -199,7 +224,7 @@ void ANonPlayerCharacter::TryFire()
 			if (IsValid(HittedCharacter) == true)
 			{
 				FDamageEvent DamageEvent;
-				HittedCharacter->TakeDamage(10.f, DamageEvent, GetController(), this);
+				HittedCharacter->TakeDamage(SetMonster.Damage, DamageEvent, GetController(), this);
 			}
 		}
 
