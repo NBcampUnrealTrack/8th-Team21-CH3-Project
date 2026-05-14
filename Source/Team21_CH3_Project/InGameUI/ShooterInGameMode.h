@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "TimerManager.h"
 #include "ShooterInGameMode.generated.h"
 
 UCLASS()
@@ -27,6 +28,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Wave Rules")
 	void StartNextWave();
+
+	UFUNCTION(BlueprintCallable, Category = "Wave Rules")
+	void ContinueToNextWaveWithLevelReload();
 
 	void EndMatch(bool bPlayerWon);
 
@@ -61,18 +65,33 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Wave State")
 	bool bIsShopOpen;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave State")
+	float NextWaveStartDelay;
+
+	FTimerHandle NextWaveStartTimerHandle;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Match State")
 	bool bIsMatchEnded;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Level")
 	FName OutGameLevelName;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match State")
+	float EndMatchReturnDelay;
+
+	FTimerHandle EndMatchReturnTimerHandle;
+
 protected:
 	int32 CalculateTargetKillCountForWave(int32 InWave) const;
 	void AddGold(int32 GoldAmount);
 	void RefreshHUDWaveInfo();
+
+	void ReloadCurrentLevel();
 	void MoveToOutGameMap();
 	void StopGameplayInput();
+
+	void HandleAutoStartNextWaveWithLevelReload();
+	void HandleEndMatchReturnToOutGame();
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Wave")
@@ -80,6 +99,9 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Shop")
 	void RequestOpenShop(int32 ClearedWave, int32 CurrentGoldAmount);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
+	void TriggerRoundResultUI(int32 ClearedWave, int32 CurrentGoldAmount);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
 	void TriggerResultUI(bool bPlayerWon);
