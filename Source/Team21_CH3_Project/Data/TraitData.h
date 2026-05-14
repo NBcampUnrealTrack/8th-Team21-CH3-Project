@@ -33,7 +33,7 @@ struct TEAM21_CH3_PROJECT_API FTraitData : public FTableRowBase
 	float moveSpeedBonus = 0.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Trait|Unlock")
-	int32 unlockKillCount = 0;
+	int32 unlockGoldCost = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Trait|Visual")
 	TObjectPtr<UTexture2D> icon = nullptr;

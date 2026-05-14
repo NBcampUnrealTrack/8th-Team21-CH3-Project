@@ -18,6 +18,9 @@ class TEAM21_CH3_PROJECT_API UOutGameSettingsWidget : public UOutGameWidgetBase{
 
 public:
 	virtual void NativeOnInitialized() override;
+	
+	UFUNCTION()
+	void UpdateSettings();
 
 private:
 	UPROPERTY(meta = (BindWidget))
@@ -33,12 +36,12 @@ private:
 
 	UFUNCTION()
 	void HandleMouseSensitivityChanged(float value);
-
 	UFUNCTION()
 	void HandleGraphicsQualityChanged(FString selectedItem, ESelectInfo::Type selectionType);
 	UFUNCTION()
 	void HandleApplyClicked();
 
+	
 #pragma region sound
 
 	UPROPERTY(meta = (BindWidget))
@@ -52,8 +55,6 @@ private:
 
 	UFUNCTION()
 	void HandleMasterVolumeChanged(float value);
-	
-	float volume;
 
 #pragma endregion
 };

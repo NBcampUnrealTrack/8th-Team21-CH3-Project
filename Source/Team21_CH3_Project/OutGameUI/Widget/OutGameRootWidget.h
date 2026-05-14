@@ -6,7 +6,7 @@
 #include "OutGameRootWidget.generated.h"
 
 class UWidgetSwitcher;
-class UOutGameQuitConfirmWidget;
+class UOutGameConfirmDialogWidget;
 class UOutGameTransitionWidget;
 class UUOutGameCommonHeaderWidget;
 class AAOutGameCinematicManager;
@@ -30,6 +30,12 @@ enum class EMapLevel : uint8{
 	Hard = 2 UMETA(DisplayName = "Hard")
 };
 
+UENUM(BlueprintType)
+enum class EConfirmAction : uint8{
+	None = 0 UMETA(DisplayName = "None"),
+	QuitGame = 1 UMETA(DisplayName = "QuitGame"),
+	NewGame = 2 UMETA(DisplayName = "NewGame")
+};
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API UOutGameRootWidget : public UOutGameWidgetBase{
@@ -85,8 +91,6 @@ protected:
 
 private:
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UOutGameQuitConfirmWidget> quitConfirmWidget;
-	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UOutGameTransitionWidget> TransitionWidget;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UUOutGameCommonHeaderWidget> commonHeaderWidget;
@@ -94,4 +98,23 @@ private:
 	EOutGameWidgetType currentWidgetType;
 	EMapLevel selectedMapLevel;
 	bool bIsTransitionPlaying;
+	
+#pragma region ConfirmDialog
+	
+public:
+	void ShowQuitConfirm();
+	void ShowNewGameConfirm();	
+	
+private:
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UOutGameConfirmDialogWidget> confirmDialogWidget;
+	
+	EConfirmAction pendingConfirmAction;
+	
+	UFUNCTION()
+	void HandleConfirmAccepted();
+	UFUNCTION()
+	void HandleConfirmCanceled();
+
+#pragma endregion 
 };

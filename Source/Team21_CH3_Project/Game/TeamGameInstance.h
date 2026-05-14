@@ -13,12 +13,16 @@ enum class EWeaponType : uint8{
 	None
 };
 
+class UTeamSaveGame;
+
 UCLASS(BlueprintType)
 class TEAM21_CH3_PROJECT_API UTeamGameInstance : public UGameInstance{
 	GENERATED_BODY()
 	
 public:
 	UTeamGameInstance();
+	
+	virtual void Init() override;
 
 	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Weapon")
 	EWeaponType GetSelectedWeaponType() const;
@@ -79,4 +83,20 @@ private:
 	bool bIsWin;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Team Game Instance|Result", meta = (AllowPrivateAccess = "true"))
 	bool bHasMatchResult;
+	
+#pragma region SaveGame
+	
+public:
+	UFUNCTION()
+	void LoadGameData();
+	UFUNCTION()
+	void SaveGameData();
+	UFUNCTION()
+	void StartNewGame();
+	
+private:
+	UPROPERTY()
+	TObjectPtr<UTeamSaveGame> CurrentSaveGame;
+	
+#pragma endregion
 };

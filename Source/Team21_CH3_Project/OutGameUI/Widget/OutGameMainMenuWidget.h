@@ -8,7 +8,7 @@
 class UButton;
 class UWidgetSwitcher;
 
-UCLASS(Abstract, Blueprintable)
+UCLASS()
 class TEAM21_CH3_PROJECT_API UOutGameMainMenuWidget : public UOutGameWidgetBase
 {
 	GENERATED_BODY()
@@ -19,9 +19,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "OutGame UI")
 	void ShowLobby();
 
+	bool IsLobby() const;
 protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UWidgetSwitcher> ScreenSwitcher;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> NewGameButton;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> ContinueButton;
 	UPROPERTY(meta = (BindWidget))
@@ -29,6 +32,8 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> QuitButton;
 	
+	UFUNCTION()
+	void HandleNewGameClicked();
 	UFUNCTION()
 	void HandleContinueClicked();
 	UFUNCTION()

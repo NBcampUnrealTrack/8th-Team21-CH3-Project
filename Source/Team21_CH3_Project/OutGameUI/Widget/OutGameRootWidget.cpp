@@ -1,10 +1,11 @@
 // OutGameRootWidget.cpp
 #include "OutGameUI/Widget/OutGameRootWidget.h"
 #include "OutGameMainMenuWidget.h"
+#include "OutGameSettingsWidget.h"
 #include "OutGameUI/Controller/OutGamePlayerController.h"
 #include "OutGameUI/Widget/OutGameTransitionWidget.h"
 #include "OutGameUI/Widget/UOutGameCommonHeaderWidget.h"
-#include "OutGameUI/Widget/OutGameQuitConfirmWidget.h"
+#include "OutGameUI/Widget/OutGameConfirmDialogWidget.h"
 #include "OutGameUI/Widget/OutGameWeaponSelectWidget.h"
 #include "OutGameUI/Widget/OutGameWeaponPreviewWidget.h"
 #include "Components/WidgetSwitcher.h"
@@ -17,8 +18,16 @@ void UOutGameRootWidget::NativeOnInitialized(){
 	if (IsValid(TransitionWidget) == true) TransitionWidget->OnFadeOutFinished.AddDynamic(this, &ThisClass::HandleTransitionFadeOutFinished);
 	if (IsValid(TransitionWidget) == true) TransitionWidget->OnFadeInFinished.AddDynamic(this, &ThisClass::HandleTransitionFadeInFinished);
 
+	// ConfirmDialogWidget delegate
+	if (IsValid(confirmDialogWidget) == true)
+	{
+		confirmDialogWidget->OnConfirmed.AddUniqueDynamic(this, &ThisClass::HandleConfirmAccepted);
+		confirmDialogWidget->OnCanceled.AddUniqueDynamic(this, &ThisClass::HandleConfirmCanceled);
+	}
+	
 	currentWidgetType = EOutGameWidgetType::MainMenu;
 	selectedMapLevel = EMapLevel::Easy;
+	pendingConfirmAction = EConfirmAction::None;
 	bIsTransitionPlaying = false;
 }
 
@@ -48,6 +57,13 @@ void UOutGameRootWidget::ShowWidget(EOutGameWidgetType widgetType)
 		if (UOutGameWeaponPreviewWidget* weaponPreviewWidget = Cast<UOutGameWeaponPreviewWidget>(ScreenSwitcher->GetActiveWidget()))
 		{
 			weaponPreviewWidget->EnterWeaponPreview();
+		} 
+	}
+	if (widgetType == EOutGameWidgetType::Settings)
+	{
+		if (UOutGameSettingsWidget* settingsWidget = Cast<UOutGameSettingsWidget>(ScreenSwitcher->GetActiveWidget()))
+		{
+			settingsWidget->UpdateSettings();
 		}
 	}
 	
@@ -157,7 +173,17 @@ void UOutGameRootWidget::HandleBackRequested(){
 	
 	if (currentWidgetType == EOutGameWidgetType::MainMenu)
 	{
-		if (IsValid(quitConfirmWidget) == true) quitConfirmWidget->ToggleQuitConfirm();
+		// Quit KEY Disabled MainMenuWidget
+		UOutGameMainMenuWidget* mainMenuWidget = Cast<UOutGameMainMenuWidget>(ScreenSwitcher->GetActiveWidget());
+		if (IsValid(mainMenuWidget) == false || mainMenuWidget->IsLobby() == false)
+		{
+			return;
+		}
+		
+		if (IsValid(confirmDialogWidget) == false) return;
+		
+		if (confirmDialogWidget->IsOpend()) confirmDialogWidget->HideConfirmDialog();
+		else ShowQuitConfirm();
 		
 		return;
 	}
@@ -207,7 +233,56 @@ AAOutGameCinematicManager* UOutGameRootWidget::GetCinematicManager() const{
 	return Cast<AAOutGameCinematicManager>(foundActors[0]);
 }
 
+#pragma region ConfirmDialog
 
+void UOutGameRootWidget::ShowQuitConfirm(){
+	pendingConfirmAction = EConfirmAction::QuitGame;
+	
+	if (IsValid(confirmDialogWidget) == false) return;
+	
+	confirmDialogWidget->ShowConfirmDialog(
+		FText::FromString(TEXT("Quit Game")),
+		FText::FromString(TEXT("게임을 종료하시겠습니까?"))
+		);
+}
+
+void UOutGameRootWidget::ShowNewGameConfirm(){
+	pendingConfirmAction = EConfirmAction::NewGame;
+	
+	if (IsValid(confirmDialogWidget) == false) return;
+	
+	confirmDialogWidget->ShowConfirmDialog(
+		FText::FromString(TEXT("New Game")),
+		FText::FromString(TEXT("저장된 플레이 데이터가 삭제됩니다. \n정말 시작하시겠습니까?"))
+	);
+}
+
+void UOutGameRootWidget::HandleConfirmAccepted(){
+	switch (pendingConfirmAction)
+	{
+	case EConfirmAction::QuitGame:
+		if (AOutGamePlayerController* PC = Cast<AOutGamePlayerController>(GetOwningPlayer()))
+			UKismetSystemLibrary::QuitGame(this, PC, EQuitPreference::Quit, false);
+		break;
+	case EConfirmAction::NewGame:
+		if (UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetWorld()->GetGameInstance()))
+			GI->StartNewGame();
+		
+		ShowTransition([this]
+		{
+			ShowLobby();
+		});
+		break;
+	default:
+		break;
+	}
+}
+
+void UOutGameRootWidget::HandleConfirmCanceled(){
+	pendingConfirmAction = EConfirmAction::None;
+}
+
+#pragma endregion 
 
 
 

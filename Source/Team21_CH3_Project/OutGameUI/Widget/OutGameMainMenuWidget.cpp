@@ -9,6 +9,8 @@
 void UOutGameMainMenuWidget::NativeOnInitialized(){
 	Super::NativeOnInitialized();
 
+	if (IsValid(NewGameButton) == true)
+		NewGameButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleNewGameClicked);
 	if (IsValid(ContinueButton) == true)
 		ContinueButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleContinueClicked);
 	if (IsValid(PlayButton) == true)
@@ -24,6 +26,22 @@ void UOutGameMainMenuWidget::ShowLobby(){
 		if (UOutGameRootWidget* rootWidgetInstance = pc->GetRootWidget())
 		{
 			if (IsValid(ScreenSwitcher) == true) { ScreenSwitcher->SetActiveWidgetIndex(1); }
+		}
+	}
+}
+
+bool UOutGameMainMenuWidget::IsLobby() const{
+	if (IsValid(ScreenSwitcher) == false) return false;
+	
+	return ScreenSwitcher->GetActiveWidgetIndex() == 1;
+}
+
+void UOutGameMainMenuWidget::HandleNewGameClicked(){
+	if (AOutGamePlayerController* pc = GetOwningPlayer<AOutGamePlayerController>())
+	{
+		if (UOutGameRootWidget* rootWidgetInstance = pc->GetRootWidget())
+		{
+			rootWidgetInstance->ShowNewGameConfirm();
 		}
 	}
 }
