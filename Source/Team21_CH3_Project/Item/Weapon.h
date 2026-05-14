@@ -5,6 +5,8 @@
 #include "Game/TeamGameInstance.h"
 #include "Weapon.generated.h"
 
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnAmmoChanged, int32 /*CurrentBullets*/, int32 /*MaxBullets*/);
+
 class ACharacterBase;
 class UPickupComponent;
 class UAnimMontage;
@@ -41,6 +43,9 @@ public:
 	void Reload();
 
 	bool UseBullets();
+
+public:
+	FOnAmmoChanged OnAmmoChanged;
 
 protected:
 	virtual void BeginPlay() override;
