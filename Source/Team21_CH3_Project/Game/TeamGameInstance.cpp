@@ -15,6 +15,10 @@ UTeamGameInstance::UTeamGameInstance(){
 	aiScore = 0;
 	bIsWin = false;
 	bHasMatchResult = false;
+
+	SavedCurrentWave = 1;
+	SavedCurrentGold = 0;
+	bHasSavedInGameWaveData = false;
 }
 
 void UTeamGameInstance::Init(){
@@ -111,6 +115,35 @@ void UTeamGameInstance::SetMatch(bool bHasMatch){
 	bHasMatchResult = bHasMatch;
 }
 
+void UTeamGameInstance::SaveInGameWaveData(int32 InCurrentWave, int32 InCurrentGold)
+{
+	SavedCurrentWave = FMath::Max(1, InCurrentWave);
+	SavedCurrentGold = FMath::Max(0, InCurrentGold);
+	bHasSavedInGameWaveData = true;
+}
+
+void UTeamGameInstance::ClearInGameWaveData()
+{
+	SavedCurrentWave = 1;
+	SavedCurrentGold = 0;
+	bHasSavedInGameWaveData = false;
+}
+
+bool UTeamGameInstance::HasSavedInGameWaveData() const
+{
+	return bHasSavedInGameWaveData;
+}
+
+int32 UTeamGameInstance::GetSavedCurrentWave() const
+{
+	return SavedCurrentWave;
+}
+
+int32 UTeamGameInstance::GetSavedCurrentGold() const
+{
+	return SavedCurrentGold;
+}
+
 void UTeamGameInstance::LoadGameData(){
 	if (UGameplayStatics::DoesSaveGameExist(SaveSlotName, SaveUserIndex))
 	{
@@ -158,6 +191,10 @@ void UTeamGameInstance::StartNewGame(){
 	playerTotalKillCount = 0;
 	bIsWin = false;
 	bHasMatchResult = false;
+
+	SavedCurrentWave = 1;
+	SavedCurrentGold = 0;
+	bHasSavedInGameWaveData = false;
 	
 	SaveGameData();
 }

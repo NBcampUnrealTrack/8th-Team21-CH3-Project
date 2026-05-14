@@ -66,6 +66,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Result")
 	void SetMatch(bool bHasMatch);
 
+	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Wave")
+	void SaveInGameWaveData(int32 InCurrentWave, int32 InCurrentGold);
+
+	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Wave")
+	void ClearInGameWaveData();
+
+	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Wave")
+	bool HasSavedInGameWaveData() const;
+
+	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Wave")
+	int32 GetSavedCurrentWave() const;
+
+	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Wave")
+	int32 GetSavedCurrentGold() const;
+
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Weapon", meta = (AllowPrivateAccess = "true"))
 	EWeaponType selectedWeaponType;
@@ -83,6 +98,15 @@ private:
 	bool bIsWin;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Team Game Instance|Result", meta = (AllowPrivateAccess = "true"))
 	bool bHasMatchResult;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Wave", meta = (AllowPrivateAccess = "true"))
+	int32 SavedCurrentWave;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Wave", meta = (AllowPrivateAccess = "true"))
+	int32 SavedCurrentGold;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Wave", meta = (AllowPrivateAccess = "true"))
+	bool bHasSavedInGameWaveData;
 	
 #pragma region SaveGame
 	

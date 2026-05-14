@@ -1,7 +1,12 @@
+// InGameHUD.cpp
+
 #include "InGameHUD.h"
 #include "InGameUI.h"
 #include "RoundTransitionWidget.h"
+#include "ShooterInGameMode.h"
+
 #include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
 
 void AInGameHUD::BeginPlay()
 {
@@ -14,6 +19,13 @@ void AInGameHUD::BeginPlay()
 		if (InGameUIInstance)
 		{
 			InGameUIInstance->AddToViewport();
+
+			// HUD 위젯 생성이 완료된 직후 GameMode에 Wave/Kill/Gold UI 갱신을 다시 요청한다.
+			AShooterInGameMode* GameMode = Cast<AShooterInGameMode>(UGameplayStatics::GetGameMode(this));
+			if (GameMode)
+			{
+				GameMode->RequestHUDWaveInfoRefreshRetry();
+			}
 		}
 	}
 }

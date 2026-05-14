@@ -14,7 +14,7 @@ AShooterInGameMode::AShooterInGameMode()
 	CurrentWaveKillCount = 0;
 	TargetKillCount = 0;
 
-	MaxWave = 5;
+	MaxWave = 3;
 	BaseTargetKillCount = 5;
 	TargetKillCountIncreasePerWave = 2;
 
@@ -25,7 +25,14 @@ AShooterInGameMode::AShooterInGameMode()
 	bIsShopOpen = false;
 	bIsMatchEnded = false;
 
+	NextWaveStartDelay = 3.0f;
+
 	OutGameLevelName = TEXT("OutGameMap");
+	EndMatchReturnDelay = 3.0f;
+
+	HUDWaveRefreshRetryCount = 0;
+	MaxHUDWaveRefreshRetryCount = 10;
+	HUDWaveRefreshRetryInterval = 0.05f;
 }
 
 void AShooterInGameMode::BeginPlay()
@@ -50,9 +57,23 @@ void AShooterInGameMode::BeginPlay()
 			TriggerResultUI(GI->GetIsWin());
 			return;
 		}
+
+		if (GI->HasSavedInGameWaveData())
+		{
+			CurrentWave = GI->GetSavedCurrentWave();
+			CurrentGold = GI->GetSavedCurrentGold();
+
+			UE_LOG(LogTemp, Warning, TEXT("Restore Wave Data / Wave: %d / Gold: %d"),
+				CurrentWave,
+				CurrentGold
+			);
+		}
 	}
 
 	StartWave();
+
+	// HUD 생성 순서 때문에 첫 갱신이 누락될 수 있어 재시도
+	RequestHUDWaveInfoRefreshRetry();
 }
 
 void AShooterInGameMode::OnCharacterDied(bool bIsPlayer)
@@ -85,6 +106,7 @@ void AShooterInGameMode::StartWave()
 	TargetKillCount = CalculateTargetKillCountForWave(CurrentWave);
 
 	RefreshHUDWaveInfo();
+	RequestHUDWaveInfoRefreshRetry();
 
 	UE_LOG(LogTemp, Warning, TEXT("StartWave / Wave: %d / TargetKillCount: %d"),
 		CurrentWave,
@@ -143,13 +165,34 @@ void AShooterInGameMode::ClearWave()
 
 	bIsShopOpen = true;
 
-	RequestOpenShop(CurrentWave, CurrentGold);
+	StopGameplayInput();
+
+	TriggerRoundResultUI(CurrentWave, CurrentGold);
+
+	UE_LOG(LogTemp, Warning, TEXT("RoundResult UI shown. Next wave reload after %.2f seconds"),
+		NextWaveStartDelay
+	);
+
+	GetWorldTimerManager().ClearTimer(NextWaveStartTimerHandle);
+
+	GetWorldTimerManager().SetTimer(
+		NextWaveStartTimerHandle,
+		this,
+		&AShooterInGameMode::HandleAutoStartNextWaveWithLevelReload,
+		NextWaveStartDelay,
+		false
+	);
 }
 
 void AShooterInGameMode::StartNextWave()
 {
 	if (bIsMatchEnded || bIsWaveInProgress || !bIsShopOpen)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("StartNextWave Blocked / MatchEnded: %s / WaveInProgress: %s / ShopOpen: %s"),
+			bIsMatchEnded ? TEXT("true") : TEXT("false"),
+			bIsWaveInProgress ? TEXT("true") : TEXT("false"),
+			bIsShopOpen ? TEXT("true") : TEXT("false")
+		);
 		return;
 	}
 
@@ -157,6 +200,44 @@ void AShooterInGameMode::StartNextWave()
 	CurrentWave++;
 
 	StartWave();
+}
+
+void AShooterInGameMode::HandleAutoStartNextWaveWithLevelReload()
+{
+	UE_LOG(LogTemp, Warning, TEXT("HandleAutoStartNextWaveWithLevelReload Called"));
+
+	ContinueToNextWaveWithLevelReload();
+}
+
+void AShooterInGameMode::ContinueToNextWaveWithLevelReload()
+{
+	if (bIsMatchEnded || !bIsShopOpen)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ContinueToNextWaveWithLevelReload Blocked / MatchEnded: %s / ShopOpen: %s"),
+			bIsMatchEnded ? TEXT("true") : TEXT("false"),
+			bIsShopOpen ? TEXT("true") : TEXT("false")
+		);
+		return;
+	}
+
+	CurrentWave++;
+	CurrentWaveKillCount = 0;
+
+	bIsWaveInProgress = false;
+	bIsShopOpen = false;
+
+	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
+	if (GI)
+	{
+		GI->SaveInGameWaveData(CurrentWave, CurrentGold);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("ContinueToNextWaveWithLevelReload / NextWave: %d / Gold: %d"),
+		CurrentWave,
+		CurrentGold
+	);
+
+	ReloadCurrentLevel();
 }
 
 void AShooterInGameMode::EndMatch(bool bPlayerWon)
@@ -170,6 +251,9 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 	bIsMatchEnded = true;
 	bIsWaveInProgress = false;
 	bIsShopOpen = false;
+
+	GetWorldTimerManager().ClearTimer(NextWaveStartTimerHandle);
+	GetWorldTimerManager().ClearTimer(HUDWaveRefreshRetryTimerHandle);
 
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	if (PC)
@@ -187,21 +271,46 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 	{
 		GI->SetIsWin(bPlayerWon);
 		GI->SetMatch(true);
+		GI->ClearInGameWaveData();
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("EndMatch Called. bPlayerWon: %s / Move To: %s"),
+	StopGameplayInput();
+
+	TriggerResultUI(bPlayerWon);
+
+	UE_LOG(LogTemp, Warning, TEXT("EndMatch Called. bPlayerWon: %s / Move To: %s After %.2f seconds"),
 		bPlayerWon ? TEXT("true") : TEXT("false"),
-		*OutGameLevelName.ToString()
+		*OutGameLevelName.ToString(),
+		EndMatchReturnDelay
 	);
 
-	MoveToOutGameMap();
+	GetWorldTimerManager().ClearTimer(EndMatchReturnTimerHandle);
+
+	GetWorldTimerManager().SetTimer(
+		EndMatchReturnTimerHandle,
+		this,
+		&AShooterInGameMode::HandleEndMatchReturnToOutGame,
+		EndMatchReturnDelay,
+		false
+	);
 }
 
 int32 AShooterInGameMode::CalculateTargetKillCountForWave(int32 InWave) const
 {
-	const int32 SafeWave = FMath::Max(1, InWave);
+	switch (InWave)
+	{
+	case 1:
+		return 5;
 
-	return BaseTargetKillCount + ((SafeWave - 1) * TargetKillCountIncreasePerWave);
+	case 2:
+		return 7;
+
+	case 3:
+		return 10;
+
+	default:
+		return 10;
+	}
 }
 
 void AShooterInGameMode::AddGold(int32 GoldAmount)
@@ -216,16 +325,21 @@ void AShooterInGameMode::AddGold(int32 GoldAmount)
 
 void AShooterInGameMode::RefreshHUDWaveInfo()
 {
+	TryRefreshHUDWaveInfo();
+}
+
+bool AShooterInGameMode::TryRefreshHUDWaveInfo()
+{
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	if (!PC)
 	{
-		return;
+		return false;
 	}
 
 	AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
 	if (!MyHUD)
 	{
-		return;
+		return false;
 	}
 
 	MyHUD->RefreshWaveUI(
@@ -233,6 +347,42 @@ void AShooterInGameMode::RefreshHUDWaveInfo()
 		CurrentWaveKillCount,
 		TargetKillCount,
 		CurrentGold
+	);
+
+	return true;
+}
+
+void AShooterInGameMode::RequestHUDWaveInfoRefreshRetry()
+{
+	HUDWaveRefreshRetryCount = 0;
+
+	GetWorldTimerManager().ClearTimer(HUDWaveRefreshRetryTimerHandle);
+
+	HandleHUDWaveInfoRefreshRetry();
+}
+
+void AShooterInGameMode::HandleHUDWaveInfoRefreshRetry()
+{
+	if (TryRefreshHUDWaveInfo())
+	{
+		GetWorldTimerManager().ClearTimer(HUDWaveRefreshRetryTimerHandle);
+		return;
+	}
+
+	HUDWaveRefreshRetryCount++;
+
+	if (HUDWaveRefreshRetryCount >= MaxHUDWaveRefreshRetryCount)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("HUD Wave Refresh Retry Failed."));
+		return;
+	}
+
+	GetWorldTimerManager().SetTimer(
+		HUDWaveRefreshRetryTimerHandle,
+		this,
+		&AShooterInGameMode::HandleHUDWaveInfoRefreshRetry,
+		HUDWaveRefreshRetryInterval,
+		false
 	);
 }
 
@@ -253,6 +403,26 @@ void AShooterInGameMode::StopGameplayInput()
 	FInputModeUIOnly InputModeData;
 	PC->SetInputMode(InputModeData);
 	PC->bShowMouseCursor = true;
+}
+
+void AShooterInGameMode::ReloadCurrentLevel()
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	const FName CurrentLevelName = FName(*UGameplayStatics::GetCurrentLevelName(World, true));
+
+	UE_LOG(LogTemp, Warning, TEXT("ReloadCurrentLevel Called. Level: %s"), *CurrentLevelName.ToString());
+
+	UGameplayStatics::OpenLevel(this, CurrentLevelName);
+}
+
+void AShooterInGameMode::HandleEndMatchReturnToOutGame()
+{
+	MoveToOutGameMap();
 }
 
 void AShooterInGameMode::MoveToOutGameMap()

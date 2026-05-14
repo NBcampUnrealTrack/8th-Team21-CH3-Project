@@ -35,7 +35,7 @@ APlayerCharacter::APlayerCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 500.f, 0.f);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
-	GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	GetCharacterMovement()->MaxWalkSpeed = 600.f;
 
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->SetupAttachment(RootComponent);
