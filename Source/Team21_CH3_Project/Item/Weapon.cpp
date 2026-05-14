@@ -15,6 +15,11 @@ AWeapon::AWeapon()
 	bCanFullAuto = true;
 }
 
+void AWeapon::SetCurrentBullsets(int32 InCurrentBullsets)
+{
+	CurrentBullets = InCurrentBullsets;
+}
+
 void AWeapon::EquipToCharacter(ACharacterBase* InCharacter)
 {
 	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
