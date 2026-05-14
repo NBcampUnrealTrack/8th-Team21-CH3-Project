@@ -29,6 +29,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Wave Rules")
 	void StartNextWave();
 
+	UFUNCTION(BlueprintCallable, Category = "Wave Rules")
+	void ContinueToNextWaveWithLevelReload();
+
 	void EndMatch(bool bPlayerWon);
 
 protected:
@@ -83,10 +86,11 @@ protected:
 	void AddGold(int32 GoldAmount);
 	void RefreshHUDWaveInfo();
 
+	void ReloadCurrentLevel();
 	void MoveToOutGameMap();
 	void StopGameplayInput();
 
-	void HandleAutoStartNextWave();
+	void HandleAutoStartNextWaveWithLevelReload();
 	void HandleEndMatchReturnToOutGame();
 
 protected:
@@ -95,6 +99,9 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Shop")
 	void RequestOpenShop(int32 ClearedWave, int32 CurrentGoldAmount);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
+	void TriggerRoundResultUI(int32 ClearedWave, int32 CurrentGoldAmount);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
 	void TriggerResultUI(bool bPlayerWon);

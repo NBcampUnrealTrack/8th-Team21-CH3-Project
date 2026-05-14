@@ -25,7 +25,7 @@ AShooterInGameMode::AShooterInGameMode()
 	bIsShopOpen = false;
 	bIsMatchEnded = false;
 
-	NextWaveStartDelay = 2.0f;
+	NextWaveStartDelay = 3.0f;
 
 	OutGameLevelName = TEXT("OutGameMap");
 	EndMatchReturnDelay = 3.0f;
@@ -52,6 +52,17 @@ void AShooterInGameMode::BeginPlay()
 		{
 			TriggerResultUI(GI->GetIsWin());
 			return;
+		}
+
+		if (GI->HasSavedInGameWaveData())
+		{
+			CurrentWave = GI->GetSavedCurrentWave();
+			CurrentGold = GI->GetSavedCurrentGold();
+
+			UE_LOG(LogTemp, Warning, TEXT("Restore Wave Data / Wave: %d / Gold: %d"),
+				CurrentWave,
+				CurrentGold
+			);
 		}
 	}
 
@@ -146,27 +157,20 @@ void AShooterInGameMode::ClearWave()
 
 	bIsShopOpen = true;
 
-	APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	if (PC)
-	{
-		AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
-		if (MyHUD)
-		{
-			MyHUD->ShowRoundTransitionUI(
-				FText::FromString(TEXT("WAVE CLEAR")),
-				FText::FromString(FString::Printf(TEXT("WAVE %d STARTING..."), CurrentWave + 1))
-			);
-		}
-	}
+	StopGameplayInput();
 
-	UE_LOG(LogTemp, Warning, TEXT("Next Wave Timer Start / Delay: %.2f"), NextWaveStartDelay);
+	TriggerRoundResultUI(CurrentWave, CurrentGold);
+
+	UE_LOG(LogTemp, Warning, TEXT("RoundResult UI shown. Next wave reload after %.2f seconds"),
+		NextWaveStartDelay
+	);
 
 	GetWorldTimerManager().ClearTimer(NextWaveStartTimerHandle);
 
 	GetWorldTimerManager().SetTimer(
 		NextWaveStartTimerHandle,
 		this,
-		&AShooterInGameMode::HandleAutoStartNextWave,
+		&AShooterInGameMode::HandleAutoStartNextWaveWithLevelReload,
 		NextWaveStartDelay,
 		false
 	);
@@ -174,15 +178,13 @@ void AShooterInGameMode::ClearWave()
 
 void AShooterInGameMode::StartNextWave()
 {
-	UE_LOG(LogTemp, Warning, TEXT("StartNextWave Called / MatchEnded: %s / WaveInProgress: %s / ShopOpen: %s"),
-		bIsMatchEnded ? TEXT("true") : TEXT("false"),
-		bIsWaveInProgress ? TEXT("true") : TEXT("false"),
-		bIsShopOpen ? TEXT("true") : TEXT("false")
-	);
-
 	if (bIsMatchEnded || bIsWaveInProgress || !bIsShopOpen)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("StartNextWave Blocked"));
+		UE_LOG(LogTemp, Warning, TEXT("StartNextWave Blocked / MatchEnded: %s / WaveInProgress: %s / ShopOpen: %s"),
+			bIsMatchEnded ? TEXT("true") : TEXT("false"),
+			bIsWaveInProgress ? TEXT("true") : TEXT("false"),
+			bIsShopOpen ? TEXT("true") : TEXT("false")
+		);
 		return;
 	}
 
@@ -192,26 +194,42 @@ void AShooterInGameMode::StartNextWave()
 	StartWave();
 }
 
-void AShooterInGameMode::HandleAutoStartNextWave()
+void AShooterInGameMode::HandleAutoStartNextWaveWithLevelReload()
 {
-	UE_LOG(LogTemp, Warning, TEXT("HandleAutoStartNextWave Called"));
+	UE_LOG(LogTemp, Warning, TEXT("HandleAutoStartNextWaveWithLevelReload Called"));
 
-	if (bIsMatchEnded)
+	ContinueToNextWaveWithLevelReload();
+}
+
+void AShooterInGameMode::ContinueToNextWaveWithLevelReload()
+{
+	if (bIsMatchEnded || !bIsShopOpen)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("ContinueToNextWaveWithLevelReload Blocked / MatchEnded: %s / ShopOpen: %s"),
+			bIsMatchEnded ? TEXT("true") : TEXT("false"),
+			bIsShopOpen ? TEXT("true") : TEXT("false")
+		);
 		return;
 	}
 
-	APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	if (PC)
+	CurrentWave++;
+	CurrentWaveKillCount = 0;
+
+	bIsWaveInProgress = false;
+	bIsShopOpen = false;
+
+	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
+	if (GI)
 	{
-		AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
-		if (MyHUD)
-		{
-			MyHUD->HideRoundTransitionUI();
-		}
+		GI->SaveInGameWaveData(CurrentWave, CurrentGold);
 	}
 
-	StartNextWave();
+	UE_LOG(LogTemp, Warning, TEXT("ContinueToNextWaveWithLevelReload / NextWave: %d / Gold: %d"),
+		CurrentWave,
+		CurrentGold
+	);
+
+	ReloadCurrentLevel();
 }
 
 void AShooterInGameMode::EndMatch(bool bPlayerWon)
@@ -244,6 +262,7 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 	{
 		GI->SetIsWin(bPlayerWon);
 		GI->SetMatch(true);
+		GI->ClearInGameWaveData();
 	}
 
 	StopGameplayInput();
@@ -334,6 +353,21 @@ void AShooterInGameMode::StopGameplayInput()
 	FInputModeUIOnly InputModeData;
 	PC->SetInputMode(InputModeData);
 	PC->bShowMouseCursor = true;
+}
+
+void AShooterInGameMode::ReloadCurrentLevel()
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	const FName CurrentLevelName = FName(*UGameplayStatics::GetCurrentLevelName(World, true));
+
+	UE_LOG(LogTemp, Warning, TEXT("ReloadCurrentLevel Called. Level: %s"), *CurrentLevelName.ToString());
+
+	UGameplayStatics::OpenLevel(this, CurrentLevelName);
 }
 
 void AShooterInGameMode::HandleEndMatchReturnToOutGame()
