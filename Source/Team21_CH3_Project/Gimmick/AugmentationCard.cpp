@@ -1,5 +1,5 @@
 #include "Gimmick/AugmentationCard.h"
-//#include "AugmentWidget.h" // 주석 해제 (위젯 클래스 헤더)
+#include "InGameUI/AugmentCardWidget.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -74,9 +74,9 @@ void AAugmentCard::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
             FinalOptions.Add(Option);
         }
     }
-
+    /*
     // 4. 위젯 생성 및 출력
-    /*if (UAugmentWidget* WidgetInstance = CreateWidget<UAugmentWidget>(GetWorld(), AugmentWidgetClass))
+    if (UAugmentWidget* WidgetInstance = CreateWidget<UAugmentWidget>(GetWorld(), AugmentWidgetClass))
     {
         WidgetInstance->OnDataReceived(FinalOptions);
         WidgetInstance->AddToViewport();
