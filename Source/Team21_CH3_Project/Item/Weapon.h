@@ -26,6 +26,7 @@ public:
 	float GetMaxAttackRange() const { return MaxAttackRange; }
 
 	int32 GetCurrentBullets() const { return CurrentBullets; }
+	void SetCurrentBullsets(int32 InCurrentBullsets);
 
 	int32 GetMaxBullets() const { return MaxBullets; }
 

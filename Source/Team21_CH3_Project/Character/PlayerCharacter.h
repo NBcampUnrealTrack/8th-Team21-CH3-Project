@@ -105,10 +105,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float TargetSpeed = 1200.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float CurrentSpeed = 500.f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	float CurrentSpeed = 600.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float CurrentAcceleration = 2048.f;
 
 #pragma endregion
@@ -169,6 +169,14 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Reload")
 	bool bIsReloading = false;
+
+#pragma endregion
+
+#pragma region Attribute
+
+	float baseSpeed;
+
+	float baseAttackDamage;
 
 #pragma endregion
 };
