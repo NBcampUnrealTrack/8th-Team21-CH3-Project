@@ -26,6 +26,7 @@ AShooterInGameMode::AShooterInGameMode()
 	bIsMatchEnded = false;
 
 	OutGameLevelName = TEXT("OutGameMap");
+	EndMatchReturnDelay = 3.0f;
 }
 
 void AShooterInGameMode::BeginPlay()
@@ -189,12 +190,25 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 		GI->SetMatch(true);
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("EndMatch Called. bPlayerWon: %s / Move To: %s"),
+	StopGameplayInput();
+
+	TriggerResultUI(bPlayerWon);
+
+	UE_LOG(LogTemp, Warning, TEXT("EndMatch Called. bPlayerWon: %s / Move To: %s After %.2f seconds"),
 		bPlayerWon ? TEXT("true") : TEXT("false"),
-		*OutGameLevelName.ToString()
+		*OutGameLevelName.ToString(),
+		EndMatchReturnDelay
 	);
 
-	MoveToOutGameMap();
+	GetWorldTimerManager().ClearTimer(EndMatchReturnTimerHandle);
+
+	GetWorldTimerManager().SetTimer(
+		EndMatchReturnTimerHandle,
+		this,
+		&AShooterInGameMode::HandleEndMatchReturnToOutGame,
+		EndMatchReturnDelay,
+		false
+	);
 }
 
 int32 AShooterInGameMode::CalculateTargetKillCountForWave(int32 InWave) const
@@ -253,6 +267,11 @@ void AShooterInGameMode::StopGameplayInput()
 	FInputModeUIOnly InputModeData;
 	PC->SetInputMode(InputModeData);
 	PC->bShowMouseCursor = true;
+}
+
+void AShooterInGameMode::HandleEndMatchReturnToOutGame()
+{
+	MoveToOutGameMap();
 }
 
 void AShooterInGameMode::MoveToOutGameMap()

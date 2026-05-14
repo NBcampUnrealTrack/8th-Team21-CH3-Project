@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "TimerManager.h"
 #include "ShooterInGameMode.generated.h"
 
 UCLASS()
@@ -67,12 +68,21 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Level")
 	FName OutGameLevelName;
 
+	// EndMatch 후 결과 UI를 보여준 뒤 OutGameMap으로 이동하기까지의 대기 시간
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match State")
+	float EndMatchReturnDelay;
+
+	FTimerHandle EndMatchReturnTimerHandle;
+
 protected:
 	int32 CalculateTargetKillCountForWave(int32 InWave) const;
 	void AddGold(int32 GoldAmount);
 	void RefreshHUDWaveInfo();
+
 	void MoveToOutGameMap();
 	void StopGameplayInput();
+
+	void HandleEndMatchReturnToOutGame();
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Wave")
