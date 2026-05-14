@@ -1,9 +1,8 @@
 // OutGameConfirmDialogWidget.cpp
 #include "OutGameConfirmDialogWidget.h"
 #include "Components/Button.h"
-#include "Kismet/KismetSystemLibrary.h"
+#include "Components/TextBlock.h"
 #include "Animation/WidgetAnimation.h"
-
 
 void UOutGameConfirmDialogWidget::NativeOnInitialized(){
 	Super::NativeOnInitialized();
@@ -27,43 +26,42 @@ void UOutGameConfirmDialogWidget::NativeOnInitialized(){
 	
 	bIsPlay = false;
 	State = EQuitConfirmState::Closed;
+	SetVisibility(ESlateVisibility::Collapsed);
 }
 
-void UOutGameConfirmDialogWidget::ToggleQuitConfirm(){
-	if (State == EQuitConfirmState::Closed)
-	{
-		ShowQuitConfirm();
-	}
-	else if (State == EQuitConfirmState::Opened)
-	{
-		HandleCancelClicked();
-	}
+bool UOutGameConfirmDialogWidget::IsOpend(){
+	return State == EQuitConfirmState::Opened || State == EQuitConfirmState::Opening;
 }
 
-void UOutGameConfirmDialogWidget::ShowQuitConfirm(){
+void UOutGameConfirmDialogWidget::ShowConfirmDialog(const FText& InTitle, const FText& InMessage){
 	if (bIsPlay == true) return;
 	bIsPlay = true;
 	
+	if (IsValid(titleText) == true) titleText->SetText(InTitle);
+	if (IsValid(messageText) == true) messageText->SetText(InMessage);
+	
+	pendingTitleText = InTitle;
+	pendingMessageText = InMessage;
 	SetVisibility(ESlateVisibility::Visible);
 	if (IsValid(FadeOutAnim) == true) PlayAnimation(FadeOutAnim);
 }
 
-void UOutGameConfirmDialogWidget::HideQuitConfirm(){
-	if (bIsPlay == true) return;
-	bIsPlay = true;
-	
-	if (IsValid(FadeOutAnim) == true) PlayAnimation(FadeOutAnim);
-}
-
-void UOutGameConfirmDialogWidget::HandleConfirmClicked(){
-	UKismetSystemLibrary::QuitGame(this, GetOwningPlayer(), EQuitPreference::Quit, true);
-}
-
-void UOutGameConfirmDialogWidget::HandleCancelClicked(){
+void UOutGameConfirmDialogWidget::HideConfirmDialog(){
 	if (bIsPlay == true) return;
 	bIsPlay = true;
 	
 	if (IsValid(FadeInAnim) == true) PlayAnimation(FadeInAnim);
+}
+
+void UOutGameConfirmDialogWidget::HandleConfirmClicked(){
+	//UKismetSystemLibrary::QuitGame(this, GetOwningPlayer(), EQuitPreference::Quit, true);
+	HideConfirmDialog();
+	OnConfirmed.Broadcast();
+}
+
+void UOutGameConfirmDialogWidget::HandleCancelClicked(){
+	HideConfirmDialog();
+	OnCanceled.Broadcast();
 }
 
 void UOutGameConfirmDialogWidget::HandleFadeOutFinished(){

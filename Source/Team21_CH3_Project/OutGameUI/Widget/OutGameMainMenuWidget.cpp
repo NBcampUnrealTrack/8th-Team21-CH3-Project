@@ -3,7 +3,6 @@
 #include "OutGameUI/Widget/OutGameRootWidget.h"
 #include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
-#include "Game/TeamGameInstance.h"
 #include "OutGameUI/Controller/OutGamePlayerController.h"
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -31,13 +30,20 @@ void UOutGameMainMenuWidget::ShowLobby(){
 	}
 }
 
-void UOutGameMainMenuWidget::HandleNewGameClicked(){
-	if (UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetWorld()->GetGameInstance()))
-	{
-		GI->StartNewGame();
-	}
+bool UOutGameMainMenuWidget::IsLobby() const{
+	if (IsValid(ScreenSwitcher) == false) return false;
 	
-	HandleContinueClicked();
+	return ScreenSwitcher->GetActiveWidgetIndex() == 1;
+}
+
+void UOutGameMainMenuWidget::HandleNewGameClicked(){
+	if (AOutGamePlayerController* pc = GetOwningPlayer<AOutGamePlayerController>())
+	{
+		if (UOutGameRootWidget* rootWidgetInstance = pc->GetRootWidget())
+		{
+			rootWidgetInstance->ShowNewGameConfirm();
+		}
+	}
 }
 
 void UOutGameMainMenuWidget::HandleContinueClicked(){
