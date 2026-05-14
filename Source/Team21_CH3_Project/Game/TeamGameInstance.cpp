@@ -101,7 +101,9 @@ void UTeamGameInstance::SaveInGameWaveData(int32 InCurrentWave, int32 InCurrentG
 
 void UTeamGameInstance::ClearInGameWaveData()
 {
-	playerGold = SavedCurrentGold;
+	playerGold += SavedCurrentGold;
+	
+	UE_LOG(LogTemp, Warning, TEXT("SavedCurrentGold : %d \nplayerGold : %d"), SavedCurrentGold, playerGold);
 	
 	SavedCurrentWave = 1;
 	SavedCurrentGold = 0;
