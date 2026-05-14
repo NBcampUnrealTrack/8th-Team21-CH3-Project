@@ -275,6 +275,9 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 		return;
 	}
 
+	const int32 FinalWaveKillCount = CurrentWaveKillCount;
+	const int32 FinalGold = CurrentGold;
+
 	bIsMatchEnded = true;
 	bIsWaveInProgress = false;
 	bIsShopOpen = false;
@@ -303,22 +306,38 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 		GI->SetIsWin(bPlayerWon);
 		GI->SetMatch(true);
 
-		// 게임 종료 직전 마지막 Wave / Gold 값을 한 번 저장한다.
-		// 팀원 쪽에서 SaveInGameWaveData 내부 또는 이후 흐름에서 PlayerGold 반영용으로 사용할 수 있음.
-		GI->SaveInGameWaveData(CurrentWave, CurrentGold);
+		if (bPlayerWon && CurrentWave >= MaxWave)
+		{
+			// Wave3 클리어 시 최종 KillCount를 TeamGameInstance에 누적 저장
+			GI->AddPlayerKillCount(FinalWaveKillCount);
+
+			// Wave3 클리어 시 최종 Gold를 TeamGameInstance에 전달
+			// ClearInGameWaveData() 내부에서 SavedCurrentGold를 playerGold에 더하고 저장함
+			GI->SaveInGameWaveData(CurrentWave, FinalGold);
+		}
+		else
+		{
+			// 사망 등 게임 종료 시에도 현재 Gold 반영이 필요하면 유지
+			GI->SaveInGameWaveData(CurrentWave, FinalGold);
+		}
 
 		// 인게임 웨이브 복구용 임시 데이터 초기화
 		GI->ClearInGameWaveData();
 	}
 
+	// GameMode 내부 값 초기화
+	CurrentWaveKillCount = 0;
+	CurrentGold = 0;
+
 	StopGameplayInput();
 
 	TriggerResultUI(bPlayerWon);
 
-	UE_LOG(LogTemp, Warning, TEXT("EndMatch Called. bPlayerWon: %s / FinalWave: %d / FinalGold: %d / Move To: %s After %.2f seconds"),
+	UE_LOG(LogTemp, Warning, TEXT("EndMatch Called. bPlayerWon: %s / FinalWave: %d / FinalKillCount: %d / FinalGold: %d / Move To: %s After %.2f seconds"),
 		bPlayerWon ? TEXT("true") : TEXT("false"),
 		CurrentWave,
-		CurrentGold,
+		FinalWaveKillCount,
+		FinalGold,
 		*OutGameLevelName.ToString(),
 		EndMatchReturnDelay
 	);
@@ -333,7 +352,6 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 		false
 	);
 }
-
 int32 AShooterInGameMode::CalculateTargetKillCountForWave(int32 InWave) const
 {
 	switch (InWave)
