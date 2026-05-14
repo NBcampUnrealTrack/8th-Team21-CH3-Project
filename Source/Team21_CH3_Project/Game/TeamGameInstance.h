@@ -29,34 +29,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Weapon")
 	void SetSelectedWeaponType(EWeaponType weaponType);
 
-	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Settings")
-	float GetMouseSensitivity() const;
-	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Settings")
-	void SetMouseSensitivity(float value);
-
-	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Settings")
-	float GetMasterVolume() const;
-	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Settings")
-	void SetMasterVolume(float value);
-
 	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Record")
 	int32 GetPlayerTotalKillCount() const;
 	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Record")
 	void SetPlayerTotalKillCount(int32 killCount);
 	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Record")
 	void AddPlayerKillCount(int32 killCount = 1);
-
-	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Score")
-	int32 GetPlayerScore() const;
-	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Score")
-	int32 GetAIScore() const;
-	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Score")
-	void AddPlayerScore(int32 score = 1);
-	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Score")
-	void AddAIScore(int32 score = 1);
-	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Score")
-	void ClearScore();
-
+	
 	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Result")
 	bool GetIsWin() const;
 	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Result")
@@ -68,49 +47,49 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Wave")
 	void SaveInGameWaveData(int32 InCurrentWave, int32 InCurrentGold);
-
 	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Wave")
 	void ClearInGameWaveData();
-
 	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Wave")
 	bool HasSavedInGameWaveData() const;
-
 	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Wave")
 	int32 GetSavedCurrentWave() const;
-
 	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Wave")
 	int32 GetSavedCurrentGold() const;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Weapon", meta = (AllowPrivateAccess = "true"))
 	EWeaponType selectedWeaponType;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Settings", meta = (AllowPrivateAccess = "true"))
-	float mouseSensitivity;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Settings", meta = (AllowPrivateAccess = "true"))
-	float masterVolume;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Record", meta = (AllowPrivateAccess = "true"))
 	int32 playerTotalKillCount;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Score", meta = (AllowPrivateAccess = "true"))
-	int32 playerScore;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Score", meta = (AllowPrivateAccess = "true"))
-	int32 aiScore;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Result", meta = (AllowPrivateAccess = "true"))
 	bool bIsWin;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Team Game Instance|Result", meta = (AllowPrivateAccess = "true"))
 	bool bHasMatchResult;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Wave", meta = (AllowPrivateAccess = "true"))
 	int32 SavedCurrentWave;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Wave", meta = (AllowPrivateAccess = "true"))
 	int32 SavedCurrentGold;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Wave", meta = (AllowPrivateAccess = "true"))
 	bool bHasSavedInGameWaveData;
 	
 #pragma region SaveGame
 	
 public:
+	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Settings")
+	float GetMouseSensitivity() const;
+	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Settings")
+	void SetMouseSensitivity(float value);
+
+	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Settings")
+	float GetMasterVolume() const;
+	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Settings")
+	void SetMasterVolume(float value);
+	
+	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Settings")
+	int32 GetPlayerGold() const;
+	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Settings")
+	void AddPlayerGold(int32 gold);
+	
 	UFUNCTION()
 	void LoadGameData();
 	UFUNCTION()
@@ -119,6 +98,13 @@ public:
 	void StartNewGame();
 	
 private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Settings", meta = (AllowPrivateAccess = "true"))
+	int32 playerGold;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Settings", meta = (AllowPrivateAccess = "true"))
+	float mouseSensitivity;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Settings", meta = (AllowPrivateAccess = "true"))
+	float masterVolume;
+	
 	UPROPERTY()
 	TObjectPtr<UTeamSaveGame> CurrentSaveGame;
 	

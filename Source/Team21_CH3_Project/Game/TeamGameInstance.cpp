@@ -11,8 +11,7 @@ UTeamGameInstance::UTeamGameInstance(){
 	mouseSensitivity = 1.0f;
 	masterVolume = 100.0f;
 	playerTotalKillCount = 0;
-	playerScore = 0;
-	aiScore = 0;
+	playerGold = 0;
 	bIsWin = false;
 	bHasMatchResult = false;
 
@@ -77,28 +76,6 @@ void UTeamGameInstance::AddPlayerKillCount(int32 killCount){
 	SaveGameData();
 }
 
-int32 UTeamGameInstance::GetPlayerScore() const{
-	return playerScore;
-}
-
-int32 UTeamGameInstance::GetAIScore() const{
-	return aiScore;
-}
-
-void UTeamGameInstance::AddPlayerScore(int32 score){
-	int32 safeScore = FMath::Max(0, score);
-	playerScore += safeScore;
-}
-
-void UTeamGameInstance::AddAIScore(int32 score){
-	int32 safeScore = FMath::Max(0, score);
-	aiScore += safeScore;
-}
-
-void UTeamGameInstance::ClearScore(){
-	//AddPlayerKillCount(playerScore);
-}
-
 bool UTeamGameInstance::GetIsWin() const{
 	return bIsWin;
 }
@@ -124,9 +101,12 @@ void UTeamGameInstance::SaveInGameWaveData(int32 InCurrentWave, int32 InCurrentG
 
 void UTeamGameInstance::ClearInGameWaveData()
 {
+	playerGold = SavedCurrentGold;
+	
 	SavedCurrentWave = 1;
 	SavedCurrentGold = 0;
 	bHasSavedInGameWaveData = false;
+	SaveGameData();
 }
 
 bool UTeamGameInstance::HasSavedInGameWaveData() const
@@ -142,6 +122,14 @@ int32 UTeamGameInstance::GetSavedCurrentWave() const
 int32 UTeamGameInstance::GetSavedCurrentGold() const
 {
 	return SavedCurrentGold;
+}
+
+void UTeamGameInstance::AddPlayerGold(int32 gold){
+	playerGold += gold;
+}
+
+int32 UTeamGameInstance::GetPlayerGold() const{
+	return playerGold;
 }
 
 void UTeamGameInstance::LoadGameData(){
@@ -160,6 +148,7 @@ void UTeamGameInstance::LoadGameData(){
 	playerTotalKillCount = CurrentSaveGame->playerTotalKillCount;
 	mouseSensitivity = CurrentSaveGame->mouseSensitivity;
 	masterVolume = CurrentSaveGame->masterVolume;
+	playerGold = CurrentSaveGame->playerGold;
 }
 
 void UTeamGameInstance::SaveGameData(){
@@ -172,8 +161,7 @@ void UTeamGameInstance::SaveGameData(){
 	CurrentSaveGame->playerTotalKillCount = playerTotalKillCount;
 	CurrentSaveGame->mouseSensitivity = mouseSensitivity;
 	CurrentSaveGame->masterVolume = masterVolume;
-	
-	//TODO: Gold plus 
+	CurrentSaveGame->playerGold = playerGold;
 	
 	UGameplayStatics::SaveGameToSlot(CurrentSaveGame, SaveSlotName, SaveUserIndex);
 }
@@ -191,7 +179,7 @@ void UTeamGameInstance::StartNewGame(){
 	playerTotalKillCount = 0;
 	bIsWin = false;
 	bHasMatchResult = false;
-
+	playerGold = 0;
 	SavedCurrentWave = 1;
 	SavedCurrentGold = 0;
 	bHasSavedInGameWaveData = false;

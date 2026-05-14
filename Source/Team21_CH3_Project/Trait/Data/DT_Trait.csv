@@ -1,1 +1,1 @@
----,traitName,description,reloadSpeedBonus,maxHPBonus,weaponDamageBonus,goldGainBonus,moveSpeedBonus,unlockGoldCost,icon
+---,TraitCategory,Tier,RequiredTraitId,traitName,description,reloadSpeedBonus,maxHPBonus,weaponDamageBonus,goldGainBonus,moveSpeedBonus,unlockGoldCost,icon

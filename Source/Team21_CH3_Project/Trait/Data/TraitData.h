@@ -9,6 +9,7 @@ class UTexture2D;
 UENUM(BlueprintType)
 enum class ETraitCategory : uint8
 {
+	None,
 	Attack,
 	Survival,
 	Mobility
