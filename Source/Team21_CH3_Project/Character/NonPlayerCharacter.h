@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Character/CharacterBase.h"
-#include "AI/Monster/MonsterStat.h"
 #include "NonPlayerCharacter.generated.h"
 
 
@@ -42,26 +41,20 @@ protected:
 	//АјАн
 
 	virtual void EndAttack(UAnimMontage* InMontage, bool bInterruped);
-
-	void SpawnMonster(TSubclassOf<ACharacterBase> InSpawnMonster);
-
 public:
 	bool bIsNowAttacking;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Monster")
+	bool bAttackRange = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Monster")
+	float MoveSpeed = 400.f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Monster")
+	float MaxHP = 100.f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Monster")
+	float Damage =5.f;
+
 protected:
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Monster")
-	TSubclassOf<ACharacterBase> Normal;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Monster")
-	TSubclassOf<ACharacterBase> Rusher;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Monster")
-	TSubclassOf<ACharacterBase> Shooter;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Monster")
-	FMonsterStat SetMonster;
-
 	FOnAttackMontageEnded OnAttackMontageEndedDelegate;
-	float LastUpdatedMaxHP = SetMonster.MaxHP;
+	float LastUpdatedMaxHP = 0.f;
 	float LastUpdatedCurrentHP = 0.f;
 };
