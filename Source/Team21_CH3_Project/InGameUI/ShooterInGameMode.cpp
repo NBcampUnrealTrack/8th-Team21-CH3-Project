@@ -175,12 +175,22 @@ void AShooterInGameMode::ClearWave()
 		return;
 	}
 
+	const int32 ClearedWaveKillCount = CurrentWaveKillCount;
+
+	// Wave가 끝날 때마다 해당 Wave의 KillCount를 TeamGameInstance에 누적 저장
+	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
+	if (GI)
+	{
+		GI->AddPlayerKillCount(ClearedWaveKillCount);
+	}
+
 	bIsWaveInProgress = false;
 
 	RefreshHUDWaveInfo();
 
-	UE_LOG(LogTemp, Warning, TEXT("ClearWave / Wave: %d / MaxWave: %d"),
+	UE_LOG(LogTemp, Warning, TEXT("ClearWave / Wave: %d / KillCount: %d / MaxWave: %d"),
 		CurrentWave,
+		ClearedWaveKillCount,
 		MaxWave
 	);
 
@@ -210,7 +220,6 @@ void AShooterInGameMode::ClearWave()
 		false
 	);
 }
-
 void AShooterInGameMode::StartNextWave()
 {
 	if (bIsMatchEnded || bIsWaveInProgress || !bIsShopOpen)
@@ -306,20 +315,9 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 		GI->SetIsWin(bPlayerWon);
 		GI->SetMatch(true);
 
-		if (bPlayerWon && CurrentWave >= MaxWave)
-		{
-			// Wave3 클리어 시 최종 KillCount를 TeamGameInstance에 누적 저장
-			GI->AddPlayerKillCount(FinalWaveKillCount);
-
-			// Wave3 클리어 시 최종 Gold를 TeamGameInstance에 전달
-			// ClearInGameWaveData() 내부에서 SavedCurrentGold를 playerGold에 더하고 저장함
-			GI->SaveInGameWaveData(CurrentWave, FinalGold);
-		}
-		else
-		{
-			// 사망 등 게임 종료 시에도 현재 Gold 반영이 필요하면 유지
-			GI->SaveInGameWaveData(CurrentWave, FinalGold);
-		}
+		// 게임 종료 직전 마지막 Wave / Gold 값을 한 번 저장한다.
+		// ClearInGameWaveData() 내부에서 SavedCurrentGold를 playerGold에 더하고 저장함.
+		GI->SaveInGameWaveData(CurrentWave, FinalGold);
 
 		// 인게임 웨이브 복구용 임시 데이터 초기화
 		GI->ClearInGameWaveData();
@@ -352,6 +350,7 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 		false
 	);
 }
+
 int32 AShooterInGameMode::CalculateTargetKillCountForWave(int32 InWave) const
 {
 	switch (InWave)
