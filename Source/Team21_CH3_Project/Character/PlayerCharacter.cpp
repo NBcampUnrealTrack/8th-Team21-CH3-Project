@@ -429,7 +429,18 @@ void APlayerCharacter::TryFire()
 			if (IsValid(HittedCharacter) == true)
 			{
 				FDamageEvent DamageEvent;
-				HittedCharacter->TakeDamage(10.f * AttackDamageMul, DamageEvent, GetController(), this);
+				FString BoneNameString = HitResult.BoneName.ToString();
+				//UKismetSystemLibrary::PrintString(this, BoneNameString);
+				//DrawDebugSphere(GetWorld(), HitResult.Location, 3.f, 16, FColor(255, 0, 0, 255), true, 20.f, 0U, 5.f); //피격위치(Bone) 디버그드로잉
+				
+				if (true == BoneNameString.Equals(FString(TEXT("HEAD")), ESearchCase::IgnoreCase))
+				{
+					HittedCharacter->TakeDamage(50.f * AttackDamageMul * 1.25f, DamageEvent, GetController(), this);
+				}
+				else
+				{
+					HittedCharacter->TakeDamage(50.f * AttackDamageMul, DamageEvent, GetController(), this);
+				}
 			}
 		}
 
