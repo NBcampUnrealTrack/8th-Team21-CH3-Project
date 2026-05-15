@@ -73,7 +73,7 @@ void AAI_Controller::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
-void AAI_Controller::BeginAI(APawn* InPawn)
+void AAI_Controller::BeginAI(APawn* InPawn)//OnPossess와 동일한 코드 만약 오류발생 혹은 아무도 쓰지않으면 삭제할 것
 {
 	UBlackboardComponent* BlackboardComponent = Cast<UBlackboardComponent>(Blackboard);
 	if (IsValid(BlackboardComponent) == true)
@@ -123,6 +123,26 @@ void AAI_Controller::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors)
 			else
 			{
 				UE_LOG(LogTemp, Log, TEXT("Actor Lost: %s"), *Actor->GetName());
+			}
+		}
+	}
+}
+
+void AAI_Controller::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+	UBlackboardComponent* BlackboardComponent = Cast<UBlackboardComponent>(Blackboard);
+	if (IsValid(BlackboardComponent) == true)
+	{
+		if (UseBlackboard(BlackboardDataAsset, BlackboardComponent) == true)
+		{
+			bool bRunSucceeded = RunBehaviorTree(BehaviorTree);
+			checkf(bRunSucceeded == true, TEXT("Fail to run behavior Tree."));
+
+			BlackboardComponent->SetValueAsVector(StartPatrolPositionKey, InPawn->GetActorLocation());
+			if (ShowAIDebug == 1)
+			{
+				UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("BeginAI()")));
 			}
 		}
 	}

@@ -9,6 +9,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputConfig;
 class UInputMappingContext;
+class UAugmentComponent;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API APlayerCharacter : public ACharacterBase
@@ -155,6 +156,10 @@ public:
 	// 아이템 최대 보유 개수
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Augment")
 	int32 MaxItemCapacity = 3;
+
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess))
+	TObjectPtr<UAugmentComponent> AugmentComponent;
 
 #pragma endregion
 

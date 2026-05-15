@@ -21,6 +21,7 @@
 #include "InGameUI/ShooterInGameMode.h"
 #include "InGameUI/InGameHUD.h"
 #include "Kismet/GameplayStatics.h"
+#include "Component/AugmentComponent.h"
 
 
 
@@ -52,6 +53,7 @@ APlayerCharacter::APlayerCharacter()
 	CameraComp->bUsePawnControlRotation = false;
 
 	//TimeBetweenFire = 60.f / FirePerMinute;  
+	AugmentComponent = CreateDefaultSubobject<UAugmentComponent>(TEXT("AugmentComponent"));
 }
 
 void APlayerCharacter::BeginPlay()
@@ -236,11 +238,11 @@ void APlayerCharacter::InputLook(const FInputActionValue& InValue)
 
 void APlayerCharacter::InputAttackRanged(const FInputActionValue& InValue)
 {
-	//if (0.f < GetCharacterMovement()->Velocity.Size())
-	//	//캐릭터의 속도(벡터의 크기)가 0이상이면 -> 움직이고 있다면
-	//{
-	//	return; //코드 실행 X
-	//}
+	if (0.f < GetCharacterMovement()->Velocity.Size())
+		//캐릭터의 속도(벡터의 크기)가 0이상이면 -> 움직이고 있다면
+	{
+		return; //코드 실행 X
+	}
 	
 	if (IsValid(CurrentWeapon) == false) // 무기를 줍지 않았다면
 	{
@@ -377,7 +379,8 @@ void APlayerCharacter::TryFire()
 
 	for (int32 i = 0; i < BulletsCount; i++)
 	{
-		FVector BulletDirection = TargetTransform.GetUnitAxis(EAxis::X);
+		//FVector BulletDirection = TargetTransform.GetUnitAxis(EAxis::X);
+		FVector BulletDirection = AimDirectionFromCamera;
 
 		if (SpreadAngle > 0.f)
 		{
@@ -387,8 +390,10 @@ void APlayerCharacter::TryFire()
 			BulletDirection = SpreadRot.RotateVector(BulletDirection);
 		}
 
-		FVector StartLocation = WeaponMuzzleLocation;
-		FVector EndLocation = TargetTransform.GetLocation() + BulletDirection * CurrentWeapon->GetMaxAttackRange();
+		//FVector StartLocation = WeaponMuzzleLocation;
+		FVector StartLocation = CameraLocation;
+		//FVector EndLocation = TargetTransform.GetLocation() + BulletDirection * CurrentWeapon->GetMaxAttackRange();
+		FVector EndLocation = CameraLocation + BulletDirection * CurrentWeapon-> GetMaxAttackRange();
 
 		FHitResult HitResult;
 		FCollisionQueryParams TraceParams(NAME_None, false, this);

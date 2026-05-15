@@ -20,7 +20,6 @@ ANonPlayerCharacter::ANonPlayerCharacter() : bIsNowAttacking(false)
 
 	AIControllerClass = AAI_Controller::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
-	SetMonster.MonsterName = EMonsterType::None;
 }
 
 void ANonPlayerCharacter::BeginPlay()
@@ -33,30 +32,12 @@ void ANonPlayerCharacter::BeginPlay()
 
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 		GetCharacterMovement()->bUseControllerDesiredRotation = true;
+		GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
 		GetCharacterMovement()->RotationRate = FRotator(0.f, 480.f, 0.f);
-		
-		if (SetMonster.MonsterName == EMonsterType::Normal)
+		if (bAttackRange == true)
 		{
-			SetMonster.Speed = 350.f;
-			SetMonster.MaxHP = 50.f;
-			SetMonster.bRange = false;
-			SetMonster.Damage = 10.f;
+			GetWeapon(RifleClass);
 		}
-		if (SetMonster.MonsterName == EMonsterType::Rusher)
-		{
-			SetMonster.Speed = 500.f;
-			SetMonster.MaxHP = 30.f;
-			SetMonster.bRange = false;
-			SetMonster.Damage = 5.f;
-		}
-		if (SetMonster.MonsterName == EMonsterType::Shooter)
-		{
-			SetMonster.Speed = 150.f;
-			SetMonster.MaxHP = 20.f;
-			SetMonster.bRange = true;
-			SetMonster.Damage = 10.f;
-		}
-
 	}
 }
 
@@ -67,7 +48,7 @@ void ANonPlayerCharacter::BeginAttack()
 	checkf(IsValid(AnimInstance) == true, TEXT("Invalid AnimInstance"));
 
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-	if (IsValid(AnimInstance) == true && IsValid(AttackMeleeMontage) == true && AnimInstance->Montage_IsPlaying(AttackMeleeMontage) == false && SetMonster.bRange == false)
+	if (IsValid(AnimInstance) == true && IsValid(AttackMeleeMontage) == true && AnimInstance->Montage_IsPlaying(AttackMeleeMontage) == false && bAttackRange == false)
 	{
 
 		AnimInstance->Montage_Play(AttackMeleeMontage);
@@ -83,7 +64,7 @@ void ANonPlayerCharacter::BeginAttack()
 		}
 	}
 
-	if (SetMonster.bRange == true)
+	if (bAttackRange == true)
 	{
 		TryFire();
 	}
@@ -150,7 +131,10 @@ void ANonPlayerCharacter::OnCurrentHPChange(float InCurrentHP)
 void ANonPlayerCharacter::TryFire()
 {
 	AAI_Controller* AIController = GetController<AAI_Controller>();
-
+	if (bAttackRange == false)
+	{
+		return;
+	}
 	if (IsValid(AIController) == true)
 	{
 		float FocalDistance = 400.f;
@@ -224,7 +208,7 @@ void ANonPlayerCharacter::TryFire()
 			if (IsValid(HittedCharacter) == true)
 			{
 				FDamageEvent DamageEvent;
-				HittedCharacter->TakeDamage(SetMonster.Damage, DamageEvent, GetController(), this);
+				HittedCharacter->TakeDamage(Damage, DamageEvent, GetController(), this);
 			}
 		}
 
