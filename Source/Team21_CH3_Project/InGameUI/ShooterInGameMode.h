@@ -5,11 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "TimerManager.h"
-#include "Data/AugmentationDataTable.h"
 #include "ShooterInGameMode.generated.h"
 
 class UAugmentCardSelectWidget;
 class UDataTable;
+struct FAugmentCardData;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API AShooterInGameMode : public AGameModeBase
@@ -105,8 +105,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Augment")
 	TSubclassOf<UAugmentCardSelectWidget> AugmentCardSelectWidgetClass;
 
+	// 증강 카드 선택 UI 인스턴스
+	// CreateWidget으로 생성한 뒤, 선택 완료 시 RemoveFromParent 후 nullptr 처리한다.
 	UPROPERTY()
-	UAugmentCardSelectWidget* ActiveAugmentCardSelectWidget;
+	UAugmentCardSelectWidget* ActiveWidget;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Augment")
 	int32 AugmentKillInterval;
@@ -141,7 +143,7 @@ protected:
 	void HideAugmentCardSelectUI();
 
 	UFUNCTION()
-	void HandleAugmentSelected(FAugmentResult SelectedCardData);
+	void HandleAugmentSelected(FAugmentCardData SelectedCardData);
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Wave")
