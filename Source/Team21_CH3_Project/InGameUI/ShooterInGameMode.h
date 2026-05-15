@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "TimerManager.h"
+#include "Data/AugmentationDataTable.h"
 #include "ShooterInGameMode.generated.h"
 
 class UAugmentCardSelectWidget;
-struct FAugmentCardData;
+class UDataTable;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API AShooterInGameMode : public AGameModeBase
@@ -41,6 +42,9 @@ public:
 	void EndMatch(bool bPlayerWon);
 
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave Data")
+	UDataTable* WaveDataTable;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Wave State")
 	int32 CurrentWave;
 
@@ -101,8 +105,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Augment")
 	TSubclassOf<UAugmentCardSelectWidget> AugmentCardSelectWidgetClass;
 
+	// 증강 카드 선택 UI 인스턴스
+	// CreateWidget으로 생성한 뒤, 선택 완료 시 RemoveFromParent 후 nullptr 처리한다.
 	UPROPERTY()
-	UAugmentCardSelectWidget* ActiveAugmentCardSelectWidget;
+	UAugmentCardSelectWidget* ActiveWidget;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Augment")
 	int32 AugmentKillInterval;
@@ -115,6 +121,9 @@ protected:
 
 protected:
 	int32 CalculateTargetKillCountForWave(int32 InWave) const;
+	int32 CalculateGoldPerKillForWave(int32 InWave) const;
+	FName MakeWaveDataRowName(int32 InWave) const;
+
 	void AddGold(int32 GoldAmount);
 
 	void RefreshHUDWaveInfo();
@@ -134,7 +143,7 @@ protected:
 	void HideAugmentCardSelectUI();
 
 	UFUNCTION()
-	void HandleAugmentSelected(FAugmentCardData SelectedCardData);
+	void HandleAugmentSelected(FAugmentResult SelectedCardData);
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Wave")

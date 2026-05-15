@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Data/AugmentationDataTable.h"
 #include "Component/AugmentComponent.h"
+#include "InGameUI/AugmentCardSelectWidget.h"
 
 AAugmentCard::AAugmentCard()
 {
@@ -22,6 +23,7 @@ AAugmentCard::AAugmentCard()
     CollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AAugmentCard::OnOverlapBegin);
 }
 
+
 void AAugmentCard::BeginPlay()
 {
     Super::BeginPlay();
@@ -33,11 +35,20 @@ void AAugmentCard::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 {
     if (!OtherActor || OtherActor == this) return;
 
-    // 1. 증강 컴포넌트가 있는 액터(플레이어)인지 확인
     UAugmentComponent* AugmentComp = OtherActor->FindComponentByClass<UAugmentComponent>();
     if (!AugmentComp || !AugmentDataTable || !AugmentWidgetClass) return;
+    
+    AugmentSelection(AugmentComp);
 
-    // 2. 랜덤 셔플
+    Destroy();
+}
+
+
+void AAugmentCard::AugmentSelection(UAugmentComponent* AugmentComp)
+{
+    if (!AugmentDataTable || !AugmentWidgetClass) return;
+
+
     TArray<FName> RowNames = AugmentDataTable->GetRowNames();
     if (RowNames.Num() < 3) return;
 
@@ -47,7 +58,7 @@ void AAugmentCard::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
         RowNames.Swap(i, j);
     }
 
-    // 3. 선택지 생성
+
     TArray<FAugmentResult> FinalOptions;
     for (int32 i = 0; i < 3; i++)
     {
@@ -57,15 +68,15 @@ void AAugmentCard::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
             FAugmentResult Option;
             Option.Type = Row->Type;
 
-            // 컴포넌트에서 현재 상태를 읽어옴
+
             int32 CurrentLevel = AugmentComp->GetAugmentLevel(Row->Type);
             Option.CurrentLevel = CurrentLevel + 1;
             Option.DisplayTitle = FString::Printf(TEXT("%s (Lv.%d)"), *Row->AugmentName, Option.CurrentLevel);
 
-            // 수치 계산 (중첩 횟수만큼 가산)
+
             float DisplayValue = Row->BaseValue + (CurrentLevel * Row->UpgradeValue);
 
-            // 설명문 조립
+
             FFormatNamedArguments Args;
             Args.Add(TEXT("Value"), FText::AsNumber(FMath::FloorToInt(DisplayValue)));
             Args.Add(TEXT("Unit"), FText::FromString(Row->UnitText));
@@ -74,14 +85,15 @@ void AAugmentCard::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
             FinalOptions.Add(Option);
         }
     }
-    /*
-    // 4. 위젯 생성 및 출력
-    if (UAugmentWidget* WidgetInstance = CreateWidget<UAugmentWidget>(GetWorld(), AugmentWidgetClass))
+
+
+    if (UAugmentCardSelectWidget* WidgetInstance = CreateWidget<UAugmentCardSelectWidget>(GetWorld(), AugmentWidgetClass))
     {
         WidgetInstance->OnDataReceived(FinalOptions);
         WidgetInstance->AddToViewport();
 
-        // 컨트롤러 설정 로직 (기존과 동일)
+        AugmentComp->BindAugmentWidget(WidgetInstance);
+
         if (APlayerController* PC = Cast<APlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
         {
             PC->SetPause(true);
@@ -91,6 +103,4 @@ void AAugmentCard::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
             PC->SetInputMode(InputMode);
         }
     }
-    */
-    Destroy(); // 카드 제거
 }

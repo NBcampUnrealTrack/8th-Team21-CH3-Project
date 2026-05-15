@@ -80,7 +80,13 @@ void UInGameUI::UpdateAmmo(int32 CurrentAmmo, int32 MaxAmmo)
 	AmmoText->SetText(FText::FromString(AmmoString));
 }
 
-void UInGameUI::UpdateWaveInfo(int32 CurrentWave, int32 CurrentKillCount, int32 TargetKillCount, int32 CurrentGold)
+void UInGameUI::UpdateWaveInfo(
+	int32 CurrentWave,
+	int32 CurrentKillCount,
+	int32 TargetKillCount,
+	int32 CurrentGold,
+	int32 GoldPerKill
+)
 {
 	if (WaveText)
 	{
@@ -100,6 +106,13 @@ void UInGameUI::UpdateWaveInfo(int32 CurrentWave, int32 CurrentKillCount, int32 
 	{
 		GoldText->SetText(FText::FromString(
 			FString::Printf(TEXT("GOLD %d"), CurrentGold)
+		));
+	}
+
+	if (GoldPerKillText)
+	{
+		GoldPerKillText->SetText(FText::FromString(
+			FString::Printf(TEXT("GOLD/KILL +%d"), GoldPerKill)
 		));
 	}
 }

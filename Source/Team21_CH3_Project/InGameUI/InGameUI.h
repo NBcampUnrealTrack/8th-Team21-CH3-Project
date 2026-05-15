@@ -26,7 +26,13 @@ public:
 	void UpdateAmmo(int32 CurrentAmmo, int32 MaxAmmo);
 
 	// Wave / Kill / Gold UI 갱신
-	void UpdateWaveInfo(int32 CurrentWave, int32 CurrentKillCount, int32 TargetKillCount, int32 CurrentGold);
+	void UpdateWaveInfo(
+		int32 CurrentWave,
+		int32 CurrentKillCount,
+		int32 TargetKillCount,
+		int32 CurrentGold,
+		int32 GoldPerKill
+	);
 
 	// 라운드 전환 메시지 표시
 	// 예: Round Win / Round Lose
@@ -83,6 +89,11 @@ protected:
 	// 예: GOLD 0
 	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* GoldText;
+
+	// 처치당 골드 Text
+	// 예: GOLD/KILL +10
+	UPROPERTY(meta = (BindWidgetOptional))
+	UTextBlock* GoldPerKillText;
 
 	// 기존 플레이어 점수 Text
 	UPROPERTY(meta = (BindWidgetOptional))
