@@ -1,7 +1,6 @@
 // AugmentCardWidget.cpp
 
 #include "InGameUI/AugmentCardWidget.h"
-
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
 
@@ -15,9 +14,10 @@ void UAugmentCardWidget::NativeConstruct()
 		Button_Select->OnClicked.AddDynamic(this, &UAugmentCardWidget::HandleSelectButtonClicked);
 	}
 
-	SetAugmentCardData(CurrentCardData);
+	//SetAugmentResult(CurrentCardData);
 }
 
+/*
 void UAugmentCardWidget::SetAugmentCardData(const FAugmentCardData& InCardData)
 {
 	CurrentCardData = InCardData;
@@ -37,8 +37,33 @@ void UAugmentCardWidget::SetAugmentCardData(const FAugmentCardData& InCardData)
 		CardEffectText->SetText(CurrentCardData.CardEffect);
 	}
 }
+*/
 
-const FAugmentCardData& UAugmentCardWidget::GetAugmentCardData() const
+void UAugmentCardWidget::SetAugmentResult(const FAugmentResult& InCardData){
+	CurrentCardData = InCardData;
+	
+	UE_LOG(LogTemp, Warning, TEXT("SetAugmentResult: %s / %s"),
+		*CurrentCardData.DisplayTitle,
+		*CurrentCardData.Description
+	);
+
+	UE_LOG(LogTemp, Warning, TEXT("CardNameText: %s"), IsValid(CardNameText) ? TEXT("Valid") : TEXT("Null"));
+	UE_LOG(LogTemp, Warning, TEXT("CardDescriptionText: %s"), IsValid(CardDescriptionText) ? TEXT("Valid") : TEXT("Null"));
+
+	if (CardNameText)
+	{
+		CardNameText->SetText(FText::FromString(CurrentCardData.DisplayTitle));
+	}
+
+	if (CardDescriptionText)
+	{
+		CardDescriptionText->SetText(FText::FromString(CurrentCardData.Description));
+	}
+
+
+}
+
+const FAugmentResult& UAugmentCardWidget::GetAugmentCardData() const
 {
 	return CurrentCardData;
 }

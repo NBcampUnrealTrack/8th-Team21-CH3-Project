@@ -1,6 +1,6 @@
 // AugmentCardSelectWidget.cpp
-
 #include "InGameUI/AugmentCardSelectWidget.h"
+#include "InGameUI/AugmentCardWidget.h"
 
 void UAugmentCardSelectWidget::NativeConstruct()
 {
@@ -25,7 +25,26 @@ void UAugmentCardSelectWidget::NativeConstruct()
 	}
 }
 
-void UAugmentCardSelectWidget::HandleCardSelected(FAugmentCardData SelectedCardData)
+void UAugmentCardSelectWidget::OnDataReceived(const TArray<FAugmentResult>& finalOptions)
+{
+	if (CardChoice_1 && finalOptions.IsValidIndex(0))
+	{
+		CardChoice_1->SetAugmentResult(finalOptions[0]);
+	}
+
+	if (CardChoice_2 && finalOptions.IsValidIndex(1))
+	{
+		CardChoice_2->SetAugmentResult(finalOptions[1]);
+	}
+
+	if (CardChoice_3 && finalOptions.IsValidIndex(2))
+	{
+		CardChoice_3->SetAugmentResult(finalOptions[2]);
+	}
+}
+
+
+void UAugmentCardSelectWidget::HandleCardSelected(FAugmentResult SelectedCardData)
 {
 	OnAugmentSelected.Broadcast(SelectedCardData);
 }
