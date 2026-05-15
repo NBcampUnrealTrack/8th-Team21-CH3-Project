@@ -2,6 +2,8 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "InGameUI/AugmentCardSelectWidget.h"
+#include "InGameUI/AugmentCardWidget.h"
 
 UAugmentComponent::UAugmentComponent()
 {
@@ -12,6 +14,37 @@ void UAugmentComponent::BeginPlay()
 {
     Super::BeginPlay();
 }
+
+
+void UAugmentComponent::BindAugmentWidget(UAugmentCardSelectWidget* InWidget)
+{
+    if (InWidget)
+    {
+        ActiveWidget = InWidget;
+
+        // 방송을 들을 준비 (바인딩)
+        ActiveWidget->OnAugmentSelected.AddDynamic(this, &UAugmentComponent::OnAugmentCardSelected);
+    }
+}
+
+void UAugmentComponent::OnAugmentCardSelected(FAugmentResult SelectedCardData)
+{
+
+    EAugmentType SelectedType = SelectedCardData.Type;
+
+    ApplyAugment(SelectedType);
+
+
+    if (ActiveWidget)
+    {
+        ActiveWidget->RemoveFromParent(); // 화면에서 제거
+        ActiveWidget = nullptr;           // 참조 해제
+    }
+
+}
+
+
+
 
 // 1. 위젯에서 카드 선택 시 호출되는 함수
 void UAugmentComponent::ApplyAugment(EAugmentType Type)

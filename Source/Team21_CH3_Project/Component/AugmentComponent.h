@@ -2,8 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Data/AugmentationDataTable.h" // 아까 만든 데이터 구조 헤더
+#include "Data/AugmentationDataTable.h"
+#include "InGameUI/AugmentCardWidget.h"
 #include "AugmentComponent.generated.h"
+
+class UAugmentCardSelectWidget;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class TEAM21_CH3_PROJECT_API UAugmentComponent : public UActorComponent
@@ -17,6 +20,14 @@ protected:
     virtual void BeginPlay() override;
 
 public:
+    void BindAugmentWidget(UAugmentCardSelectWidget* InWidget);
+
+    UFUNCTION()
+    void OnAugmentCardSelected(FAugmentResult SelectedCardData);
+
+    
+
+
     // --- 시스템 핵심 함수 ---
 
     /** 위젯에서 카드를 선택했을 때 호출할 함수 */
@@ -47,6 +58,8 @@ public:
         return OwnedAugments.Contains(Type) ? OwnedAugments[Type] : 0;
     }
 
+
+
 private:
     // --- 내부 관리 데이터 ---
 
@@ -73,4 +86,7 @@ private:
 
     /** 위기 본능 등 상태 업데이트 */
     void CheckCrisisInstinct();
+
+    UPROPERTY()
+    class UAugmentCardSelectWidget* ActiveWidget;
 };
