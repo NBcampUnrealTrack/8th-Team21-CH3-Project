@@ -25,13 +25,15 @@ void UAugmentCardSelectWidget::NativeConstruct()
 		CardChoice_3->OnAugmentCardClicked.AddDynamic(this, &UAugmentCardSelectWidget::HandleThirdCardSelected);
 	}
 	
-	if (IsValid(FadeInAnim) == true)
-	{
-		PlayAnimation(FadeInAnim);
-		//FWidgetAnimationDynamicEvent fadeOutFinishedEvent;
-		//fadeOutFinishedEvent.BindDynamic(this, &ThisClass::HandleFadeInFinished);
-		//BindToAnimationFinished(FadeOutAnim, fadeOutFinishedEvent);
-	}
+	if (IsValid(fadeInAnim) == true) PlayAnimation(fadeInAnim);
+	
+	FWidgetAnimationDynamicEvent selectedFinishedEvent;
+	selectedFinishedEvent.BindDynamic(this, &ThisClass::HandleSelectedAnimFinished);
+	
+	if (IsValid(firstCardSelectedAnim) == true) BindToAnimationFinished(firstCardSelectedAnim, selectedFinishedEvent);
+	if (IsValid(secondCardSelectedAnim) == true) BindToAnimationFinished(secondCardSelectedAnim, selectedFinishedEvent);
+	if (IsValid(thirdCardSelectedAnim) == true) BindToAnimationFinished(thirdCardSelectedAnim, selectedFinishedEvent);
+	
 }
 
 void UAugmentCardSelectWidget::OnDataReceived(const TArray<FAugmentResult>& finalOptions)
