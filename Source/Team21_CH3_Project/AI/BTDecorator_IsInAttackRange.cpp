@@ -6,7 +6,7 @@
 #include "Character/NonPlayerCharacter.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-const float UBTDecorator_IsInAttackRange::AttackRange(500.f);
+const float UBTDecorator_IsInAttackRange::AttackRange(200.f);
 
 UBTDecorator_IsInAttackRange::UBTDecorator_IsInAttackRange()
 {
