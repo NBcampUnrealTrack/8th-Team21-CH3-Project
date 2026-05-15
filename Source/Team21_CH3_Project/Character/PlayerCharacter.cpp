@@ -377,7 +377,8 @@ void APlayerCharacter::TryFire()
 
 	for (int32 i = 0; i < BulletsCount; i++)
 	{
-		FVector BulletDirection = TargetTransform.GetUnitAxis(EAxis::X);
+		//FVector BulletDirection = TargetTransform.GetUnitAxis(EAxis::X);
+		FVector BulletDirection = AimDirectionFromCamera;
 
 		if (SpreadAngle > 0.f)
 		{
@@ -387,8 +388,10 @@ void APlayerCharacter::TryFire()
 			BulletDirection = SpreadRot.RotateVector(BulletDirection);
 		}
 
-		FVector StartLocation = WeaponMuzzleLocation;
-		FVector EndLocation = TargetTransform.GetLocation() + BulletDirection * CurrentWeapon->GetMaxAttackRange();
+		//FVector StartLocation = WeaponMuzzleLocation;
+		FVector StartLocation = CameraLocation;
+		//FVector EndLocation = TargetTransform.GetLocation() + BulletDirection * CurrentWeapon->GetMaxAttackRange();
+		FVector EndLocation = CameraLocation + BulletDirection * CurrentWeapon-> GetMaxAttackRange();
 
 		FHitResult HitResult;
 		FCollisionQueryParams TraceParams(NAME_None, false, this);
