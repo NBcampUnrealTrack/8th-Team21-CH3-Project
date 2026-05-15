@@ -14,11 +14,7 @@ void UUOutGameCommonHeaderWidget::NativeOnInitialized(){
 	if (IsValid(settingsButton) == true) settingsButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleSettingsClicked);
 	if (IsValid(traitButton) == true) traitButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleTraitClicked);
 	
-	if (UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetWorld()->GetGameInstance()))
-	{
-		if (IsValid(playerTotalKillCount) == true) playerTotalKillCount->SetText(FText::FromString(FString::Printf(TEXT("%d"), GI->GetPlayerTotalKillCount())));
-		if (IsValid(playerGold) == true) playerGold->SetText(FText::FromString(FString::Printf(TEXT("%d"), GI->GetPlayerGold())));
-	}
+	UpdateCommonUI();
 }
 
 void UUOutGameCommonHeaderWidget::SetActiveTab(EOutGameWidgetType widgetType){
@@ -39,7 +35,7 @@ void UUOutGameCommonHeaderWidget::UpdateCommonUI(){
 	if (UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetWorld()->GetGameInstance()))
 	{
 		if (IsValid(playerTotalKillCount) == true) playerTotalKillCount->SetText(FText::FromString(FString::Printf(TEXT("%d"), GI->GetPlayerTotalKillCount())));
-		if (IsValid(playerGold) == true) playerGold->SetText(FText::FromString(FString::Printf(TEXT("%d"), GI->GetPlayerGold())));
+		if (IsValid(playerGold) == true) playerGold->SetText(FText::FromString(FString::Printf(TEXT("%d G"), GI->GetPlayerGold())));
 	}
 }
 
