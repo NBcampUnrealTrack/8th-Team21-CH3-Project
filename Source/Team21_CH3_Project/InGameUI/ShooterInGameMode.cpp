@@ -175,12 +175,22 @@ void AShooterInGameMode::ClearWave()
 		return;
 	}
 
+	const int32 ClearedWaveKillCount = CurrentWaveKillCount;
+
+	// Wave가 끝날 때마다 해당 Wave의 KillCount를 TeamGameInstance에 누적 저장
+	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
+	if (GI)
+	{
+		GI->AddPlayerKillCount(ClearedWaveKillCount);
+	}
+
 	bIsWaveInProgress = false;
 
 	RefreshHUDWaveInfo();
 
-	UE_LOG(LogTemp, Warning, TEXT("ClearWave / Wave: %d / MaxWave: %d"),
+	UE_LOG(LogTemp, Warning, TEXT("ClearWave / Wave: %d / KillCount: %d / MaxWave: %d"),
 		CurrentWave,
+		ClearedWaveKillCount,
 		MaxWave
 	);
 
@@ -210,7 +220,6 @@ void AShooterInGameMode::ClearWave()
 		false
 	);
 }
-
 void AShooterInGameMode::StartNextWave()
 {
 	if (bIsMatchEnded || bIsWaveInProgress || !bIsShopOpen)
@@ -275,6 +284,9 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 		return;
 	}
 
+	const int32 FinalWaveKillCount = CurrentWaveKillCount;
+	const int32 FinalGold = CurrentGold;
+
 	bIsMatchEnded = true;
 	bIsWaveInProgress = false;
 	bIsShopOpen = false;
@@ -304,21 +316,26 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 		GI->SetMatch(true);
 
 		// 게임 종료 직전 마지막 Wave / Gold 값을 한 번 저장한다.
-		// 팀원 쪽에서 SaveInGameWaveData 내부 또는 이후 흐름에서 PlayerGold 반영용으로 사용할 수 있음.
-		GI->SaveInGameWaveData(CurrentWave, CurrentGold);
+		// ClearInGameWaveData() 내부에서 SavedCurrentGold를 playerGold에 더하고 저장함.
+		GI->SaveInGameWaveData(CurrentWave, FinalGold);
 
 		// 인게임 웨이브 복구용 임시 데이터 초기화
 		GI->ClearInGameWaveData();
 	}
 
+	// GameMode 내부 값 초기화
+	CurrentWaveKillCount = 0;
+	CurrentGold = 0;
+
 	StopGameplayInput();
 
 	TriggerResultUI(bPlayerWon);
 
-	UE_LOG(LogTemp, Warning, TEXT("EndMatch Called. bPlayerWon: %s / FinalWave: %d / FinalGold: %d / Move To: %s After %.2f seconds"),
+	UE_LOG(LogTemp, Warning, TEXT("EndMatch Called. bPlayerWon: %s / FinalWave: %d / FinalKillCount: %d / FinalGold: %d / Move To: %s After %.2f seconds"),
 		bPlayerWon ? TEXT("true") : TEXT("false"),
 		CurrentWave,
-		CurrentGold,
+		FinalWaveKillCount,
+		FinalGold,
 		*OutGameLevelName.ToString(),
 		EndMatchReturnDelay
 	);
