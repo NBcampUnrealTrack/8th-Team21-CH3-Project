@@ -40,7 +40,7 @@ AShooterInGameMode::AShooterInGameMode()
 	MaxHUDWaveRefreshRetryCount = 10;
 	HUDWaveRefreshRetryInterval = 0.05f;
 
-	ActiveAugmentCardSelectWidget = nullptr;
+	ActiveWidget = nullptr;
 	AugmentKillInterval = 5;
 	bIsAugmentSelectOpen = false;
 	bPendingClearWaveAfterAugment = false;
@@ -521,21 +521,21 @@ void AShooterInGameMode::ShowAugmentCardSelectUI()
 		return;
 	}
 
-	ActiveAugmentCardSelectWidget = CreateWidget<UAugmentCardSelectWidget>(PC, AugmentCardSelectWidgetClass);
-	if (!ActiveAugmentCardSelectWidget)
+	ActiveWidget = CreateWidget<UAugmentCardSelectWidget>(PC, AugmentCardSelectWidgetClass);
+	if (!ActiveWidget)
 	{
 		return;
 	}
 
-	ActiveAugmentCardSelectWidget->OnAugmentSelected.RemoveDynamic(this, &AShooterInGameMode::HandleAugmentSelected);
-	ActiveAugmentCardSelectWidget->OnAugmentSelected.AddDynamic(this, &AShooterInGameMode::HandleAugmentSelected);
+	ActiveWidget->OnAugmentSelected.RemoveDynamic(this, &AShooterInGameMode::HandleAugmentSelected);
+	ActiveWidget->OnAugmentSelected.AddDynamic(this, &AShooterInGameMode::HandleAugmentSelected);
 
-	ActiveAugmentCardSelectWidget->AddToViewport(200);
+	ActiveWidget->AddToViewport(200);
 
 	bIsAugmentSelectOpen = true;
 
 	FInputModeUIOnly InputModeData;
-	InputModeData.SetWidgetToFocus(ActiveAugmentCardSelectWidget->TakeWidget());
+	InputModeData.SetWidgetToFocus(ActiveWidget->TakeWidget());
 	PC->SetInputMode(InputModeData);
 	PC->bShowMouseCursor = true;
 	PC->SetPause(true);
@@ -545,10 +545,10 @@ void AShooterInGameMode::ShowAugmentCardSelectUI()
 
 void AShooterInGameMode::HideAugmentCardSelectUI()
 {
-	if (ActiveAugmentCardSelectWidget)
+	if (ActiveWidget)
 	{
-		ActiveAugmentCardSelectWidget->RemoveFromParent();
-		ActiveAugmentCardSelectWidget = nullptr;
+		ActiveWidget->RemoveFromParent();
+		ActiveWidget = nullptr;
 	}
 
 	bIsAugmentSelectOpen = false;
@@ -556,9 +556,7 @@ void AShooterInGameMode::HideAugmentCardSelectUI()
 
 void AShooterInGameMode::HandleAugmentSelected(FAugmentResult SelectedCardData)
 {
-	// UE_LOG(LogTemp, Warning, TEXT("Augment Selected: %s"),
-	// 	*SelectedCardData.CardName.ToString()
-	// );
+	// UE_LOG(LogTemp, Warning, TEXT("Augment Selected"));
 
 	HideAugmentCardSelectUI();
 
