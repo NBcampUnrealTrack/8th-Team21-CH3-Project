@@ -554,11 +554,11 @@ void AShooterInGameMode::HideAugmentCardSelectUI()
 	bIsAugmentSelectOpen = false;
 }
 
-void AShooterInGameMode::HandleAugmentSelected(FAugmentCardData SelectedCardData)
+void AShooterInGameMode::HandleAugmentSelected(FAugmentResult SelectedCardData)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Augment Selected: %s"),
-		*SelectedCardData.CardName.ToString()
-	);
+	// UE_LOG(LogTemp, Warning, TEXT("Augment Selected: %s"),
+	// 	*SelectedCardData.CardName.ToString()
+	// );
 
 	HideAugmentCardSelectUI();
 

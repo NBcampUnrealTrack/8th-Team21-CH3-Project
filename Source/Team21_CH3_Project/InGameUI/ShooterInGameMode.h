@@ -5,11 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "TimerManager.h"
+#include "Data/AugmentationDataTable.h"
 #include "ShooterInGameMode.generated.h"
 
 class UAugmentCardSelectWidget;
 class UDataTable;
-struct FAugmentCardData;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API AShooterInGameMode : public AGameModeBase
@@ -141,7 +141,7 @@ protected:
 	void HideAugmentCardSelectUI();
 
 	UFUNCTION()
-	void HandleAugmentSelected(FAugmentCardData SelectedCardData);
+	void HandleAugmentSelected(FAugmentResult SelectedCardData);
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Wave")
