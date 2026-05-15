@@ -3,6 +3,8 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "Trait/Data/TraitData.h"
+#include "Data/PlayerTraitBonus.h"
 #include "TeamGameInstance.generated.h"
 
 UENUM(BlueprintType)
@@ -109,4 +111,24 @@ private:
 	TObjectPtr<UTeamSaveGame> CurrentSaveGame;
 	
 #pragma endregion
+	
+#pragma region TraitSystem
+	
+public:
+	int32 GetTraitLevel(FName TraitId) const;
+	const TMap<FName, int32>& GetTraitLevels() const;
+	
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Trait", meta = (AllowPrivateAccess = "true"))
+	TMap<FName, int32> traitLevels;
+	
+	UFUNCTION(BlueprintCallable)
+	bool CanUpgradeTrait(FName traitId, const FTraitData& traitData) const;
+	UFUNCTION(BlueprintCallable)
+	bool TryUpgradeTrait(FName traitId, const FTraitData& traitData);
+	UFUNCTION(BlueprintCallable)
+	bool SpendPlayerGold(int32 Cost);
+	FPlayerTraitBonus GetTotalTraitBonus(UDataTable* TraitDataTable) const;
+	
+#pragma endregion 
 };
