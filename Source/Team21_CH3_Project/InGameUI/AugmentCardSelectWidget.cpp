@@ -1,27 +1,36 @@
 // AugmentCardSelectWidget.cpp
 #include "InGameUI/AugmentCardSelectWidget.h"
 #include "InGameUI/AugmentCardWidget.h"
+#include "Animation/WidgetAnimation.h"
 
 void UAugmentCardSelectWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (CardChoice_1)
+	if (IsValid(CardChoice_1) == true)
 	{
-		CardChoice_1->OnAugmentCardClicked.RemoveDynamic(this, &UAugmentCardSelectWidget::HandleCardSelected);
-		CardChoice_1->OnAugmentCardClicked.AddDynamic(this, &UAugmentCardSelectWidget::HandleCardSelected);
+		CardChoice_1->OnAugmentCardClicked.RemoveDynamic(this, &UAugmentCardSelectWidget::HandleFirstCardSelected);
+		CardChoice_1->OnAugmentCardClicked.AddDynamic(this, &UAugmentCardSelectWidget::HandleFirstCardSelected);
 	}
 
-	if (CardChoice_2)
+	if (IsValid(CardChoice_2) == true)
 	{
-		CardChoice_2->OnAugmentCardClicked.RemoveDynamic(this, &UAugmentCardSelectWidget::HandleCardSelected);
-		CardChoice_2->OnAugmentCardClicked.AddDynamic(this, &UAugmentCardSelectWidget::HandleCardSelected);
+		CardChoice_2->OnAugmentCardClicked.RemoveDynamic(this, &UAugmentCardSelectWidget::HandleSecondCardSelected);
+		CardChoice_2->OnAugmentCardClicked.AddDynamic(this, &UAugmentCardSelectWidget::HandleSecondCardSelected);
 	}
 
-	if (CardChoice_3)
+	if (IsValid(CardChoice_3) == true)
 	{
-		CardChoice_3->OnAugmentCardClicked.RemoveDynamic(this, &UAugmentCardSelectWidget::HandleCardSelected);
-		CardChoice_3->OnAugmentCardClicked.AddDynamic(this, &UAugmentCardSelectWidget::HandleCardSelected);
+		CardChoice_3->OnAugmentCardClicked.RemoveDynamic(this, &UAugmentCardSelectWidget::HandleThirdCardSelected);
+		CardChoice_3->OnAugmentCardClicked.AddDynamic(this, &UAugmentCardSelectWidget::HandleThirdCardSelected);
+	}
+	
+	if (IsValid(FadeInAnim) == true)
+	{
+		PlayAnimation(FadeInAnim);
+		//FWidgetAnimationDynamicEvent fadeOutFinishedEvent;
+		//fadeOutFinishedEvent.BindDynamic(this, &ThisClass::HandleFadeInFinished);
+		//BindToAnimationFinished(FadeOutAnim, fadeOutFinishedEvent);
 	}
 }
 
@@ -43,8 +52,19 @@ void UAugmentCardSelectWidget::OnDataReceived(const TArray<FAugmentResult>& fina
 	}
 }
 
+void UAugmentCardSelectWidget::HandleFadeInFinished(){
+	
+}
 
-void UAugmentCardSelectWidget::HandleCardSelected(FAugmentResult SelectedCardData)
+void UAugmentCardSelectWidget::HandleFirstCardSelected(FAugmentResult SelectedCardData)
 {
+	OnAugmentSelected.Broadcast(SelectedCardData);
+}
+
+void UAugmentCardSelectWidget::HandleSecondCardSelected(FAugmentResult SelectedCardData){
+	OnAugmentSelected.Broadcast(SelectedCardData);
+}
+
+void UAugmentCardSelectWidget::HandleThirdCardSelected(FAugmentResult SelectedCardData){
 	OnAugmentSelected.Broadcast(SelectedCardData);
 }

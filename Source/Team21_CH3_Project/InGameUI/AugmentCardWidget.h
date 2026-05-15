@@ -61,9 +61,6 @@ protected:
 	UTextBlock* CardDescriptionText;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* CardEffectText;
-
-	UPROPERTY(meta = (BindWidget))
 	UButton* Button_Select;
 
 protected:
