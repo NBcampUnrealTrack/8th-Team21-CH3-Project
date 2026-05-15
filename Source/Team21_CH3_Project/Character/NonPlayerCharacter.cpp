@@ -80,6 +80,11 @@ float ANonPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 		AAI_Controller* AIController = Cast<AAI_Controller>(GetController());
 		if (IsValid(AIController) == true)
 		{
+			if (IsValid(CurrentWeapon))
+			{
+				CurrentWeapon->SetLifeSpan(0.1f);
+				CurrentWeapon = nullptr;
+			}
 			AIController->EndAI();
 			bool bNPCWin = false;
 			GameMode->OnCharacterDied(bNPCWin);

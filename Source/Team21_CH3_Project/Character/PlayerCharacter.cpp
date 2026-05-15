@@ -87,6 +87,31 @@ void APlayerCharacter::BeginPlay()
 		RefreshPlayerHealthUI();
 	}
 	//CurrentWeapon = nullptr;
+
+	UTeamGameInstance* GameInstance = Cast<UTeamGameInstance>(GetGameInstance());
+	if (IsValid(GameInstance) == false)
+	{
+		return;
+	}
+	TSubclassOf<AWeapon> SelectWeapon = nullptr;
+	EWeaponType SelectType = GameInstance->GetSelectedWeaponType();
+
+	if (SelectType == EWeaponType::Rifle)
+	{
+		SelectWeapon = RifleClass;
+	}
+	else if (SelectType == EWeaponType::Shotgun)
+	{
+		SelectWeapon = ShotgunClass;
+	}
+	else if (SelectType == EWeaponType::Pistol)
+	{
+		SelectWeapon = PistolClass;
+	}
+	else
+		SelectWeapon = RifleClass;
+
+	GetWeapon(SelectWeapon);
 }
 
 void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
