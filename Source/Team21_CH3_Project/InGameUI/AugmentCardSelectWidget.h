@@ -9,6 +9,7 @@
 #include "AugmentCardSelectWidget.generated.h"
 
 class UAugmentCardWidget;
+class UWidgetAnimation;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAugmentSelectedSignature, FAugmentResult, SelectedCardData);
 
@@ -26,18 +27,31 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-
-protected:
+	
 	UPROPERTY(meta = (BindWidget))
 	UAugmentCardWidget* CardChoice_1;
-
 	UPROPERTY(meta = (BindWidget))
 	UAugmentCardWidget* CardChoice_2;
-
 	UPROPERTY(meta = (BindWidget))
 	UAugmentCardWidget* CardChoice_3;
 
 private:
 	UFUNCTION()
-	void HandleCardSelected(FAugmentResult SelectedCardData);
+	void HandleFadeInFinished();
+	UFUNCTION()
+	void HandleFirstCardSelected(FAugmentResult SelectedCardData);
+	UFUNCTION()
+	void HandleSecondCardSelected(FAugmentResult SelectedCardData);
+	UFUNCTION()
+	void HandleThirdCardSelected(FAugmentResult SelectedCardData);
+	
+	
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	TObjectPtr<UWidgetAnimation> FadeInAnim;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	TObjectPtr<UWidgetAnimation> FirstCardSelectedAnim;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	TObjectPtr<UWidgetAnimation> SecondCardSelectedAnim;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	TObjectPtr<UWidgetAnimation> ThirdCardSelectedAnim;
 };
