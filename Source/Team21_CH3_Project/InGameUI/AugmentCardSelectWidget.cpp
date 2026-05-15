@@ -25,7 +25,12 @@ void UAugmentCardSelectWidget::NativeConstruct()
 		CardChoice_3->OnAugmentCardClicked.AddDynamic(this, &UAugmentCardSelectWidget::HandleThirdCardSelected);
 	}
 	
+	SetVisibility(ESlateVisibility::HitTestInvisible);
+	FWidgetAnimationDynamicEvent fadeInFinishedEvent;
+	fadeInFinishedEvent.BindDynamic(this, &ThisClass::HandleFadeInFinished);
+	if (IsValid(fadeInAnim) == true) BindToAnimationFinished(fadeInAnim, fadeInFinishedEvent);
 	if (IsValid(fadeInAnim) == true) PlayAnimation(fadeInAnim);
+	
 	
 	FWidgetAnimationDynamicEvent selectedFinishedEvent;
 	selectedFinishedEvent.BindDynamic(this, &ThisClass::HandleSelectedAnimFinished);
@@ -54,7 +59,7 @@ void UAugmentCardSelectWidget::OnDataReceived(const TArray<FAugmentResult>& fina
 }
 
 void UAugmentCardSelectWidget::HandleFadeInFinished(){
-	
+	SetVisibility(ESlateVisibility::Visible);
 }
 
 void UAugmentCardSelectWidget::HandleFirstCardSelected(FAugmentResult SelectedCardData)
