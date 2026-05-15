@@ -21,6 +21,7 @@
 #include "InGameUI/ShooterInGameMode.h"
 #include "InGameUI/InGameHUD.h"
 #include "Kismet/GameplayStatics.h"
+#include "Component/AugmentComponent.h"
 
 
 
@@ -52,6 +53,7 @@ APlayerCharacter::APlayerCharacter()
 	CameraComp->bUsePawnControlRotation = false;
 
 	//TimeBetweenFire = 60.f / FirePerMinute;  
+	AugmentComponent = CreateDefaultSubobject<UAugmentComponent>(TEXT("AugmentComponent"));
 }
 
 void APlayerCharacter::BeginPlay()
