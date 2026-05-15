@@ -4,11 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Data/AugmentationDataTable.h"
 #include "AugmentCardWidget.generated.h"
 
 class UTextBlock;
 class UButton;
 
+/*
 USTRUCT(BlueprintType)
 struct FAugmentCardData
 {
@@ -24,8 +26,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Augment")
 	FText CardEffect;
 };
+*/
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAugmentCardClickedSignature, FAugmentCardData, SelectedCardData);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAugmentCardClickedSignature, FAugmentResult, SelectedCardData);
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API UAugmentCardWidget : public UUserWidget
@@ -33,11 +36,15 @@ class TEAM21_CH3_PROJECT_API UAugmentCardWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "Augment")
-	void SetAugmentCardData(const FAugmentCardData& InCardData);
+	//UFUNCTION(BlueprintCallable, Category = "Augment")
+	//void SetAugmentCardData(const FAugmentCardData& InCardData);
 
+	UFUNCTION(BlueprintCallable, Category = "Augment")
+	void SetAugmentResult(const FAugmentResult& InCardData);
+
+	
 	UFUNCTION(BlueprintPure, Category = "Augment")
-	const FAugmentCardData& GetAugmentCardData() const;
+	const FAugmentResult& GetAugmentCardData() const;
 
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Augment")
@@ -47,21 +54,21 @@ protected:
 	virtual void NativeConstruct() override;
 
 protected:
-	UPROPERTY(meta = (BindWidgetOptional))
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* CardNameText;
 
-	UPROPERTY(meta = (BindWidgetOptional))
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* CardDescriptionText;
 
-	UPROPERTY(meta = (BindWidgetOptional))
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* CardEffectText;
 
-	UPROPERTY(meta = (BindWidgetOptional))
+	UPROPERTY(meta = (BindWidget))
 	UButton* Button_Select;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Augment")
-	FAugmentCardData CurrentCardData;
+	FAugmentResult CurrentCardData;
 
 private:
 	UFUNCTION()
