@@ -47,7 +47,7 @@ private:
 	UFUNCTION()
 	void HandleSelectedAnimFinished();
 	
-	void StartCardSelected(FAugmentResult SelectedCardData, UWidgetAnimation* SelectedAnim);
+	void StartCardSelected(FAugmentResult selectedCardData, UWidgetAnimation* selectedAnim);
 	
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	TObjectPtr<UWidgetAnimation> fadeInAnim;

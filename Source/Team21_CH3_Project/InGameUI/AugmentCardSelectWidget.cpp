@@ -29,7 +29,6 @@ void UAugmentCardSelectWidget::NativeConstruct()
 	
 	FWidgetAnimationDynamicEvent selectedFinishedEvent;
 	selectedFinishedEvent.BindDynamic(this, &ThisClass::HandleSelectedAnimFinished);
-	
 	if (IsValid(firstCardSelectedAnim) == true) BindToAnimationFinished(firstCardSelectedAnim, selectedFinishedEvent);
 	if (IsValid(secondCardSelectedAnim) == true) BindToAnimationFinished(secondCardSelectedAnim, selectedFinishedEvent);
 	if (IsValid(thirdCardSelectedAnim) == true) BindToAnimationFinished(thirdCardSelectedAnim, selectedFinishedEvent);
@@ -60,13 +59,28 @@ void UAugmentCardSelectWidget::HandleFadeInFinished(){
 
 void UAugmentCardSelectWidget::HandleFirstCardSelected(FAugmentResult SelectedCardData)
 {
-	OnAugmentSelected.Broadcast(SelectedCardData);
+	StartCardSelected(SelectedCardData, firstCardSelectedAnim);
 }
 
 void UAugmentCardSelectWidget::HandleSecondCardSelected(FAugmentResult SelectedCardData){
-	OnAugmentSelected.Broadcast(SelectedCardData);
+	StartCardSelected(SelectedCardData, secondCardSelectedAnim);
 }
 
 void UAugmentCardSelectWidget::HandleThirdCardSelected(FAugmentResult SelectedCardData){
-	OnAugmentSelected.Broadcast(SelectedCardData);
+	StartCardSelected(SelectedCardData, thirdCardSelectedAnim);
+}
+
+void UAugmentCardSelectWidget::StartCardSelected(FAugmentResult selectedCardData, UWidgetAnimation* selectedAnim){
+	if (bIsSelecting) return;
+	
+	bIsSelecting = true;
+	pendingSelectedCardData = selectedCardData;
+	
+	if (IsValid(selectedAnim) == false) return;
+	
+	PlayAnimation(selectedAnim);
+}
+
+void UAugmentCardSelectWidget::HandleSelectedAnimFinished(){
+	OnAugmentSelected.Broadcast(pendingSelectedCardData);
 }
