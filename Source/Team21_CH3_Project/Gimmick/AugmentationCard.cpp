@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Data/AugmentationDataTable.h"
 #include "Component/AugmentComponent.h"
+#include "InGameUI/AugmentCardSelectWidget.h"
 
 AAugmentCard::AAugmentCard()
 {
@@ -33,11 +34,11 @@ void AAugmentCard::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 {
     if (!OtherActor || OtherActor == this) return;
 
-    // 1. Áõ°­ ÄÄÆ÷³ÍÆ®°¡ ÀÖ´Â ¾×ÅÍ(ÇÃ·¹ÀÌ¾î)ÀÎÁö È®ÀÎ
+    // 1. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½(ï¿½Ã·ï¿½ï¿½Ì¾ï¿½)ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
     UAugmentComponent* AugmentComp = OtherActor->FindComponentByClass<UAugmentComponent>();
     if (!AugmentComp || !AugmentDataTable || !AugmentWidgetClass) return;
 
-    // 2. ·£´ý ¼ÅÇÃ
+    // 2. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     TArray<FName> RowNames = AugmentDataTable->GetRowNames();
     if (RowNames.Num() < 3) return;
 
@@ -47,7 +48,7 @@ void AAugmentCard::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
         RowNames.Swap(i, j);
     }
 
-    // 3. ¼±ÅÃÁö »ý¼º
+    // 3. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     TArray<FAugmentResult> FinalOptions;
     for (int32 i = 0; i < 3; i++)
     {
@@ -57,15 +58,15 @@ void AAugmentCard::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
             FAugmentResult Option;
             Option.Type = Row->Type;
 
-            // ÄÄÆ÷³ÍÆ®¿¡¼­ ÇöÀç »óÅÂ¸¦ ÀÐ¾î¿È
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â¸ï¿½ ï¿½Ð¾ï¿½ï¿½
             int32 CurrentLevel = AugmentComp->GetAugmentLevel(Row->Type);
             Option.CurrentLevel = CurrentLevel + 1;
             Option.DisplayTitle = FString::Printf(TEXT("%s (Lv.%d)"), *Row->AugmentName, Option.CurrentLevel);
 
-            // ¼öÄ¡ °è»ê (ÁßÃ¸ È½¼ö¸¸Å­ °¡»ê)
+            // ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ (ï¿½ï¿½Ã¸ È½ï¿½ï¿½ï¿½ï¿½Å­ ï¿½ï¿½ï¿½ï¿½)
             float DisplayValue = Row->BaseValue + (CurrentLevel * Row->UpgradeValue);
 
-            // ¼³¸í¹® Á¶¸³
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             FFormatNamedArguments Args;
             Args.Add(TEXT("Value"), FText::AsNumber(FMath::FloorToInt(DisplayValue)));
             Args.Add(TEXT("Unit"), FText::FromString(Row->UnitText));
@@ -74,14 +75,14 @@ void AAugmentCard::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
             FinalOptions.Add(Option);
         }
     }
-    /*
-    // 4. À§Á¬ »ý¼º ¹× Ãâ·Â
-    if (UAugmentWidget* WidgetInstance = CreateWidget<UAugmentWidget>(GetWorld(), AugmentWidgetClass))
+    
+    // 4. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½
+    if (UAugmentCardSelectWidget* WidgetInstance = CreateWidget<UAugmentCardSelectWidget>(GetWorld(), AugmentWidgetClass))
     {
         WidgetInstance->OnDataReceived(FinalOptions);
         WidgetInstance->AddToViewport();
 
-        // ÄÁÆ®·Ñ·¯ ¼³Á¤ ·ÎÁ÷ (±âÁ¸°ú µ¿ÀÏ)
+        // ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
         if (APlayerController* PC = Cast<APlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
         {
             PC->SetPause(true);
@@ -91,6 +92,6 @@ void AAugmentCard::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
             PC->SetInputMode(InputMode);
         }
     }
-    */
-    Destroy(); // Ä«µå Á¦°Å
+    
+    Destroy(); // Ä«ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 }
