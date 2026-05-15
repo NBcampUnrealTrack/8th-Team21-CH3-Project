@@ -44,13 +44,13 @@ protected:
 public:
 	bool bIsNowAttacking;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Monster")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
 	bool bAttackRange = false;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Monster")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
 	float MoveSpeed = 400.f;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Monster")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
 	float MaxHP = 100.f;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Monster")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
 	float Damage =5.f;
 
 protected:

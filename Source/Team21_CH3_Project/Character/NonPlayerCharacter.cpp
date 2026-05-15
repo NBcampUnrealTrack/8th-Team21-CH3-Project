@@ -20,9 +20,6 @@ ANonPlayerCharacter::ANonPlayerCharacter() : bIsNowAttacking(false)
 
 	AIControllerClass = AAI_Controller::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
-
-	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
-
 }
 
 void ANonPlayerCharacter::BeginPlay()
@@ -35,7 +32,12 @@ void ANonPlayerCharacter::BeginPlay()
 
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 		GetCharacterMovement()->bUseControllerDesiredRotation = true;
+		GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
 		GetCharacterMovement()->RotationRate = FRotator(0.f, 480.f, 0.f);
+		if (bAttackRange == true)
+		{
+			GetWeapon(RifleClass);
+		}
 	}
 }
 
@@ -129,7 +131,10 @@ void ANonPlayerCharacter::OnCurrentHPChange(float InCurrentHP)
 void ANonPlayerCharacter::TryFire()
 {
 	AAI_Controller* AIController = GetController<AAI_Controller>();
-
+	if (bAttackRange == false)
+	{
+		return;
+	}
 	if (IsValid(AIController) == true)
 	{
 		float FocalDistance = 400.f;
@@ -203,7 +208,7 @@ void ANonPlayerCharacter::TryFire()
 			if (IsValid(HittedCharacter) == true)
 			{
 				FDamageEvent DamageEvent;
-				HittedCharacter->TakeDamage(10.f, DamageEvent, GetController(), this);
+				HittedCharacter->TakeDamage(Damage, DamageEvent, GetController(), this);
 			}
 		}
 
