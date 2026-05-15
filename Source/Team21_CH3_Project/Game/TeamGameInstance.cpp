@@ -165,43 +165,22 @@ const TMap<FName, int32>& UTeamGameInstance::GetTraitLevels() const{
 	return traitLevels;
 }
 
-bool UTeamGameInstance::CanUpgradeTrait(FName traitId, const FTraitData& traitData) const{
-	if (traitId.IsNone())
-		return false;
-
-	const int32 CurrentLevel = GetTraitLevel(traitId);
-	if (CurrentLevel >= 5)
-		return false;
-
-	const bool bHasRequiredTrait =
-		traitData.RequiredTraitId.IsNone() ||
-		traitData.RequiredTraitId == FName(TEXT("None")) ||
-		GetTraitLevel(traitData.RequiredTraitId) >= 5;
-	
-	if (bHasRequiredTrait == false) return false;
-
-	return playerGold >= traitData.unlockGoldCost;
-}
-
-bool UTeamGameInstance::TryUpgradeTrait(FName traitId, const FTraitData& traitData){
-	if (CanUpgradeTrait(traitId, traitData) == false) return false;
-	if (SpendPlayerGold(traitData.unlockGoldCost) == false) return false;
-	
-	traitLevels.FindOrAdd(traitId)++; // Level Up traitLevel
-	SaveGameData();
-	
-	return true;
-}
-
-FPlayerTraitBonus UTeamGameInstance::GetTotalTraitBonus(UDataTable* TraitDataTable) const{
-	
-	return 
-}
-
 bool UTeamGameInstance::SpendPlayerGold(int32 Cost){
-	return true;
+	return playerGold >= Cost ? playerGold -= Cost : false;
 }
 
-int32 UTeamGameInstance::GetTraitLevel(FName TraitId) const{ return 0; }
+void UTeamGameInstance::TraitLevelUp(FName traitId){
+	traitLevels.FindOrAdd(traitId)++;
+	SaveGameData();
+}
+
+int32 UTeamGameInstance::GetTraitLevel(FName traitId) const{
+	if (const int32* foundLevel = traitLevels.Find(traitId))
+	{
+		return *foundLevel;
+	}
+
+	return 0;
+}
 
 #pragma endregion
