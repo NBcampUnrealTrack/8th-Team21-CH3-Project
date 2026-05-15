@@ -435,11 +435,11 @@ void APlayerCharacter::TryFire()
 				
 				if (true == BoneNameString.Equals(FString(TEXT("HEAD")), ESearchCase::IgnoreCase))
 				{
-					HittedCharacter->TakeDamage(10.f * AttackDamageMul * 1.25f, DamageEvent, GetController(), this);
+					HittedCharacter->TakeDamage(50.f * AttackDamageMul * 1.25f, DamageEvent, GetController(), this);
 				}
 				else
 				{
-					HittedCharacter->TakeDamage(10.f * AttackDamageMul, DamageEvent, GetController(), this);
+					HittedCharacter->TakeDamage(50.f * AttackDamageMul, DamageEvent, GetController(), this);
 				}
 			}
 		}
