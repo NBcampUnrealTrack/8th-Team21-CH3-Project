@@ -236,11 +236,11 @@ void APlayerCharacter::InputLook(const FInputActionValue& InValue)
 
 void APlayerCharacter::InputAttackRanged(const FInputActionValue& InValue)
 {
-	//if (0.f < GetCharacterMovement()->Velocity.Size())
-	//	//캐릭터의 속도(벡터의 크기)가 0이상이면 -> 움직이고 있다면
-	//{
-	//	return; //코드 실행 X
-	//}
+	if (0.f < GetCharacterMovement()->Velocity.Size())
+		//캐릭터의 속도(벡터의 크기)가 0이상이면 -> 움직이고 있다면
+	{
+		return; //코드 실행 X
+	}
 	
 	if (IsValid(CurrentWeapon) == false) // 무기를 줍지 않았다면
 	{
