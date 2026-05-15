@@ -30,11 +30,23 @@ void AInGameHUD::BeginPlay()
 	}
 }
 
-void AInGameHUD::RefreshWaveUI(int32 CurrentWave, int32 CurrentKillCount, int32 TargetKillCount, int32 CurrentGold)
+void AInGameHUD::RefreshWaveUI(
+	int32 CurrentWave,
+	int32 CurrentKillCount,
+	int32 TargetKillCount,
+	int32 CurrentGold,
+	int32 GoldPerKill
+)
 {
 	if (InGameUIInstance)
 	{
-		InGameUIInstance->UpdateWaveInfo(CurrentWave, CurrentKillCount, TargetKillCount, CurrentGold);
+		InGameUIInstance->UpdateWaveInfo(
+			CurrentWave,
+			CurrentKillCount,
+			TargetKillCount,
+			CurrentGold,
+			GoldPerKill
+		);
 	}
 }
 

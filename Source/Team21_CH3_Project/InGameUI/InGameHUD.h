@@ -15,7 +15,13 @@ class TEAM21_CH3_PROJECT_API AInGameHUD : public AHUD
 	GENERATED_BODY()
 
 public:
-	void RefreshWaveUI(int32 CurrentWave, int32 CurrentKillCount, int32 TargetKillCount, int32 CurrentGold);
+	void RefreshWaveUI(
+		int32 CurrentWave,
+		int32 CurrentKillCount,
+		int32 TargetKillCount,
+		int32 CurrentGold,
+		int32 GoldPerKill
+	);
 
 	void RefreshHealthUI(float CurrentHealth, float MaxHealth);
 	void RefreshAmmoUI(int32 CurrentAmmo, int32 MaxAmmo);

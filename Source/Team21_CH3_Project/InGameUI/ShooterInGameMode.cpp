@@ -4,14 +4,18 @@
 #include "InGameUI/InGameHUD.h"
 #include "InGameUI/AugmentCardSelectWidget.h"
 #include "Game/TeamGameInstance.h"
+#include "Data/EnemyWaveDataTable.h"
 
 #include "Blueprint/UserWidget.h"
+#include "Engine/DataTable.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 
 AShooterInGameMode::AShooterInGameMode()
 {
+	WaveDataTable = nullptr;
+
 	CurrentWave = 1;
 	CurrentWaveKillCount = 0;
 	TargetKillCount = 0;
@@ -109,7 +113,9 @@ void AShooterInGameMode::StartWave()
 	bIsWaveInProgress = true;
 
 	CurrentWaveKillCount = 0;
+
 	TargetKillCount = CalculateTargetKillCountForWave(CurrentWave);
+	GoldPerEnemyKill = CalculateGoldPerKillForWave(CurrentWave);
 
 	bIsAugmentSelectOpen = false;
 	bPendingClearWaveAfterAugment = false;
@@ -117,9 +123,10 @@ void AShooterInGameMode::StartWave()
 	RefreshHUDWaveInfo();
 	RequestHUDWaveInfoRefreshRetry();
 
-	UE_LOG(LogTemp, Warning, TEXT("StartWave / Wave: %d / TargetKillCount: %d"),
+	UE_LOG(LogTemp, Warning, TEXT("StartWave / Wave: %d / TargetKillCount: %d / GoldPerKill: %d"),
 		CurrentWave,
-		TargetKillCount
+		TargetKillCount,
+		GoldPerEnemyKill
 	);
 
 	RequestSpawnWave(CurrentWave, TargetKillCount);
@@ -142,11 +149,12 @@ void AShooterInGameMode::HandleEnemyDied()
 	AddGold(GoldPerEnemyKill);
 	RefreshHUDWaveInfo();
 
-	UE_LOG(LogTemp, Warning, TEXT("EnemyDied / Wave: %d / Kill: %d / Target: %d / Gold: %d"),
+	UE_LOG(LogTemp, Warning, TEXT("EnemyDied / Wave: %d / Kill: %d / Target: %d / Gold: %d / GoldPerKill: %d"),
 		CurrentWave,
 		CurrentWaveKillCount,
 		TargetKillCount,
-		CurrentGold
+		CurrentGold,
+		GoldPerEnemyKill
 	);
 
 	const bool bShouldClearWave = CurrentWaveKillCount >= TargetKillCount;
@@ -220,6 +228,7 @@ void AShooterInGameMode::ClearWave()
 		false
 	);
 }
+
 void AShooterInGameMode::StartNextWave()
 {
 	if (bIsMatchEnded || bIsWaveInProgress || !bIsShopOpen)
@@ -351,8 +360,38 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 	);
 }
 
+FName AShooterInGameMode::MakeWaveDataRowName(int32 InWave) const
+{
+	const FString RowNameString = FString::Printf(TEXT("Wave_%02d"), InWave);
+	return FName(*RowNameString);
+}
+
 int32 AShooterInGameMode::CalculateTargetKillCountForWave(int32 InWave) const
 {
+	if (WaveDataTable)
+	{
+		const FName RowName = MakeWaveDataRowName(InWave);
+		const FEnemyWaveDataTable* WaveData = WaveDataTable->FindRow<FEnemyWaveDataTable>(RowName, TEXT("CalculateTargetKillCountForWave"));
+
+		if (WaveData)
+		{
+			const int32 TotalEnemyCount =
+				FMath::Max(0, WaveData->NormalCount) +
+				FMath::Max(0, WaveData->RusherCount) +
+				FMath::Max(0, WaveData->ShooterCount) +
+				FMath::Max(0, WaveData->BossCount);
+
+			if (TotalEnemyCount > 0)
+			{
+				return TotalEnemyCount;
+			}
+		}
+
+		UE_LOG(LogTemp, Warning, TEXT("WaveDataTable row not found or enemy count is 0. Row: %s"),
+			*RowName.ToString()
+		);
+	}
+
 	switch (InWave)
 	{
 	case 1:
@@ -367,6 +406,26 @@ int32 AShooterInGameMode::CalculateTargetKillCountForWave(int32 InWave) const
 	default:
 		return 10;
 	}
+}
+
+int32 AShooterInGameMode::CalculateGoldPerKillForWave(int32 InWave) const
+{
+	if (WaveDataTable)
+	{
+		const FName RowName = MakeWaveDataRowName(InWave);
+		const FEnemyWaveDataTable* WaveData = WaveDataTable->FindRow<FEnemyWaveDataTable>(RowName, TEXT("CalculateGoldPerKillForWave"));
+
+		if (WaveData)
+		{
+			return FMath::Max(0, WaveData->GoldPerKill);
+		}
+
+		UE_LOG(LogTemp, Warning, TEXT("WaveDataTable row not found. Row: %s"),
+			*RowName.ToString()
+		);
+	}
+
+	return GoldPerEnemyKill;
 }
 
 void AShooterInGameMode::AddGold(int32 GoldAmount)
@@ -402,7 +461,8 @@ bool AShooterInGameMode::TryRefreshHUDWaveInfo()
 		CurrentWave,
 		CurrentWaveKillCount,
 		TargetKillCount,
-		CurrentGold
+		CurrentGold,
+		GoldPerEnemyKill
 	);
 
 	return true;

@@ -8,6 +8,7 @@
 #include "ShooterInGameMode.generated.h"
 
 class UAugmentCardSelectWidget;
+class UDataTable;
 struct FAugmentCardData;
 
 UCLASS()
@@ -41,6 +42,9 @@ public:
 	void EndMatch(bool bPlayerWon);
 
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave Data")
+	UDataTable* WaveDataTable;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Wave State")
 	int32 CurrentWave;
 
@@ -115,6 +119,9 @@ protected:
 
 protected:
 	int32 CalculateTargetKillCountForWave(int32 InWave) const;
+	int32 CalculateGoldPerKillForWave(int32 InWave) const;
+	FName MakeWaveDataRowName(int32 InWave) const;
+
 	void AddGold(int32 GoldAmount);
 
 	void RefreshHUDWaveInfo();
