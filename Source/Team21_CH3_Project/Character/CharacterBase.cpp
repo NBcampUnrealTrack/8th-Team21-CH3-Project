@@ -61,30 +61,30 @@ void ACharacterBase::BeginPlay()
 
 	GameMode = Cast<AShooterInGameMode>(GetWorld()->GetAuthGameMode());
 
-	UTeamGameInstance* GameInstance = Cast<UTeamGameInstance>(GetGameInstance());
-	if (IsValid(GameInstance) == false)
-	{
-		return;
-	}
-	TSubclassOf<AWeapon> SelectWeapon = nullptr;
-	EWeaponType SelectType = GameInstance->GetSelectedWeaponType();
-
-	if (SelectType == EWeaponType::Rifle)
-	{
-		SelectWeapon = RifleClass;
-	}
-	else if (SelectType == EWeaponType::Shotgun)
-	{
-		SelectWeapon = ShotgunClass;
-	}
-	else if (SelectType == EWeaponType::Pistol)
-	{
-		SelectWeapon = PistolClass;
-	}
-	else
-		SelectWeapon = RifleClass;
-	
-	GetWeapon(SelectWeapon);
+	//UTeamGameInstance* GameInstance = Cast<UTeamGameInstance>(GetGameInstance());
+	//if (IsValid(GameInstance) == false)
+	//{
+	//	return;
+	//}
+	//TSubclassOf<AWeapon> SelectWeapon = nullptr;
+	//EWeaponType SelectType = GameInstance->GetSelectedWeaponType();
+	//
+	//if (SelectType == EWeaponType::Rifle)
+	//{
+	//	SelectWeapon = RifleClass;
+	//}
+	//else if (SelectType == EWeaponType::Shotgun)
+	//{
+	//	SelectWeapon = ShotgunClass;
+	//}
+	//else if (SelectType == EWeaponType::Pistol)
+	//{
+	//	SelectWeapon = PistolClass;
+	//}
+	//else
+	//	SelectWeapon = RifleClass;
+	//
+	//GetWeapon(SelectWeapon);
 }
 
 float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
