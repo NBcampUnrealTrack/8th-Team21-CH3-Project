@@ -82,6 +82,7 @@ void AAugmentCard::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
         WidgetInstance->OnDataReceived(FinalOptions);
         WidgetInstance->AddToViewport();
 
+        AugmentComp->BindAugmentWidget(WidgetInstance);
         
         if (APlayerController* PC = Cast<APlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
         {

@@ -40,6 +40,15 @@ void UAugmentComponent::OnAugmentCardSelected(FAugmentResult SelectedCardData)
         ActiveWidget->RemoveFromParent(); // 화면에서 제거
         ActiveWidget = nullptr;           // 참조 해제
     }
+    
+    APlayerController* PC = Cast<APlayerController>(GetWorld()->GetFirstPlayerController());
+    if (PC)
+    {
+        PC->SetPause(false);
+        PC->bShowMouseCursor = false;
+        FInputModeGameOnly InputMode;
+        PC->SetInputMode(InputMode);
+    }
 
 }
 
