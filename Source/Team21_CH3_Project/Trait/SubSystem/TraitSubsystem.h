@@ -13,11 +13,11 @@ class TEAM21_CH3_PROJECT_API UTraitSubsystem : public UGameInstanceSubsystem{
 
 public:
 	UFUNCTION(BlueprintCallable)
-	bool CanUpgradeTrait(FName traitId, const FTraitData& traitData) const;
+	ETraitCardState GetTraitCardState(FName traitId, const FTraitData& traitData) const;
 	UFUNCTION(BlueprintCallable)
 	bool TryUpgradeTrait(FName traitId, const FTraitData& traitData);
 	
 private:
-	UFUNCTION(BlueprintCallable)
-	FPlayerTraitBonus CalculateTotalTraitBonus(FName traitId, const FTraitData& traitData);
+	UFUNCTION()
+	FPlayerTraitBonus CalculateTotalTraitBonus(UDataTable* traitDataTable) const;
 };

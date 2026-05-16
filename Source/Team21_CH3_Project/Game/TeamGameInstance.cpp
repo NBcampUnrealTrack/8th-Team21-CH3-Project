@@ -11,7 +11,7 @@ UTeamGameInstance::UTeamGameInstance(){
 	mouseSensitivity = 1.0f;
 	masterVolume = 100.0f;
 	playerTotalKillCount = 0;
-	playerGold = 0;
+	playerGold = 1000;
 	bIsWin = false;
 	bHasMatchResult = false;
 
@@ -151,7 +151,7 @@ void UTeamGameInstance::StartNewGame(){
 	bIsWin = false;
 	bHasMatchResult = false;
 	traitLevels.Empty();
-	playerGold = 0;
+	playerGold = 1000;
 	SavedCurrentWave = 1;
 	SavedCurrentGold = 0;
 	bHasSavedInGameWaveData = false;
@@ -166,7 +166,13 @@ const TMap<FName, int32>& UTeamGameInstance::GetTraitLevels() const{
 }
 
 bool UTeamGameInstance::SpendPlayerGold(int32 Cost){
-	return playerGold >= Cost ? playerGold -= Cost : false;
+	if (playerGold < Cost)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("playerGold %d Cost %d SpendPlayerGold Failed"), playerGold, Cost);
+		return false;
+	}
+	playerGold -= Cost;
+	return true;
 }
 
 void UTeamGameInstance::TraitLevelUp(FName traitId){
