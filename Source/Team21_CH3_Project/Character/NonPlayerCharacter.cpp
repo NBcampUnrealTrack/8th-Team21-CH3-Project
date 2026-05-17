@@ -8,10 +8,12 @@
 #include "Animation/CharacterAnimInstance.h"
 #include "Item/Weapon.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "Engine/EngineTypes.h"
 #include "Engine/DamageEvents.h"
 #include "Component/PickupComponent.h"
 #include "Team21_CH3_Project.h"
+#include "Character/PlayerCharacter.h"
 #include "InGameUI/ShooterInGameMode.h"
 
 ANonPlayerCharacter::ANonPlayerCharacter() : bIsNowAttacking(false)
@@ -179,6 +181,9 @@ void ANonPlayerCharacter::TryFire()
 		FCollisionQueryParams TraceParams(NAME_None, false, this);
 		TraceParams.AddIgnoredActor(CurrentWeapon);
 
+		//TArray<AActor*> IgnoredMonsters;
+		//UGameplayStatics::GetAllActorsOfClass(GetWorld(), ANonPlayerCharacter::StaticClass(), IgnoredMonsters);
+		//TraceParams.AddIgnoredActors(IgnoredMonsters);
 		bool IsCollided = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_ATTACK, TraceParams);
 		if (IsCollided == false)
 		{
@@ -209,7 +214,7 @@ void ANonPlayerCharacter::TryFire()
 
 		if (IsCollided == true)
 		{
-			ACharacterBase* HittedCharacter = Cast<ACharacterBase>(HitResult.GetActor());
+			APlayerCharacter* HittedCharacter = Cast<APlayerCharacter>(HitResult.GetActor());
 			if (IsValid(HittedCharacter) == true)
 			{
 				FDamageEvent DamageEvent;
