@@ -42,7 +42,6 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 	checkf(IsValid(Player) == true, TEXT("Player Is imValid"));
 
-	AIController->SetFocus(Player);
 	NPC->BeginAttack();
 	return EBTNodeResult::InProgress;
 }

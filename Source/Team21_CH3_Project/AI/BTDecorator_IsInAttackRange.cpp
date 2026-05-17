@@ -25,9 +25,18 @@ bool UBTDecorator_IsInAttackRange::CalculateRawConditionValue(UBehaviorTreeCompo
 
 
 	APlayerCharacter* TargetPlayerCharacter = Cast<APlayerCharacter>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(AAI_Controller::TargetCharacterKey));
+	float AttackRange = 150.f;
+	if (NPC->bAttackRange == true)
+	{
+		AttackRange = 850.f;
+	}
+	else
+	{
+		AttackRange = 150.f;
+	}
 	if (IsValid(TargetPlayerCharacter) == true && TargetPlayerCharacter->IsPlayerControlled() == true)
 	{
-		return true;//NPC->GetDistanceTo(TargetPlayerCharacter); //<= AttackRange;
+		return NPC->GetDistanceTo(TargetPlayerCharacter) <= AttackRange;
 	}
 	return false;
 }
