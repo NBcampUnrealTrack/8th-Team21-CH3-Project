@@ -11,7 +11,7 @@ UTeamGameInstance::UTeamGameInstance(){
 	mouseSensitivity = 1.0f;
 	masterVolume = 100.0f;
 	playerTotalKillCount = 0;
-	playerGold = 1000;
+	playerGold = 10000;
 	bIsWin = false;
 	bHasMatchResult = false;
 
@@ -151,7 +151,7 @@ void UTeamGameInstance::StartNewGame(){
 	bIsWin = false;
 	bHasMatchResult = false;
 	traitLevels.Empty();
-	playerGold = 1000;
+	playerGold = 10000;
 	SavedCurrentWave = 1;
 	SavedCurrentGold = 0;
 	bHasSavedInGameWaveData = false;

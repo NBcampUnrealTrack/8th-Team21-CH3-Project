@@ -60,7 +60,7 @@ FPlayerTraitBonus UTraitSubsystem::CalculateTotalTraitBonus(UDataTable* traitDat
 	for (const TPair<FName, int32>& Pair : TraitLevels)
 	{
 		const FName traitId = Pair.Key;
-		const int32 Level = Pair.Value;
+		const int32 level = Pair.Value;
 		
 		const FTraitData* traitData = traitDataTable->FindRow<FTraitData>(
 			traitId,
@@ -69,11 +69,11 @@ FPlayerTraitBonus UTraitSubsystem::CalculateTotalTraitBonus(UDataTable* traitDat
 		
 		if (traitData == nullptr) continue;
 		
-		totalBonus.weaponDamageBonus += traitData->weaponDamageBonus * Level;
-		totalBonus.maxHPBonus += traitData->maxHPBonus * Level;
-		totalBonus.moveSpeedBonus += traitData->moveSpeedBonus * Level;
-		totalBonus.reloadSpeedBonus += traitData->reloadSpeedBonus * Level;
-		totalBonus.goldGainBonus += traitData->goldGainBonus * Level;
+		totalBonus.weaponDamageBonus += traitData->weaponDamageBonus * level;
+		totalBonus.maxHPBonus += traitData->maxHPBonus * level;
+		totalBonus.moveSpeedBonus += traitData->moveSpeedBonus * level;
+		totalBonus.reloadSpeedBonus += traitData->reloadSpeedBonus * level;
+		totalBonus.goldGainBonus += traitData->goldGainBonus * level;
 	}
 	
 	return totalBonus;
