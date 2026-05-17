@@ -94,14 +94,7 @@ void UOutGameTraitWidget::RefreshSelectedTraitDetail(FName traitId)
 	if (IsValid(traitIcon) == true) traitIcon->SetBrushFromTexture(traitData->icon);
 	traitIcon->SetVisibility(ESlateVisibility::Visible);
 	
-	if (IsValid(traitData->))
-	
-	if (IsValid(requiredTraitText) == true)
-	{
-		if ()
-		
-		requiredTraitText->SetText(FText::FromString(FString::Printf(TEXT("%s"), *traitData->RequiredTraitId.ToString())));
-	}
+
 	
 	
 
