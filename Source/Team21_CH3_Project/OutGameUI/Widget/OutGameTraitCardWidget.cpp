@@ -24,15 +24,20 @@ void UOutGameTraitCardWidget::InitializeCard(FName InTraitId, const FTraitData& 
 }
 
 void UOutGameTraitCardWidget::RefreshCard(int32 inCurrentLevel, ETraitCardState inState){
-	CurrentLevel = inCurrentLevel;
+	currentLevel = inCurrentLevel;
 	CurrentState = inState;
 	
 	if (IsValid(lockedIcon) == true) lockedIcon->SetVisibility(ESlateVisibility::Collapsed);
 	if (IsValid(traitIcon) == true) traitIcon->SetRenderOpacity(1);
 	if (IsValid(titleText) == true) titleText->SetRenderOpacity(1);
 	if (IsValid(levelText) == true) levelText->SetRenderOpacity(1);
-	if (IsValid(levelText) == true) levelText->SetText(FText::FromString(FString::Printf(TEXT("Lv.%d/5"), CurrentLevel)));
-	
+	if (IsValid(levelText) == true)
+	{
+		if (currentLevel < maxLevel)
+			levelText->SetText(FText::FromString(FString::Printf(TEXT("Lv.%d/5"), currentLevel)));
+		else 
+			levelText->SetText(FText::FromString(FString::Printf(TEXT("Lv.MAX"))));
+	}
 	switch (CurrentState)
 	{
 	case ETraitCardState::Locked:

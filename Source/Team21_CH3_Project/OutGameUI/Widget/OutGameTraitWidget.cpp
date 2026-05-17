@@ -89,11 +89,14 @@ void UOutGameTraitWidget::RefreshSelectedTraitDetail(FName traitId)
 	}
 	
 	if (IsValid(titleText) == true) titleText->SetText(traitData->traitName);
-	if (IsValid(requiredTraitText) == true) requiredTraitText->SetText(FText::FromString(FString::Printf(TEXT("%s"), *traitData->RequiredTraitId.ToString())));
 	if (IsValid(descriptionText) == true) descriptionText->SetText(traitData->description);
 	if (IsValid(unlockGoldCostText) == true) unlockGoldCostText->SetText(FText::FromString(FString::Printf(TEXT("%d G"), traitData->unlockGoldCost)));
 	if (IsValid(traitIcon) == true) traitIcon->SetBrushFromTexture(traitData->icon);
 	traitIcon->SetVisibility(ESlateVisibility::Visible);
+	
+
+	
+	
 
 	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetWorld()->GetGameInstance());
 	if (IsValid(GI) == false) return;
@@ -119,10 +122,12 @@ void UOutGameTraitWidget::RefreshSelectedTraitDetail(FName traitId)
 		if (IsValid(stateText) == true)stateText->SetText(FText::FromString(TEXT("Level Up")));
 		break;
 	case ETraitCardState::NotEnoughGold:
-		if (IsValid(stateText) == true)stateText->SetText(FText::FromString(TEXT("골드 부족")));
+		if (IsValid(traitLevelUpButton)) traitLevelUpButton->SetVisibility(ESlateVisibility::Collapsed);
+		if (IsValid(stateText) == true)stateText->SetText(FText::FromString(TEXT("소지 골드가 충분하지않습니다")));
 		break;
 	case ETraitCardState::MaxLevel:
-		if (IsValid(stateText) == true)stateText->SetText(FText::FromString(TEXT("최대 레벨")));
+		if (IsValid(traitLevelUpButton)) traitLevelUpButton->SetVisibility(ESlateVisibility::Collapsed);
+		if (IsValid(stateText) == true)stateText->SetText(FText::FromString(TEXT("현재 최대 레벨입니다")));
 		break;
 	case ETraitCardState::Invalid:
 		if (IsValid(stateText) == true)stateText->SetText(FText::FromString(FString::Printf(TEXT("%s In valid traitId"), *traitId.ToString())));

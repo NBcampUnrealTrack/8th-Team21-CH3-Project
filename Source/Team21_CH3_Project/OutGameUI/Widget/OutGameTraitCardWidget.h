@@ -54,7 +54,8 @@ private:
 	
 	FTraitData traitData;
 	FName traitId;
-	int32 CurrentLevel = 0;
+	int32 currentLevel = 0;
+	int32 maxLevel = 5;
 	ETraitCardState CurrentState = ETraitCardState::Upgradeable;
 	bool bIsPlaying= false;
 	
