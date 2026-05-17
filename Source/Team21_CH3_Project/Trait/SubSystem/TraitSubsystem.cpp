@@ -41,8 +41,7 @@ bool UTraitSubsystem::TryUpgradeTrait(FName traitId, const FTraitData& traitData
 	if (GetTraitCardState(traitId, traitData) != ETraitCardState::Upgradeable) return false;
 	if (GI->SpendPlayerGold(traitData.unlockGoldCost) == false) return false;
 	
-	GI->TraitLevelUp(traitId);
-	GI->SaveGameData();
+	GI->TraitLevelUp(traitId); // TraitLevelUp in SaveGameData()
 	
 	return true;
 }

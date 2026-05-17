@@ -6,7 +6,7 @@
 
 class UTexture2D;
 
-UENUM(Blueprintable)
+UENUM(BlueprintType)
 enum class ETraitCardState : uint8{
 	Invalid,
 	Locked,
