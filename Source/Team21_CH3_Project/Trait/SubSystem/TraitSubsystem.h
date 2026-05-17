@@ -16,8 +16,7 @@ public:
 	ETraitCardState GetTraitCardState(FName traitId, const FTraitData& traitData) const;
 	UFUNCTION(BlueprintCallable)
 	bool TryUpgradeTrait(FName traitId, const FTraitData& traitData);
-	
-private:
 	UFUNCTION()
 	FPlayerTraitBonus CalculateTotalTraitBonus(UDataTable* traitDataTable) const;
+
 };
