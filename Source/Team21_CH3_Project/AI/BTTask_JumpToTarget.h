@@ -4,19 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "BTTask_TurnToTarget.generated.h"
+#include "BTTask_JumpToTarget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class TEAM21_CH3_PROJECT_API UBTTask_TurnToTarget : public UBTTaskNode
+class TEAM21_CH3_PROJECT_API UBTTask_JumpToTarget : public UBTTaskNode
 {
 	GENERATED_BODY()
-	
 public:
-	UBTTask_TurnToTarget();
-
+	UBTTask_JumpToTarget();
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 };

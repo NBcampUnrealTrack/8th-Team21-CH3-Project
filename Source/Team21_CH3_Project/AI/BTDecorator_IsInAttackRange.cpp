@@ -5,8 +5,7 @@
 #include "Controller/AI_Controller.h"
 #include "Character/NonPlayerCharacter.h"
 #include "BehaviorTree/BlackboardComponent.h"
-
-const float UBTDecorator_IsInAttackRange::AttackRange(200.f);
+#include "Character/PlayerCharacter.h"
 
 UBTDecorator_IsInAttackRange::UBTDecorator_IsInAttackRange()
 {
@@ -24,7 +23,17 @@ bool UBTDecorator_IsInAttackRange::CalculateRawConditionValue(UBehaviorTreeCompo
 	ANonPlayerCharacter* NPC = Cast<ANonPlayerCharacter>(AIController->GetPawn());
 	checkf(IsValid(NPC) == true, TEXT("Invalid NPC."));
 
-	ACharacterBase* TargetPlayerCharacter = Cast<ACharacterBase>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(AAI_Controller::TargetCharacterKey));
+
+	APlayerCharacter* TargetPlayerCharacter = Cast<APlayerCharacter>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(AAI_Controller::TargetCharacterKey));
+	float AttackRange = 150.f;
+	if (NPC->bAttackRange == true)
+	{
+		AttackRange = 850.f;
+	}
+	else
+	{
+		AttackRange = 150.f;
+	}
 	if (IsValid(TargetPlayerCharacter) == true && TargetPlayerCharacter->IsPlayerControlled() == true)
 	{
 		return NPC->GetDistanceTo(TargetPlayerCharacter) <= AttackRange;

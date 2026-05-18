@@ -3,11 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AIController.h"
-#include "Perception/AIPerceptionComponent.h"
-#include "Perception/AISenseConfig_Sight.h"
-#include "Perception/AISenseConfig_Hearing.h"
-#include "Perception/AIPerceptionTypes.h"
+#include "DetourCrowdAIController.h"
 #include "AI_Controller.generated.h"
 
 class UBlackboardData;
@@ -17,13 +13,13 @@ class UBehaviorTree;
  * 
  */
 UCLASS()
-class TEAM21_CH3_PROJECT_API AAI_Controller : public AAIController
+class TEAM21_CH3_PROJECT_API AAI_Controller : public ADetourCrowdAIController
 {
 	GENERATED_BODY()
 	
 	friend class ANonPlayerCharacter;
 public:
-	AAI_Controller();
+	AAI_Controller(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	virtual void BeginPlay() override;
@@ -32,14 +28,10 @@ protected:
 	void BeginAI(APawn* InPawn);
 	void EndAI();
 
-	UFUNCTION()
-	void OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors);
-
 public:
 	static const float PatrolRadius;
 	static int32 ShowAIDebug;
-	static const FName StartPatrolPositionKey;
-	static const FName EndPatrolPositionKey;
+	static const FName StartPositionKey;
 	static const FName TargetCharacterKey;
 	
 private:
@@ -47,12 +39,4 @@ private:
 	TObjectPtr<UBlackboardData> BlackboardDataAsset;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (AllowPrivateAccess))
 	TObjectPtr<UBehaviorTree> BehaviorTree;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess))
-	class UAIPerceptionComponent* AIPerception;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess))
-	class UAISenseConfig_Sight* SightConfig;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess))
-	class UAISenseConfig_Hearing* HearingConfig;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess))
-	class UAISenseConfig_Damage* DamageSenseConfig;
 };

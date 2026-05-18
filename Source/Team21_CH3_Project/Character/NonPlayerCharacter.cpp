@@ -8,11 +8,14 @@
 #include "Animation/CharacterAnimInstance.h"
 #include "Item/Weapon.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "Engine/EngineTypes.h"
 #include "Engine/DamageEvents.h"
 #include "Component/PickupComponent.h"
 #include "Team21_CH3_Project.h"
+#include "Character/PlayerCharacter.h"
 #include "InGameUI/ShooterInGameMode.h"
+#include "TimerManager.h"
 
 ANonPlayerCharacter::ANonPlayerCharacter() : bIsNowAttacking(false)
 {
@@ -50,7 +53,7 @@ void ANonPlayerCharacter::BeginAttack()
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	if (IsValid(AnimInstance) == true && IsValid(AttackMeleeMontage) == true && AnimInstance->Montage_IsPlaying(AttackMeleeMontage) == false && bAttackRange == false)
 	{
-
+		if (bIsNowAttacking)return;
 		AnimInstance->Montage_Play(AttackMeleeMontage);
 
 
@@ -63,10 +66,12 @@ void ANonPlayerCharacter::BeginAttack()
 
 		}
 	}
-
 	if (bAttackRange == true)
 	{
+		bIsNowAttacking = true;
+
 		TryFire();
+		GetWorldTimerManager().SetTimer(AttackTimer, this, &ThisClass::EndAttack, 0.7f, false);
 	}
 }
 
@@ -95,6 +100,12 @@ float ANonPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 
 	return FinalDamageAmount;
 }
+void ANonPlayerCharacter::EndAttack()
+{
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+
+	bIsNowAttacking = false;
+}
 
 void ANonPlayerCharacter::EndAttack(UAnimMontage* InMontage, bool bInterruped)
 {
@@ -113,6 +124,8 @@ void ANonPlayerCharacter::InitializeHP(UStatusComponent* InStatusComponent)
 	OnMaxHPChange(InStatusComponent->GetMaxHP());
 	OnCurrentHPChange(InStatusComponent->GetCurrentHP());
 }
+
+
 
 void ANonPlayerCharacter::OnMaxHPChange(float InMaxHP)
 {
@@ -179,6 +192,9 @@ void ANonPlayerCharacter::TryFire()
 		FCollisionQueryParams TraceParams(NAME_None, false, this);
 		TraceParams.AddIgnoredActor(CurrentWeapon);
 
+		//TArray<AActor*> IgnoredMonsters;
+		//UGameplayStatics::GetAllActorsOfClass(GetWorld(), ANonPlayerCharacter::StaticClass(), IgnoredMonsters);
+		//TraceParams.AddIgnoredActors(IgnoredMonsters);
 		bool IsCollided = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_ATTACK, TraceParams);
 		if (IsCollided == false)
 		{
@@ -209,7 +225,7 @@ void ANonPlayerCharacter::TryFire()
 
 		if (IsCollided == true)
 		{
-			ACharacterBase* HittedCharacter = Cast<ACharacterBase>(HitResult.GetActor());
+			APlayerCharacter* HittedCharacter = Cast<APlayerCharacter>(HitResult.GetActor());
 			if (IsValid(HittedCharacter) == true)
 			{
 				FDamageEvent DamageEvent;
