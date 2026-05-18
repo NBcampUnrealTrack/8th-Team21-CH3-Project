@@ -96,7 +96,6 @@ void UOutGameTraitWidget::RefreshSelectedTraitDetail(FName traitId)
 		traitIcon->SetBrushFromTexture(traitData->icon);
 		traitIcon->SetVisibility(ESlateVisibility::Visible);
 	}
-	RefreshChangeBonusDetail(traitId);
 	
 	if (IsValid(requiredTraitText) == true)
 	{
@@ -242,6 +241,7 @@ void UOutGameTraitWidget::RefreshAllTraitCards(){
 
 void UOutGameTraitWidget::HandleTraitCardClicked(FName inTraitId){
 	selectedTraitId = inTraitId;
+	RefreshChangeBonusDetail(inTraitId);
 	RefreshSelectedTraitDetail(inTraitId);
 }
 
@@ -317,6 +317,8 @@ void UOutGameTraitWidget::UpdateTraitBonus(){
 		reloadSpeedBonusText->SetText(FText::FromString(FString::Printf(TEXT("%+.0f%%"), bonus.reloadSpeedBonus * 100.0f)));
 	if (IsValid(goldGainBonusText) == true) 
 		goldGainBonusText->SetText(FText::FromString(FString::Printf(TEXT("%+.0f%%"), bonus.goldGainBonus * 100.0f)));
+	
+	// GI->SetGoldGainMultiplier(bonus.goldGainBonus);
 }
 
 void UOutGameTraitWidget::UpdateGoldUI(){
