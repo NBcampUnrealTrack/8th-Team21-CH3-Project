@@ -229,11 +229,22 @@ void UAugmentComponent::CheckLowHPSpeedBuff(float CurrentHP)
         {
             bIsSpeedBuffActive = true;
 
-            float NewSpeed = PlayerChar->baseSpeed + BonusSpeed;
+            float NewSpeed = PlayerChar->baseSpeed * (1.f + BonusSpeed / 100.f);
+            float NewTargetSpeed = PlayerChar->baseTargetSpeed * (1.f + BonusSpeed / 100.f);
 
 
-            //PlayerChar->CurrentSpeed = NewSpeed;
-            MoveComp->MaxWalkSpeed = NewSpeed;
+            PlayerChar->CurrentSpeed = NewSpeed;
+            PlayerChar->TargetSpeed = NewTargetSpeed;
+            if (PlayerChar->CurrentSpeed == PlayerChar->baseTargetSpeed)
+            {
+                PlayerChar->CurrentSpeed = NewTargetSpeed;
+                MoveComp->MaxWalkSpeed = NewTargetSpeed;
+            }
+            else
+            {
+                PlayerChar->CurrentSpeed = NewSpeed;
+                MoveComp->MaxWalkSpeed = NewSpeed;
+            }
 
             UE_LOG(LogTemp, Warning, TEXT(">>> LOW HP! (Component) Speed Buff Active: %.2f <<<"), NewSpeed);
         }
@@ -242,8 +253,18 @@ void UAugmentComponent::CheckLowHPSpeedBuff(float CurrentHP)
         {
             bIsSpeedBuffActive = false;
 
-            //PlayerChar->CurrentSpeed = PlayerChar->baseSpeed;
-            MoveComp->MaxWalkSpeed = PlayerChar->baseSpeed;
+            PlayerChar->CurrentSpeed = PlayerChar->baseSpeed;
+            PlayerChar->TargetSpeed = PlayerChar->baseTargetSpeed;
+            if (MoveComp->MaxWalkSpeed > PlayerChar->baseTargetSpeed)
+            {
+                PlayerChar->CurrentSpeed = PlayerChar->baseTargetSpeed;
+                MoveComp->MaxWalkSpeed = PlayerChar->baseTargetSpeed;
+            }
+            else
+            {
+                PlayerChar->CurrentSpeed = PlayerChar->baseSpeed;
+                MoveComp->MaxWalkSpeed = PlayerChar->baseSpeed;
+            }
 
             UE_LOG(LogTemp, Log, TEXT(">>> HP Recovered. (Component) Speed Buff Deactivated. <<<"));
         }
