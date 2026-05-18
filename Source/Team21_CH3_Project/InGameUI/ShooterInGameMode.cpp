@@ -13,6 +13,7 @@
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "Gimmick/SpawnManager.h"
 
 AShooterInGameMode::AShooterInGameMode()
 {
@@ -133,7 +134,12 @@ void AShooterInGameMode::StartWave()
 		GoldPerEnemyKill
 	);
 
-	RequestSpawnWave(CurrentWave, TargetKillCount);
+	if (!TryStartWaveWithSpawnManager(CurrentWave))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SpawnManager not found. Fallback to RequestSpawnWave."));
+
+		RequestSpawnWave(CurrentWave, TargetKillCount);
+	}
 }
 
 void AShooterInGameMode::HandleEnemyDied()
@@ -435,6 +441,39 @@ int32 AShooterInGameMode::CalculateGoldPerKillForWave(int32 InWave) const
 	}
 
 	return GoldPerEnemyKill;
+}
+
+bool AShooterInGameMode::TryStartWaveWithSpawnManager(int32 InWave)
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return false;
+	}
+
+	TArray<AActor*> FoundSpawnManagers;
+	UGameplayStatics::GetAllActorsOfClass(
+		World,
+		ASpawnManager::StaticClass(),
+		FoundSpawnManagers
+	);
+
+	if (FoundSpawnManagers.Num() <= 0)
+	{
+		return false;
+	}
+
+	ASpawnManager* SpawnManager = Cast<ASpawnManager>(FoundSpawnManagers[0]);
+	if (!SpawnManager)
+	{
+		return false;
+	}
+
+	SpawnManager->StartWave(InWave);
+
+	UE_LOG(LogTemp, Warning, TEXT("SpawnManager StartWave Called / Wave: %d"), InWave);
+
+	return true;
 }
 
 void AShooterInGameMode::AddGold(int32 GoldAmount)
