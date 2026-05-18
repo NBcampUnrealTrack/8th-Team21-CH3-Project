@@ -161,9 +161,16 @@ void UInGameUI::UpdateWaveInfo(
 {
 	if (WaveText)
 	{
-		WaveText->SetText(FText::FromString(
-			FString::Printf(TEXT("WAVE %d"), CurrentWave)
-		));
+		if (CurrentWave == 4)
+		{
+			WaveText->SetText(FText::FromString(TEXT("Wave : Boss")));
+		}
+		else
+		{
+			WaveText->SetText(FText::FromString(
+				FString::Printf(TEXT("WAVE %d"), CurrentWave)
+			));
+		}
 	}
 
 	if (KillText)
