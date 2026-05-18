@@ -181,6 +181,69 @@ void UAugmentComponent::HandleEnemyKilled(AActor* KilledEnemy)
 
 }
 
+
+void UAugmentComponent::AugmentSelection()
+{
+    
+    if (!AugmentDataTable || !AugmentWidgetClass) return;
+
+
+    TArray<FName> RowNames = AugmentDataTable->GetRowNames();
+    if (RowNames.Num() < 3) return;
+
+    for (int32 i = RowNames.Num() - 1; i > 0; i--)
+    {
+        int32 j = FMath::RandRange(0, i);
+        RowNames.Swap(i, j);
+    }
+
+
+    TArray<FAugmentResult> FinalOptions;
+    for (int32 i = 0; i < 3; i++)
+    {
+        FAugmentTableData* Row = AugmentDataTable->FindRow<FAugmentTableData>(RowNames[i], TEXT(""));
+        if (Row)
+        {
+            FAugmentResult Option;
+            Option.Type = Row->Type;
+
+
+            int32 CurrentLevel = GetAugmentLevel(Row->Type);
+            Option.CurrentLevel = CurrentLevel + 1;
+            Option.DisplayTitle = FString::Printf(TEXT("%s (Lv.%d)"), *Row->AugmentName, Option.CurrentLevel);
+
+
+            float DisplayValue = Row->BaseValue + (CurrentLevel * Row->UpgradeValue);
+
+
+            FFormatNamedArguments Args;
+            Args.Add(TEXT("Value"), FText::AsNumber(FMath::FloorToInt(DisplayValue)));
+            Args.Add(TEXT("Unit"), FText::FromString(Row->UnitText));
+            Option.Description = FText::Format(FText::FromString(Row->DescriptionFormat), Args).ToString();
+
+            FinalOptions.Add(Option);
+        }
+    }
+
+
+    if (UAugmentCardSelectWidget* WidgetInstance = CreateWidget<UAugmentCardSelectWidget>(GetWorld(), AugmentWidgetClass))
+    {
+        WidgetInstance->OnDataReceived(FinalOptions);
+        WidgetInstance->AddToViewport();
+
+        BindAugmentWidget(WidgetInstance);
+
+        if (APlayerController* PC = Cast<APlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
+        {
+            PC->SetPause(true);
+            PC->bShowMouseCursor = true;
+            FInputModeUIOnly InputMode;
+            InputMode.SetWidgetToFocus(WidgetInstance->TakeWidget());
+            PC->SetInputMode(InputMode);
+        }
+    }
+}
+
 const FAugmentTableData* UAugmentComponent::GetAugmentData(EAugmentType Type)
 {
     if (!AugmentDataTable) return nullptr;

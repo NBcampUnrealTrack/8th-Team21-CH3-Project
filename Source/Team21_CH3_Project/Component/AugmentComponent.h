@@ -34,6 +34,9 @@ public:
     /** 최종 데미지 보정치를 계산하여 반환 (캐릭터의 공격 로직에서 호출) */
     float GetCalculatedDamage(float InBaseDamage, AActor* Target);
 
+    //카드증강 선택화면 호출 함수
+    void AugmentSelection();
+
 
     // --- 이벤트 접점 함수 (캐릭터 담당자가 호출해줘야 함) ---
 
@@ -52,6 +55,8 @@ public:
     {
         return OwnedAugments.Contains(Type) ? OwnedAugments[Type] : 0;
     }
+
+    
 
 private:
     // --- 내부 관리 데이터 ---
@@ -80,10 +85,16 @@ private:
     UPROPERTY()
     class UAugmentCardSelectWidget* ActiveWidget;
 
+    //킬 카운트
+    int32 Killcount=0;
+
 protected:
     UFUNCTION()
     void CheckLowHPSpeedBuff(float CurrentHP);
 
     bool bIsSpeedBuffActive = false;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Augment|Setup")
+    TSubclassOf<UUserWidget> AugmentWidgetClass;
 
 };
