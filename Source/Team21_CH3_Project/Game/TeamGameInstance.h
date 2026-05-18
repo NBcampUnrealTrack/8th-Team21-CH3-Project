@@ -24,17 +24,12 @@ public:
 	
 	virtual void Init() override;
 
+	void ResetToDefaultValues();
+	
 	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Weapon")
 	EWeaponType GetSelectedWeaponType() const;
 	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Weapon")
 	void SetSelectedWeaponType(EWeaponType weaponType);
-
-	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Record")
-	int32 GetPlayerTotalKillCount() const;
-	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Record")
-	void SetPlayerTotalKillCount(int32 killCount);
-	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Record")
-	void AddPlayerKillCount(int32 killCount = 1);
 	
 	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Result")
 	bool GetIsWin() const;
@@ -73,6 +68,13 @@ private:
 #pragma region SaveGame
 	
 public:
+	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Record")
+	int32 GetPlayerTotalKillCount() const;
+	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Record")
+	void SetPlayerTotalKillCount(int32 killCount);
+	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Record")
+	void AddPlayerKillCount(int32 killCount = 1);
+	
 	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Settings")
 	float GetMouseSensitivity() const;
 	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Settings")
@@ -87,6 +89,8 @@ public:
 	int32 GetPlayerGold() const;
 	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Settings")
 	void AddPlayerGold(int32 gold);
+	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Settings")
+	void SetGoldGainMultiplier(float goldGainMultiplier);
 	
 	UFUNCTION()
 	void LoadGameData();
@@ -104,6 +108,8 @@ private:
 	float mouseSensitivity;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Settings", meta = (AllowPrivateAccess = "true"))
 	float masterVolume;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Settings", meta = (AllowPrivateAccess = "true"))
+	float goldGainMultiplier = 1.0f;
 	
 	UPROPERTY()
 	TObjectPtr<UTeamSaveGame> CurrentSaveGame;
@@ -120,8 +126,12 @@ public:
 	bool SpendPlayerGold(int32 Cost);
 	UFUNCTION(BlueprintCallable)
 	void TraitLevelUp(FName traitId);
+	UFUNCTION(BlueprintCallable)
+	void ApplyGoldTraitBonus();
 	
 private:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Team Game Instance|Trait", meta = (AllowPrivateAccess))
+	TObjectPtr<UDataTable> traitDataTable;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Trait", meta = (AllowPrivateAccess = "true"))
 	TMap<FName, int32> traitLevels;
 	
