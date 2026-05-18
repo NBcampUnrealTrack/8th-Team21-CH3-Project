@@ -32,10 +32,10 @@ public:
 		//죽음 여부
 public:
 	UPROPERTY()
-	float MaxHP;
+	float MaxHP = 100.f;
 
 	UPROPERTY(Transient)
-	float CurrentHP;
+	float CurrentHP = 100.f;
 
 	UPROPERTY(Transient)
 	uint8 bIsDead : 1;
