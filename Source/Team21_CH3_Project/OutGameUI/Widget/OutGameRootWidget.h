@@ -35,7 +35,8 @@ UENUM(BlueprintType)
 enum class EConfirmAction : uint8{
 	None = 0 UMETA(DisplayName = "None"),
 	QuitGame = 1 UMETA(DisplayName = "QuitGame"),
-	NewGame = 2 UMETA(DisplayName = "NewGame")
+	NewGame = 2 UMETA(DisplayName = "NewGame"),
+	MissionSelect = 3 UMETA(DisplayName = "MissionSelect")
 };
 
 UCLASS()
@@ -109,6 +110,7 @@ private:
 public:
 	void ShowQuitConfirm();
 	void ShowNewGameConfirm();	
+	void ShowMissionSelectConfirm();
 	
 private:
 	UPROPERTY(meta = (BindWidget))

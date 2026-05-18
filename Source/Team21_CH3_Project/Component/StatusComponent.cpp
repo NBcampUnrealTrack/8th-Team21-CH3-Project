@@ -3,8 +3,6 @@
 #include "Component/StatusComponent.h"
 
 UStatusComponent::UStatusComponent(): 
-	MaxHP(100.f), 
-	CurrentHP(100.f),
 	bIsDead(false)
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features

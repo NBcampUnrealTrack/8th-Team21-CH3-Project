@@ -36,5 +36,10 @@ protected:
 	UFUNCTION()
 	void HandleBackClicked();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UnlockKillCount")
+	int32 normalUnlockKillCount;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UnlockKillCount")
+	int32 hardUnlockKillCount;
+	
 	EMapLevel selectedMapLevel;
 };

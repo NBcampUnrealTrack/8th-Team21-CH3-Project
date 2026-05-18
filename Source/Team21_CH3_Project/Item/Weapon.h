@@ -38,6 +38,8 @@ public:
 
 	float GetSpreadAngle() const { return SpreadAngle; }
 
+	float GetAttackDamage() const { return AttackDamage; }
+
 	void EquipToCharacter(ACharacterBase* InCharacter);
 
 	void Reload();
@@ -88,4 +90,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
 	float FirePerMinute = 600.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats")
+	float AttackDamage = 50.f;
 };

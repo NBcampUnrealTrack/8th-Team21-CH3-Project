@@ -313,6 +313,13 @@ void APlayerCharacter::InputAttackRanged(const FInputActionValue& InValue)
 
 	if (false == bIsFullAutoFire)
 	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (IsValid(AnimInstance)) 
+			if (AnimInstance->Montage_IsPlaying(GetCurrentWeaponAttackAnimMontage()))
+			{
+				return; //단발 사격 시 애님몽타주 재생중에는 사격 불가능
+			}
+		
 		TryFire();
 	}
 
@@ -474,16 +481,17 @@ void APlayerCharacter::TryFire()
 			{
 				FDamageEvent DamageEvent;
 				FString BoneNameString = HitResult.BoneName.ToString();
+				float WeaponDamage = CurrentWeapon->GetAttackDamage();
 				//UKismetSystemLibrary::PrintString(this, BoneNameString);
 				//DrawDebugSphere(GetWorld(), HitResult.Location, 3.f, 16, FColor(255, 0, 0, 255), true, 20.f, 0U, 5.f); //피격위치(Bone) 디버그드로잉
 				
 				if (true == BoneNameString.Equals(FString(TEXT("HEAD")), ESearchCase::IgnoreCase))
 				{
-					HittedCharacter->TakeDamage(50.f * AttackDamageMul * 1.25f, DamageEvent, GetController(), this);
+					HittedCharacter->TakeDamage(WeaponDamage * AttackDamageMul * 1.25f, DamageEvent, GetController(), this);
 				}
 				else
 				{
-					HittedCharacter->TakeDamage(50.f * AttackDamageMul, DamageEvent, GetController(), this);
+					HittedCharacter->TakeDamage(WeaponDamage * AttackDamageMul, DamageEvent, GetController(), this);
 				}
 			}
 		}
@@ -531,6 +539,17 @@ void APlayerCharacter::InputEndDash(const FInputActionValue& InValue)
 
 void APlayerCharacter::InputToggleSelector(const FInputActionValue& InValue)
 {
+	if (IsValid(CurrentWeapon) == false)
+	{
+		return;
+	}
+
+	if (CurrentWeapon->GetCanFullAuto() == false)
+	{
+		return;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Toggle not work"));
+
 	bIsFullAutoFire = !bIsFullAutoFire;
 }
 

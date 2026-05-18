@@ -272,6 +272,17 @@ void UOutGameRootWidget::ShowNewGameConfirm(){
 	);
 }
 
+void UOutGameRootWidget::ShowMissionSelectConfirm(){
+	pendingConfirmAction = EConfirmAction::MissionSelect;
+	
+	if (IsValid(confirmDialogWidget) == false) return;
+	confirmDialogWidget->EnableOkButton();
+	confirmDialogWidget->ShowConfirmDialog(
+		FText::FromString(TEXT("Map Select")),
+		FText::FromString(TEXT("해금하기위한 킬 수가 부족합니다!"))
+		);
+}
+
 void UOutGameRootWidget::HandleConfirmAccepted(){
 	switch (pendingConfirmAction)
 	{
@@ -287,6 +298,9 @@ void UOutGameRootWidget::HandleConfirmAccepted(){
 		{
 			ShowLobby();
 		});
+		break;
+	case EConfirmAction::MissionSelect:
+		
 		break;
 	default:
 		break;
