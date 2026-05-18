@@ -554,29 +554,27 @@ void AShooterInGameMode::HandleHUDWaveInfoRefreshRetry()
 
 void AShooterInGameMode::ShowAugmentCardSelectUI()
 {
-	if (bIsMatchEnded || bIsAugmentSelectOpen)
-	{
-		return;
-	}
+	if (bIsMatchEnded || bIsAugmentSelectOpen) return;
 
-	// 1. 플레이어 컨트롤러를 통해 플레이어 캐릭터를 가져옵니다.
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	if (!PC) return;
 
 	APawn* PlayerPawn = PC->GetPawn();
 	if (!PlayerPawn) return;
 
-	// 2. 캐릭터가 들고 있는 AugmentComponent를 찾습니다.
 	UAugmentComponent* AugmentComp = PlayerPawn->FindComponentByClass<UAugmentComponent>();
-	if (!AugmentComp)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ShowAugmentCardSelectUI: AugmentComponent not found on Player!"));
-		return;
-	}
+	if (!AugmentComp) return;
 
-	// 3. 게임모드가 플래그만 세워두고, 실제 위젯 띄우기 노가다는 컴포넌트에게 전권을 넘깁니다!
 	bIsAugmentSelectOpen = true;
+
 	AugmentComp->AugmentSelection();
+
+
+	if (UAugmentCardSelectWidget* CurrentWidget = AugmentComp->GetAugmentWidget())
+	{
+		CurrentWidget->OnAugmentSelected.RemoveDynamic(this, &AShooterInGameMode::HandleAugmentSelected);
+		CurrentWidget->OnAugmentSelected.AddDynamic(this, &AShooterInGameMode::HandleAugmentSelected);
+	}
 }
 
 void AShooterInGameMode::HideAugmentCardSelectUI()

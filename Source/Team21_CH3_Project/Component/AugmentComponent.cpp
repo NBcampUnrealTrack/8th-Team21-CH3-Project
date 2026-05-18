@@ -187,6 +187,8 @@ void UAugmentComponent::AugmentSelection()
     
     if (!AugmentDataTable || !AugmentWidgetClass) return;
 
+    UWorld* World = GetWorld();
+    if (!World) return;
 
     TArray<FName> RowNames = AugmentDataTable->GetRowNames();
     if (RowNames.Num() < 3) return;
@@ -225,22 +227,22 @@ void UAugmentComponent::AugmentSelection()
         }
     }
 
+    APlayerController* PC = Cast<APlayerController>(UGameplayStatics::GetPlayerController(World, 0));
+    if (!PC) return;
 
-    if (UAugmentCardSelectWidget* WidgetInstance = CreateWidget<UAugmentCardSelectWidget>(GetWorld(), AugmentWidgetClass))
+    ActiveAugmentWidget = CreateWidget<UAugmentCardSelectWidget>(PC, AugmentWidgetClass);
+    if (ActiveAugmentWidget)
     {
-        WidgetInstance->OnDataReceived(FinalOptions);
-        WidgetInstance->AddToViewport();
+        ActiveAugmentWidget->OnDataReceived(FinalOptions);
+        ActiveAugmentWidget->AddToViewport(200);
 
-        BindAugmentWidget(WidgetInstance);
+        BindAugmentWidget(ActiveAugmentWidget);
 
-        if (APlayerController* PC = Cast<APlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
-        {
-            PC->SetPause(true);
-            PC->bShowMouseCursor = true;
-            FInputModeUIOnly InputMode;
-            InputMode.SetWidgetToFocus(WidgetInstance->TakeWidget());
-            PC->SetInputMode(InputMode);
-        }
+        PC->SetPause(true);
+        PC->bShowMouseCursor = true;
+        FInputModeUIOnly InputMode;
+        InputMode.SetWidgetToFocus(ActiveAugmentWidget->TakeWidget());
+        PC->SetInputMode(InputMode);
     }
 }
 

@@ -37,7 +37,7 @@ public:
     //카드증강 선택화면 호출 함수
     void AugmentSelection();
 
-
+    UAugmentCardSelectWidget* GetAugmentWidget() const { return ActiveAugmentWidget; }
     // --- 이벤트 접점 함수 (캐릭터 담당자가 호출해줘야 함) ---
 
     /** 적 처치 시 호출 */
@@ -97,4 +97,6 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Augment|Setup")
     TSubclassOf<UUserWidget> AugmentWidgetClass;
 
+    UPROPERTY()
+    TObjectPtr<class UAugmentCardSelectWidget> ActiveAugmentWidget;
 };
