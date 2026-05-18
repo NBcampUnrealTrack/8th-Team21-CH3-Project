@@ -22,6 +22,8 @@
 #include "InGameUI/InGameHUD.h"
 #include "Kismet/GameplayStatics.h"
 #include "Component/AugmentComponent.h"
+#include "Data/PlayerTraitBonus.h"   
+#include "Trait/SubSystem/TraitSubsystem.h"
 
 
 
@@ -112,6 +114,13 @@ void APlayerCharacter::BeginPlay()
 		SelectWeapon = RifleClass;
 
 	GetWeapon(SelectWeapon);
+
+	UTraitSubsystem* TraitSub = GetGameInstance()->GetSubsystem<UTraitSubsystem>();
+	if (IsValid(TraitSub) && IsValid(TraitDataTable))
+	{
+		FPlayerTraitBonus Bonus = TraitSub->CalculateTotalTraitBonus(TraitDataTable);
+		ApplyTraitBonus(Bonus);
+	}
 }
 
 void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -621,7 +630,7 @@ void APlayerCharacter::InputReLoad(const FInputActionValue& InValue)
 
 	bIsReloading = true;
 
-	AnimInstance->Montage_Play(ReloadMontage);
+	AnimInstance->Montage_Play(ReloadMontage, ReloadSpeedMul);
 	//UE_LOG(LogTemp, Warning, TEXT("재생 직후 IsPlaying: %s"), AnimInstance->Montage_IsPlaying(ReloadMontage) ? TEXT("O") : TEXT("X"));
 
 	FOnMontageEnded EndDelegate;
@@ -678,4 +687,30 @@ void APlayerCharacter::OnAmmoChanged(int32 CurrentBullets, int32 MaxBullets)
 	if (IsValid(InGameHUD) == false) return;
 
 	InGameHUD->RefreshAmmoUI(CurrentBullets, MaxBullets);
+}
+
+void APlayerCharacter::ApplyTraitBonus(const FPlayerTraitBonus& Bonus)
+{
+	// 무기 피해량 (%)
+	AttackDamageMul += Bonus.weaponDamageBonus;
+
+	// 이동속도 (%)
+	if (Bonus.moveSpeedBonus != 0.f)
+	{
+		CurrentSpeed = FMath::Max(100.f, CurrentSpeed + (CurrentSpeed * Bonus.moveSpeedBonus));
+		GetCharacterMovement()->MaxWalkSpeed = CurrentSpeed;
+	}
+
+	// 최대 체력 (절댓값)
+	if (IsValid(StatusComponent) && Bonus.maxHPBonus != 0.f)
+	{
+		float NewMaxHP = StatusComponent->GetMaxHP() + Bonus.maxHPBonus;
+		StatusComponent->SetMaxHP(NewMaxHP);
+
+		float ClampedHP = FMath::Min(StatusComponent->GetCurrentHP(), NewMaxHP);
+		StatusComponent->SetCurrentHP(ClampedHP);
+	}
+
+	// 재장전 속도 (%)
+	ReloadSpeedMul += Bonus.reloadSpeedBonus;
 }
