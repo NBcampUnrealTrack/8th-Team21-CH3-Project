@@ -105,12 +105,12 @@ protected:
 
 	float CurrentFOV = 70.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float TargetSpeed = 1200.f;
-
 public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	float TargetSpeed = 1000.f;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	float CurrentSpeed = 600.f;
+	float CurrentSpeed = 500.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float CurrentAcceleration = 2048.f;
@@ -185,9 +185,11 @@ public:
 
 #pragma region Attribute
 
-	float baseSpeed;
+	float baseSpeed = 500.f;
 
 	float baseAttackDamage;
+
+	float baseTargetSpeed = 1000.f;
 
 #pragma endregion
 

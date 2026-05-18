@@ -5,6 +5,9 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
+#include "Components/Widget.h"
+#include "Engine/Texture2D.h"
+#include "Game/TeamGameInstance.h"
 
 void UInGameUI::NativeConstruct()
 {
@@ -14,6 +17,9 @@ void UInGameUI::NativeConstruct()
 	// 실제 게임 중에는 HUD 또는 캐릭터에서 다시 갱신된다.
 	UpdateHealth(100.f, 100.f);
 	UpdateAmmo(30, 30);
+
+	// 선택한 무기에 맞는 우측 하단 무기 UI와 Crosshair 표시
+	RefreshWeaponUI();
 
 	// Wave UI는 여기서 기본값으로 세팅하지 않는다.
 	// 이유:
@@ -78,6 +84,71 @@ void UInGameUI::UpdateAmmo(int32 CurrentAmmo, int32 MaxAmmo)
 
 	const FString AmmoString = FString::Printf(TEXT("%d / %d"), CurrentAmmo, MaxAmmo);
 	AmmoText->SetText(FText::FromString(AmmoString));
+}
+
+void UInGameUI::RefreshWeaponUI()
+{
+	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
+
+	const EWeaponType SelectedWeaponType = GI
+		? GI->GetSelectedWeaponType()
+		: EWeaponType::Rifle;
+
+	if (RifleWeaponUI)
+	{
+		RifleWeaponUI->SetVisibility(
+			SelectedWeaponType == EWeaponType::Rifle
+			? ESlateVisibility::HitTestInvisible
+			: ESlateVisibility::Collapsed
+		);
+	}
+
+	if (ShotgunWeaponUI)
+	{
+		ShotgunWeaponUI->SetVisibility(
+			SelectedWeaponType == EWeaponType::Shotgun
+			? ESlateVisibility::HitTestInvisible
+			: ESlateVisibility::Collapsed
+		);
+	}
+
+	if (PistolWeaponUI)
+	{
+		PistolWeaponUI->SetVisibility(
+			SelectedWeaponType == EWeaponType::Pistol
+			? ESlateVisibility::HitTestInvisible
+			: ESlateVisibility::Collapsed
+		);
+	}
+
+	switch (SelectedWeaponType)
+	{
+	case EWeaponType::Rifle:
+		ApplyCrosshairTexture(RifleCrosshairTexture);
+		break;
+
+	case EWeaponType::Shotgun:
+		ApplyCrosshairTexture(ShotgunCrosshairTexture);
+		break;
+
+	case EWeaponType::Pistol:
+		ApplyCrosshairTexture(PistolCrosshairTexture);
+		break;
+
+	default:
+		ApplyCrosshairTexture(RifleCrosshairTexture);
+		break;
+	}
+}
+
+void UInGameUI::ApplyCrosshairTexture(UTexture2D* CrosshairTexture)
+{
+	if (!CrosshairImage || !CrosshairTexture)
+	{
+		return;
+	}
+
+	CrosshairImage->SetBrushFromTexture(CrosshairTexture, true);
 }
 
 void UInGameUI::UpdateWaveInfo(
