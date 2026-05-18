@@ -72,8 +72,6 @@ void UAugmentComponent::BindAugmentWidget(UAugmentCardSelectWidget* InWidget)
     if (InWidget)
     {
         ActiveWidget = InWidget;
-
-        // 방송을 들을 준비 (바인딩)
         ActiveWidget->OnAugmentSelected.AddDynamic(this, &UAugmentComponent::OnAugmentCardSelected);
     }
 }
@@ -145,7 +143,7 @@ void UAugmentComponent::HandleEnemyKilled(AActor* KilledEnemy)
         UE_LOG(LogTemp, Error, TEXT("HandleEnemyKilled: HealOnKill NOT FOUND in Map."));
     }
 
-    // 5. Specific Logic Check: AmmoCycle (Enum 5)
+
     if (OwnedAugments.Contains(EAugmentType::AmmoCycle))
     {
         const FAugmentTableData* Data = GetAugmentData(EAugmentType::AmmoCycle);
@@ -155,24 +153,19 @@ void UAugmentComponent::HandleEnemyKilled(AActor* KilledEnemy)
             float AmmoAmount = Data->BaseValue + (Level - 1) * Data->UpgradeValue;
             int32 RestoreAmount = FMath::FloorToInt(AmmoAmount);
 
-            // 부모 클래스인 ACharacterBase로 캐스팅합니다! (Player든 NPC든 다 커버 가능)
             ACharacterBase* BaseChar = Cast<ACharacterBase>(OwnerChar);
             if (BaseChar)
             {
-                // 부모한테 물려받은 GetCurrentWeapon() 함수를 당당하게 호출!
                 AWeapon* EquippedWeapon = BaseChar->CurrentWeapon.Get();
 
                 if (EquippedWeapon)
                 {
                     int32 CurrentAmmo = EquippedWeapon->GetCurrentBullets();
-                    int32 MaxAmmo = 30; // 무기 클래스에 MaxBullets가 있다면 나중에 연동하세요!
+                    int32 MaxAmmo = EquippedWeapon->GetMaxBullets();
 
                     int32 NewAmmo = FMath::Clamp(CurrentAmmo + RestoreAmount, 0, MaxAmmo);
 
-                    // 무기 총알 세팅 (오타 매칭 함수)
                     EquippedWeapon->SetCurrentBullsets(NewAmmo);
-
-                    // UI 갱신은 '플레이어'일 때만 필요하므로, 여기서 플레이어로 한 번 더 체크해줍니다.
                     APlayerCharacter* PlayerChar = Cast<APlayerCharacter>(BaseChar);
                     if (PlayerChar)
                     {
@@ -227,26 +220,24 @@ void UAugmentComponent::CheckLowHPSpeedBuff(float CurrentHP)
         int32 Level = OwnedAugments[EAugmentType::CrisisInstinct];
         float BonusSpeed = Data->BaseValue + (Level - 1) * Data->UpgradeValue;
 
-        // 아까 캐릭터에 작성되어 있다던 baseSpeed 변수를 가져옵니다.
-        // 만약 baseSpeed가 PlayerCharacter에만 있다면 캐스팅을, CharacterBase에 있다면 거기로 캐스팅해야 합니다.
-        // 여기서는 일단 변수가 선언된 캐릭터로 캐스팅했다고 가정합니다.
+
         APlayerCharacter* PlayerChar = Cast<APlayerCharacter>(OwnerChar);
         if (!PlayerChar) return;
 
-        // 3. 체력이 30% 이하이고 버프가 안 켜졌다면 -> 속도 즉시 반영!
+
         if (HPRatio <= 0.3f && !bIsSpeedBuffActive)
         {
             bIsSpeedBuffActive = true;
 
             float NewSpeed = PlayerChar->baseSpeed + BonusSpeed;
 
-            // 변수 세팅과 실제 무브먼트 컴포넌트 속도 제어를 컴포넌트 안에서 다 처리합니다!
+
             //PlayerChar->CurrentSpeed = NewSpeed;
             MoveComp->MaxWalkSpeed = NewSpeed;
 
             UE_LOG(LogTemp, Warning, TEXT(">>> LOW HP! (Component) Speed Buff Active: %.2f <<<"), NewSpeed);
         }
-        // 4. 체력이 30%를 초과했고 버프가 켜져 있다면 -> 원상복구!
+
         else if (HPRatio > 0.3f && bIsSpeedBuffActive)
         {
             bIsSpeedBuffActive = false;
