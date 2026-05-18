@@ -44,14 +44,21 @@ private:
 	void HandleSecondCardSelected(FAugmentResult SelectedCardData);
 	UFUNCTION()
 	void HandleThirdCardSelected(FAugmentResult SelectedCardData);
+	UFUNCTION()
+	void HandleSelectedAnimFinished();
 	
+	void StartCardSelected(FAugmentResult selectedCardData, UWidgetAnimation* selectedAnim);
 	
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
-	TObjectPtr<UWidgetAnimation> FadeInAnim;
+	TObjectPtr<UWidgetAnimation> fadeInAnim;
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
-	TObjectPtr<UWidgetAnimation> FirstCardSelectedAnim;
+	TObjectPtr<UWidgetAnimation> firstCardSelectedAnim;
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
-	TObjectPtr<UWidgetAnimation> SecondCardSelectedAnim;
+	TObjectPtr<UWidgetAnimation> secondCardSelectedAnim;
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
-	TObjectPtr<UWidgetAnimation> ThirdCardSelectedAnim;
+	TObjectPtr<UWidgetAnimation> thirdCardSelectedAnim;
+	UPROPERTY()
+	FAugmentResult pendingSelectedCardData;
+
+	bool bIsSelecting = false;
 };

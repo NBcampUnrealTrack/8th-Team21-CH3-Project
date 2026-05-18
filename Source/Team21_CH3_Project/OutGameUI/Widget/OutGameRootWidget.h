@@ -19,8 +19,9 @@ enum class EOutGameWidgetType : uint8{
 	Store = 3 UMETA(DisplayName = "Store"),
 	WeaponSelect = 4 UMETA(DisplayName = "WeaponSelect"),
 	Settings = 5 UMETA(DisplayName = "Settings"),
-	Result = 6 UMETA(DisplayName = "Result"),
-	None = 7
+	Trait = 6 UMETA(DisplayName = "Trait"),
+	Result = 7 UMETA(DisplayName = "Result"),
+	None = 8
 };
 
 UENUM(BlueprintType)
@@ -63,6 +64,10 @@ public:
 	void OpenSelectedLevel();
 	UFUNCTION()
 	void PlayResultCinematic(bool bIsWin);
+	UFUNCTION()
+	void UpdateGoldUI();
+	UFUNCTION()
+	void UpdateTraitUI();
 	
 	UFUNCTION()
 	void HandleNavigateHorizontal(int32 direction);

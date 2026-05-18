@@ -39,13 +39,13 @@ protected:
 
 	void TryFire();
 	//АјАн
-
+	void EndAttack();
 	virtual void EndAttack(UAnimMontage* InMontage, bool bInterruped);
 public:
 	bool bIsNowAttacking;
-
+	FTimerHandle AttackTimer;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
-	bool bAttackRange = false;
+	bool bAttackRange;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
 	float MoveSpeed = 400.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
@@ -57,4 +57,7 @@ protected:
 	FOnAttackMontageEnded OnAttackMontageEndedDelegate;
 	float LastUpdatedMaxHP = 0.f;
 	float LastUpdatedCurrentHP = 0.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<AWeapon>WeaponType;
 };

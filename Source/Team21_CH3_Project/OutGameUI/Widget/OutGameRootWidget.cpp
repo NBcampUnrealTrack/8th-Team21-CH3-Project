@@ -2,6 +2,7 @@
 #include "OutGameUI/Widget/OutGameRootWidget.h"
 #include "OutGameMainMenuWidget.h"
 #include "OutGameSettingsWidget.h"
+#include "OutGameTraitWidget.h"
 #include "OutGameUI/Controller/OutGamePlayerController.h"
 #include "OutGameUI/Widget/OutGameTransitionWidget.h"
 #include "OutGameUI/Widget/UOutGameCommonHeaderWidget.h"
@@ -44,6 +45,7 @@ void UOutGameRootWidget::ShowWidget(EOutGameWidgetType widgetType)
 	currentWidgetType = widgetType;
 	ScreenSwitcher->SetActiveWidgetIndex(int32(widgetType));
 	commonHeaderWidget->SetActiveTab(widgetType); // commonHeaderWidget 
+	commonHeaderWidget->UpdateCommonUI();
 	
 	if (widgetType == EOutGameWidgetType::WeaponSelect)
 	{
@@ -142,6 +144,17 @@ void UOutGameRootWidget::PlayResultCinematic(bool bIsWin){
 	cinematicManager->OnCinematicFinished.AddDynamic(this, &ThisClass::HandleResultCinematicFinished);
 	
 	cinematicManager->PlayResultCinematic(bIsWin);
+}
+
+void UOutGameRootWidget::UpdateGoldUI(){
+	commonHeaderWidget->UpdateCommonUI();
+}
+
+void UOutGameRootWidget::UpdateTraitUI(){
+	if (UOutGameTraitWidget* traitWidget = Cast<UOutGameTraitWidget>(ScreenSwitcher->GetActiveWidget()))
+	{
+		traitWidget->RefreshAllTraitCards();
+	}
 }
 
 void UOutGameRootWidget::HandleTransitionFadeOutFinished(){

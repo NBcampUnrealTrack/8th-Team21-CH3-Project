@@ -98,4 +98,14 @@ void UUOutGameCommonHeaderWidget::HandleSettingsClicked(){
 	}
 }
 
-void UUOutGameCommonHeaderWidget::HandleTraitClicked(){  }
+void UUOutGameCommonHeaderWidget::HandleTraitClicked(){
+	if (AOutGamePlayerController* PC = GetOwningPlayer<AOutGamePlayerController>())
+	{
+		if (UOutGameRootWidget* RootWidgetInstance = PC->GetRootWidget())
+		{
+			RootWidgetInstance->ShowWidget(EOutGameWidgetType::Trait);
+			RootWidgetInstance->UpdateTraitUI();
+			PC->SetViewTargetByTag("SettingsCamera", 0.0f);
+		}
+	}
+}

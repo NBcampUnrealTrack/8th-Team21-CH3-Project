@@ -59,8 +59,6 @@ public:
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Weapon", meta = (AllowPrivateAccess = "true"))
 	EWeaponType selectedWeaponType;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Record", meta = (AllowPrivateAccess = "true"))
-	int32 playerTotalKillCount;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Result", meta = (AllowPrivateAccess = "true"))
 	bool bIsWin;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Team Game Instance|Result", meta = (AllowPrivateAccess = "true"))
@@ -98,6 +96,8 @@ public:
 	void StartNewGame();
 	
 private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Record", meta = (AllowPrivateAccess = "true"))
+	int32 playerTotalKillCount;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Settings", meta = (AllowPrivateAccess = "true"))
 	int32 playerGold;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Settings", meta = (AllowPrivateAccess = "true"))
@@ -109,4 +109,21 @@ private:
 	TObjectPtr<UTeamSaveGame> CurrentSaveGame;
 	
 #pragma endregion
+	
+#pragma region TraitSystem
+	
+public:
+	int32 GetTraitLevel(FName TraitId) const;
+	const TMap<FName, int32>& GetTraitLevels() const;
+	
+	UFUNCTION(BlueprintCallable)
+	bool SpendPlayerGold(int32 Cost);
+	UFUNCTION(BlueprintCallable)
+	void TraitLevelUp(FName traitId);
+	
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Trait", meta = (AllowPrivateAccess = "true"))
+	TMap<FName, int32> traitLevels;
+	
+#pragma endregion 
 };

@@ -7,6 +7,15 @@
 class UTexture2D;
 
 UENUM(BlueprintType)
+enum class ETraitCardState : uint8{
+	Invalid,
+	Locked,
+	Upgradeable,
+	NotEnoughGold,
+	MaxLevel
+};
+
+UENUM(BlueprintType)
 enum class ETraitCategory : uint8
 {
 	None,
