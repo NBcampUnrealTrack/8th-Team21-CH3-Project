@@ -11,6 +11,8 @@
 class UAugmentCardSelectWidget;
 class UDataTable;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyKilledSignature, AActor*, KilledEnemy);
+
 UCLASS()
 class TEAM21_CH3_PROJECT_API AShooterInGameMode : public AGameModeBase
 {
@@ -40,6 +42,13 @@ public:
 	void RequestHUDWaveInfoRefreshRetry();
 
 	void EndMatch(bool bPlayerWon);
+
+public:
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnEnemyKilledSignature OnEnemyKilledDelegate;
+
+	UFUNCTION(BlueprintCallable, Category = "Events")
+	void EnemyKilled(AActor* KilledEnemy);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave Data")

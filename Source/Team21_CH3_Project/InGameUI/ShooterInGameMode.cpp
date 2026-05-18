@@ -667,3 +667,11 @@ void AShooterInGameMode::CmdMoveOutGame()
 {
 	MoveToOutGameMap();
 }
+
+void AShooterInGameMode::EnemyKilled(AActor* KilledEnemy)
+{
+	if (OnEnemyKilledDelegate.IsBound())
+	{
+		OnEnemyKilledDelegate.Broadcast(KilledEnemy);
+	}
+}
