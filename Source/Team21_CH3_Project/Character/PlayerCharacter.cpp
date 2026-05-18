@@ -121,6 +121,11 @@ void APlayerCharacter::BeginPlay()
 		FPlayerTraitBonus Bonus = TraitSub->CalculateTotalTraitBonus(TraitDataTable);
 		ApplyTraitBonus(Bonus);
 	}
+
+	if (IsValid(StatusComponent))
+	{
+		StatusComponent->SetCurrentHP(StatusComponent->GetMaxHP());
+	}
 }
 
 void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
