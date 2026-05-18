@@ -313,6 +313,13 @@ void APlayerCharacter::InputAttackRanged(const FInputActionValue& InValue)
 
 	if (false == bIsFullAutoFire)
 	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (IsValid(AnimInstance)) 
+			if (AnimInstance->Montage_IsPlaying(GetCurrentWeaponAttackAnimMontage()))
+			{
+				return; //단발 사격 시 애님몽타주 재생중에는 사격 불가능
+			}
+		
 		TryFire();
 	}
 
