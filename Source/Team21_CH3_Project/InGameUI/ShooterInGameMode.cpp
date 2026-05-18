@@ -45,7 +45,6 @@ AShooterInGameMode::AShooterInGameMode()
 	MaxHUDWaveRefreshRetryCount = 10;
 	HUDWaveRefreshRetryInterval = 0.05f;
 
-	ActiveWidget = nullptr;
 	AugmentKillInterval = 5;
 	bIsAugmentSelectOpen = false;
 	bPendingClearWaveAfterAugment = false;
@@ -567,31 +566,26 @@ void AShooterInGameMode::ShowAugmentCardSelectUI()
 
 	bIsAugmentSelectOpen = true;
 
+	PC->SetPause(true);
+	StopGameplayInput();
+
 	AugmentComp->AugmentSelection();
 
-
-	if (UAugmentCardSelectWidget* CurrentWidget = AugmentComp->GetAugmentWidget())
+	if (UAugmentCardSelectWidget* ActiveWidget = AugmentComp->GetAugmentWidget())
 	{
-		CurrentWidget->OnAugmentSelected.RemoveDynamic(this, &AShooterInGameMode::HandleAugmentSelected);
-		CurrentWidget->OnAugmentSelected.AddDynamic(this, &AShooterInGameMode::HandleAugmentSelected);
+		FInputModeUIOnly InputModeData;
+		InputModeData.SetWidgetToFocus(ActiveWidget->TakeWidget());
+		PC->SetInputMode(InputModeData);
 	}
 }
 
 void AShooterInGameMode::HideAugmentCardSelectUI()
 {
-	if (ActiveWidget)
-	{
-		ActiveWidget->RemoveFromParent();
-		ActiveWidget = nullptr;
-	}
-
 	bIsAugmentSelectOpen = false;
 }
 
-void AShooterInGameMode::HandleAugmentSelected(FAugmentResult SelectedCardData)
+void AShooterInGameMode::NotifyAugmentSelectionComplete()
 {
-	// UE_LOG(LogTemp, Warning, TEXT("Augment Selected"));
-
 	HideAugmentCardSelectUI();
 
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();

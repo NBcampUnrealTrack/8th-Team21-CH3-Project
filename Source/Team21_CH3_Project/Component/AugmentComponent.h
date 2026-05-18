@@ -82,11 +82,12 @@ private:
 
     const FAugmentTableData* GetAugmentData(EAugmentType Type);
 
+    TArray<FAugmentResult> RollRandomAugmentOptions();
+
     UPROPERTY()
     class UAugmentCardSelectWidget* ActiveWidget;
 
-    //킬 카운트
-    int32 Killcount=0;
+    
 
 protected:
     UFUNCTION()

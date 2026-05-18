@@ -116,9 +116,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Augment")
 	TSubclassOf<UAugmentCardSelectWidget> AugmentCardSelectWidgetClass;
 
-	UPROPERTY()
-	UAugmentCardSelectWidget* ActiveWidget;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Augment")
 	int32 AugmentKillInterval;
 
@@ -157,8 +154,7 @@ protected:
 	void RestorePlayerHPFromGameInstance();
 	UStatusComponent* GetPlayerStatusComponent() const;
 
-	UFUNCTION()
-	void HandleAugmentSelected(FAugmentResult SelectedCardData);
+	
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Wave")
@@ -185,4 +181,6 @@ public:
 
 	UFUNCTION(Exec)
 	void CmdMoveOutGame();
+
+	void NotifyAugmentSelectionComplete();
 };

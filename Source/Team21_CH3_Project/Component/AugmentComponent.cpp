@@ -78,30 +78,27 @@ void UAugmentComponent::BindAugmentWidget(UAugmentCardSelectWidget* InWidget)
 
 void UAugmentComponent::OnAugmentCardSelected(FAugmentResult SelectedCardData)
 {
-
+    // 1. 선택된 카드 능력치 적용 (기존 로직 유지)
     ApplyAugment(SelectedCardData.Type);
 
-
+    // 2. 켜져 있던 강화 위젯 제거 및 초기화
     if (IsValid(ActiveWidget))
     {
         ActiveWidget->RemoveFromParent();
         ActiveWidget = nullptr;
     }
 
-
-    APawn* OwnerPawn = Cast<APawn>(GetOwner());
-    if (OwnerPawn)
+    // 3. ◀ 핵심 추가: 월드에서 게임모드를 찾아 선택 완료 알림을 보냅니다.
+    if (UWorld* World = GetWorld())
     {
-        APlayerController* PC = Cast<APlayerController>(OwnerPawn->GetController());
-        if (PC)
+        AShooterInGameMode* GM = Cast<AShooterInGameMode>(World->GetAuthGameMode());
+        if (GM)
         {
-            PC->SetPause(false);
-            PC->bShowMouseCursor = false;
-            FInputModeGameOnly InputMode;
-            PC->SetInputMode(InputMode);
+            // 게임모드가 일시정지를 풀고, 마우스를 숨기고, 
+            // 5킬 시점에 밀려있던 Wave 클리어 사이클을 마저 실행합니다.
+            GM->NotifyAugmentSelectionComplete();
         }
     }
-
 }
 
 
@@ -184,51 +181,14 @@ void UAugmentComponent::HandleEnemyKilled(AActor* KilledEnemy)
 
 void UAugmentComponent::AugmentSelection()
 {
-    
-    if (!AugmentDataTable || !AugmentWidgetClass) return;
+    if (!AugmentWidgetClass) return;
 
     UWorld* World = GetWorld();
-    if (!World) return;
-
-    TArray<FName> RowNames = AugmentDataTable->GetRowNames();
-    if (RowNames.Num() < 3) return;
-
-    for (int32 i = RowNames.Num() - 1; i > 0; i--)
-    {
-        int32 j = FMath::RandRange(0, i);
-        RowNames.Swap(i, j);
-    }
-
-
-    TArray<FAugmentResult> FinalOptions;
-    for (int32 i = 0; i < 3; i++)
-    {
-        FAugmentTableData* Row = AugmentDataTable->FindRow<FAugmentTableData>(RowNames[i], TEXT(""));
-        if (Row)
-        {
-            FAugmentResult Option;
-            Option.Type = Row->Type;
-
-
-            int32 CurrentLevel = GetAugmentLevel(Row->Type);
-            Option.CurrentLevel = CurrentLevel + 1;
-            Option.DisplayTitle = FString::Printf(TEXT("%s (Lv.%d)"), *Row->AugmentName, Option.CurrentLevel);
-
-
-            float DisplayValue = Row->BaseValue + (CurrentLevel * Row->UpgradeValue);
-
-
-            FFormatNamedArguments Args;
-            Args.Add(TEXT("Value"), FText::AsNumber(FMath::FloorToInt(DisplayValue)));
-            Args.Add(TEXT("Unit"), FText::FromString(Row->UnitText));
-            Option.Description = FText::Format(FText::FromString(Row->DescriptionFormat), Args).ToString();
-
-            FinalOptions.Add(Option);
-        }
-    }
-
     APlayerController* PC = Cast<APlayerController>(UGameplayStatics::GetPlayerController(World, 0));
     if (!PC) return;
+
+    TArray<FAugmentResult> FinalOptions = RollRandomAugmentOptions();
+    if (FinalOptions.Num() == 0) return;
 
     ActiveAugmentWidget = CreateWidget<UAugmentCardSelectWidget>(PC, AugmentWidgetClass);
     if (ActiveAugmentWidget)
@@ -237,12 +197,6 @@ void UAugmentComponent::AugmentSelection()
         ActiveAugmentWidget->AddToViewport(200);
 
         BindAugmentWidget(ActiveAugmentWidget);
-
-        PC->SetPause(true);
-        PC->bShowMouseCursor = true;
-        FInputModeUIOnly InputMode;
-        InputMode.SetWidgetToFocus(ActiveAugmentWidget->TakeWidget());
-        PC->SetInputMode(InputMode);
     }
 }
 
@@ -262,6 +216,45 @@ const FAugmentTableData* UAugmentComponent::GetAugmentData(EAugmentType Type)
     }
 
     return nullptr;
+}
+
+TArray<FAugmentResult> UAugmentComponent::RollRandomAugmentOptions()
+{
+    TArray<FAugmentResult> GeneratedOptions;
+    if (!AugmentDataTable) return GeneratedOptions;
+
+    TArray<FName> RowNames = AugmentDataTable->GetRowNames();
+    if (RowNames.Num() < 3) return GeneratedOptions;
+
+    for (int32 i = RowNames.Num() - 1; i > 0; i--)
+    {
+        int32 j = FMath::RandRange(0, i);
+        RowNames.Swap(i, j);
+    }
+
+    for (int32 i = 0; i < 3; i++)
+    {
+        FAugmentTableData* Row = AugmentDataTable->FindRow<FAugmentTableData>(RowNames[i], TEXT(""));
+        if (!Row) continue;
+
+        FAugmentResult Option;
+        Option.Type = Row->Type;
+
+        int32 CurrentLevel = GetAugmentLevel(Row->Type);
+        Option.CurrentLevel = CurrentLevel + 1;
+        Option.DisplayTitle = FString::Printf(TEXT("%s (Lv.%d)"), *Row->AugmentName, Option.CurrentLevel);
+
+        float DisplayValue = Row->BaseValue + (CurrentLevel * Row->UpgradeValue);
+
+        FFormatNamedArguments Args;
+        Args.Add(TEXT("Value"), FText::AsNumber(FMath::FloorToInt(DisplayValue)));
+        Args.Add(TEXT("Unit"), FText::FromString(Row->UnitText));
+        Option.Description = FText::Format(FText::FromString(Row->DescriptionFormat), Args).ToString();
+
+        GeneratedOptions.Add(Option);
+    }
+
+    return GeneratedOptions;
 }
 
 void UAugmentComponent::CheckLowHPSpeedBuff(float CurrentHP)
