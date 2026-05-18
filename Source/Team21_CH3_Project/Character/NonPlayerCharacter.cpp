@@ -13,6 +13,7 @@
 #include "Component/PickupComponent.h"
 #include "Team21_CH3_Project.h"
 #include "InGameUI/ShooterInGameMode.h"
+#include "Kismet/GameplayStatics.h"
 
 ANonPlayerCharacter::ANonPlayerCharacter() : bIsNowAttacking(false)
 {
@@ -84,6 +85,13 @@ float ANonPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 			bool bNPCWin = false;
 			GameMode->OnCharacterDied(bNPCWin);
 			SetLifeSpan(0.1f);
+
+			AShooterInGameMode* GM = Cast<AShooterInGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+			if (GM)
+			{
+				// 게임 모드에게 내가 죽었다고 알림
+				GM->EnemyKilled(this);
+			}
 		}
 
 	}

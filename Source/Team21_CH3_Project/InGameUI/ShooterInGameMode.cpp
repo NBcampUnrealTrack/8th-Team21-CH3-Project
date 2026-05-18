@@ -667,3 +667,13 @@ void AShooterInGameMode::CmdMoveOutGame()
 {
 	MoveToOutGameMap();
 }
+
+
+void AShooterInGameMode::EnemyKilled(AActor* KilledEnemy)
+{
+	// 델리게이트 방송 (구독하고 있는 모든 컴포넌트의 HandleEnemyKilled가 실행됨)
+	if (OnEnemyKilledDelegate.IsBound())
+	{
+		OnEnemyKilledDelegate.Broadcast(KilledEnemy);
+	}
+}

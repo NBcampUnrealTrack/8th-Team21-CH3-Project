@@ -11,6 +11,8 @@
 class UAugmentCardSelectWidget;
 class UDataTable;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyKilledSignature, AActor*, KilledEnemy);
+
 UCLASS()
 class TEAM21_CH3_PROJECT_API AShooterInGameMode : public AGameModeBase
 {
@@ -170,4 +172,12 @@ public:
 
 	UFUNCTION(Exec)
 	void CmdMoveOutGame();
+
+	// 2. 델리게이트 변수 선언 (Blueprint에서도 쓸 수 있게 하려면 BlueprintAssignable 추가)
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnEnemyKilledSignature OnEnemyKilledDelegate;
+
+	// 3. 적이 죽었을 때 호출될 함수 (적 클래스에서 이 함수를 호출해줄 겁니다)
+	UFUNCTION()
+	void EnemyKilled(AActor* KilledEnemy);
 };

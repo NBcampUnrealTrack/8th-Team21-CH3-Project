@@ -25,9 +25,6 @@ public:
     UFUNCTION()
     void OnAugmentCardSelected(FAugmentResult SelectedCardData);
 
-    
-
-
     // --- 시스템 핵심 함수 ---
 
     /** 위젯에서 카드를 선택했을 때 호출할 함수 */
@@ -37,13 +34,11 @@ public:
     /** 최종 데미지 보정치를 계산하여 반환 (캐릭터의 공격 로직에서 호출) */
     float GetCalculatedDamage(float InBaseDamage, AActor* Target);
 
-    /** 이동 속도 보정치를 반환 (캐릭터의 속도 설정 로직에서 호출) */
-    float GetMoveSpeedModifier() const;
-
 
     // --- 이벤트 접점 함수 (캐릭터 담당자가 호출해줘야 함) ---
 
     /** 적 처치 시 호출 */
+    UFUNCTION()
     void HandleEnemyKilled(AActor* KilledEnemy);
 
     /** 재장전 완료 시 호출 */
@@ -57,8 +52,6 @@ public:
     {
         return OwnedAugments.Contains(Type) ? OwnedAugments[Type] : 0;
     }
-
-
 
 private:
     // --- 내부 관리 데이터 ---
@@ -80,13 +73,17 @@ private:
     /** 장전 보상 활성화 여부 (다음 1발) */
     bool bIsReloadRewardActive = false;
 
-    // --- 수치 계산 보조 함수 ---
     float GetAugmentCurrentValue(EAugmentType Type);
-    const FAugmentTableData* GetAugmentData(EAugmentType Type);
 
-    /** 위기 본능 등 상태 업데이트 */
-    void CheckCrisisInstinct();
+    const FAugmentTableData* GetAugmentData(EAugmentType Type);
 
     UPROPERTY()
     class UAugmentCardSelectWidget* ActiveWidget;
+
+protected:
+    UFUNCTION()
+    void CheckLowHPSpeedBuff(float CurrentHP);
+
+    bool bIsSpeedBuffActive = false;
+
 };
