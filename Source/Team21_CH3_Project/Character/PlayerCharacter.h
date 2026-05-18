@@ -10,6 +10,8 @@ class UCameraComponent;
 class UInputConfig;
 class UInputMappingContext;
 class UAugmentComponent;
+class UDataTable;
+struct FPlayerTraitBonus;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API APlayerCharacter : public ACharacterBase
@@ -186,5 +188,18 @@ public:
 
 	float baseAttackDamage;
 
+#pragma endregion
+
+#pragma region Trait
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trait")
+	TObjectPtr<UDataTable> TraitDataTable;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Trait")
+	float ReloadSpeedMul = 1.0f;
+
+public:
+	void ApplyTraitBonus(const FPlayerTraitBonus& Bonus);
 #pragma endregion
 };
