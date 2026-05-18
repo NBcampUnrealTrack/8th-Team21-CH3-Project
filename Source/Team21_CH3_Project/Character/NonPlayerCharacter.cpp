@@ -94,6 +94,11 @@ float ANonPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 			bool bNPCWin = false;
 			GameMode->OnCharacterDied(bNPCWin);
 			SetLifeSpan(0.1f);
+			AShooterInGameMode* GM = Cast<AShooterInGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+			if (IsValid(GM))
+			{
+				GM->EnemyKilled(this);
+			}
 		}
 
 	}
