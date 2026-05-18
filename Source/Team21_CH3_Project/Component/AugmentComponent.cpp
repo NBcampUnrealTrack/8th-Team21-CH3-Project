@@ -160,7 +160,7 @@ void UAugmentComponent::HandleEnemyKilled(AActor* KilledEnemy)
             if (BaseChar)
             {
                 // 부모한테 물려받은 GetCurrentWeapon() 함수를 당당하게 호출!
-                /*AWeapon* EquippedWeapon = BaseChar->GetCurrentWeapon();
+                AWeapon* EquippedWeapon = BaseChar->CurrentWeapon.Get();
 
                 if (EquippedWeapon)
                 {
@@ -181,7 +181,7 @@ void UAugmentComponent::HandleEnemyKilled(AActor* KilledEnemy)
 
                     UE_LOG(LogTemp, Log, TEXT(">>> AmmoCycle Success: Ammo Recharged! %d -> %d <<<"), CurrentAmmo, NewAmmo);
                 }
-                */
+                
             }
         }
     }
