@@ -9,6 +9,8 @@
 class UProgressBar;
 class UTextBlock;
 class UImage;
+class UWidget;
+class UTexture2D;
 
 // 인게임 화면에 표시되는 메인 HUD UI
 // 체력, 탄약, Wave, Kill, Gold 정보, 라운드 전환 메시지, HP 위험 피드백을 관리한다.
@@ -33,6 +35,9 @@ public:
 		int32 CurrentGold,
 		int32 GoldPerKill
 	);
+
+	// 선택한 무기에 맞는 우측 하단 무기 UI와 Crosshair 갱신
+	void RefreshWeaponUI();
 
 	// 라운드 전환 메시지 표시
 	// 예: Round Win / Round Lose
@@ -74,6 +79,30 @@ protected:
 	// 조준점 이미지
 	UPROPERTY(meta = (BindWidget))
 	UImage* CrosshairImage;
+
+	// Rifle 선택 시 적용할 Crosshair Texture
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon UI")
+	UTexture2D* RifleCrosshairTexture;
+
+	// Shotgun 선택 시 적용할 Crosshair Texture
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon UI")
+	UTexture2D* ShotgunCrosshairTexture;
+
+	// Pistol 선택 시 적용할 Crosshair Texture
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon UI")
+	UTexture2D* PistolCrosshairTexture;
+
+	// Rifle 선택 시 표시할 우측 하단 무기 UI 그룹
+	UPROPERTY(meta = (BindWidgetOptional))
+	UWidget* RifleWeaponUI;
+
+	// Shotgun 선택 시 표시할 우측 하단 무기 UI 그룹
+	UPROPERTY(meta = (BindWidgetOptional))
+	UWidget* ShotgunWeaponUI;
+
+	// Pistol 선택 시 표시할 우측 하단 무기 UI 그룹
+	UPROPERTY(meta = (BindWidgetOptional))
+	UWidget* PistolWeaponUI;
 
 	// Wave Text
 	// 예: WAVE 1
@@ -118,4 +147,7 @@ protected:
 private:
 	// HP 비율을 검사해서 위험 피드백을 표시하거나 숨긴다.
 	void UpdateHPDangerFeedback(float CurrentHealth, float MaxHealth);
+
+	// 선택 무기에 맞는 Crosshair Texture 적용
+	void ApplyCrosshairTexture(UTexture2D* CrosshairTexture);
 };
