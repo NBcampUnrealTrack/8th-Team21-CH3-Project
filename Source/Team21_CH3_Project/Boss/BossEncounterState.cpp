@@ -1,11 +1,26 @@
 ﻿// BossEncounterState.cpp
 #include "Boss/BossEncounterState.h"
+#include "Character/NonPlayerCharacter.h"
+#include "Component/StatusComponent.h"
 #include "Gimmick/SpawnManager.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 
 ABossEncounterState::ABossEncounterState()
-{	TArray<AActor*> FoundSpawnManagers;
+{	
+	PrimaryActorTick.bCanEverTick = false;
+	
+	phaseTriggerRatio = 0.7f;
+	bossMaxHP = 1000.0f;
+	cachedBoss = nullptr;
+	requiredCoreCount = 3;
+}
+
+void ABossEncounterState::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	TArray<AActor*> FoundSpawnManagers;
 	UGameplayStatics::GetAllActorsOfClass(this, ASpawnManager::StaticClass(), FoundSpawnManagers);
 
 	for (AActor* FoundActor : FoundSpawnManagers)
@@ -16,18 +31,46 @@ ABossEncounterState::ABossEncounterState()
 			continue;
 		}
 
-		//SpawnManager->OnBossSpawned.RemoveDynamic(this, &ThisClass::HandleBossSpawned);
-		//SpawnManager->OnBossSpawned.AddDynamic(this, &ThisClass::HandleBossSpawned);
+		SpawnManager->OnBossSpawned.RemoveDynamic(this, &ThisClass::HandleBossSpawned);
+		SpawnManager->OnBossSpawned.AddDynamic(this, &ThisClass::HandleBossSpawned);
 	}
-	PrimaryActorTick.bCanEverTick = false;
-}
-
-void ABossEncounterState::BeginPlay()
-{
-	Super::BeginPlay();
 }
 
 void ABossEncounterState::HandleBossSpawned(ACharacter* SpawnedBoss)
 {
-	CurrentBoss = SpawnedBoss;
+	cachedBoss = SpawnedBoss;
+	if (IsValid(cachedBoss) == false) return;
+	
+	GetStatus()->SetMaxHP(bossMaxHP);
+	GetStatus()->SetCurrentHP(bossMaxHP);
+	
+	UE_LOG(LogTemp, Warning, TEXT("Boss HP Init: Max %.1f / Current %.1f"),
+	GetStatus()->GetMaxHP(),
+	GetStatus()->GetCurrentHP()
+	);
+
+	GetStatus()->OnCurrentHPChanged.AddUObject(this, &ThisClass::HandleBossCurrentHPChanged);
+}
+
+UStatusComponent* ABossEncounterState::GetStatus(){
+	ANonPlayerCharacter* Boss = Cast<ANonPlayerCharacter>(cachedBoss);
+	
+	if (IsValid(Boss) == false) return nullptr;
+	
+	UStatusComponent* status = Boss->GetStatusComponent();
+	if (IsValid(status) == false) return nullptr;
+	
+	return status;
+}
+
+void ABossEncounterState::HandleBossCurrentHPChanged(float CurrentHP){
+	if (IsValid(cachedBoss) == false) return;
+	
+	const float maxHP = GetStatus()->GetMaxHP();
+	const float ratio = maxHP > 0.0f ? CurrentHP / maxHP : 0.0f;
+	
+	if (ratio <= phaseTriggerRatio)
+	{
+		// Boss GimmickStart
+	}
 }
