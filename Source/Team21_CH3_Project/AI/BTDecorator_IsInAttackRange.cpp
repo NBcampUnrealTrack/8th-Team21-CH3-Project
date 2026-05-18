@@ -22,21 +22,21 @@ bool UBTDecorator_IsInAttackRange::CalculateRawConditionValue(UBehaviorTreeCompo
 
 	ANonPlayerCharacter* NPC = Cast<ANonPlayerCharacter>(AIController->GetPawn());
 	checkf(IsValid(NPC) == true, TEXT("Invalid NPC."));
-
+	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
 
 	APlayerCharacter* TargetPlayerCharacter = Cast<APlayerCharacter>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(AAI_Controller::TargetCharacterKey));
-	float AttackRange = 150.f;
 	if (NPC->bAttackRange == true)
 	{
-		AttackRange = 850.f;
+		BB->SetValueAsFloat(AttackRangeKey.SelectedKeyName, 800.f);
 	}
 	else
 	{
-		AttackRange = 150.f;
+		BB->SetValueAsFloat(AttackRangeKey.SelectedKeyName, 45.f);
 	}
+	float AttackRange = BB->GetValueAsFloat(AttackRangeKey.SelectedKeyName);
 	if (IsValid(TargetPlayerCharacter) == true && TargetPlayerCharacter->IsPlayerControlled() == true)
 	{
-		return NPC->GetDistanceTo(TargetPlayerCharacter) <= AttackRange;
+		return NPC->GetDistanceTo(TargetPlayerCharacter) <= AttackRange + 50.f;
 	}
 	return false;
 }
