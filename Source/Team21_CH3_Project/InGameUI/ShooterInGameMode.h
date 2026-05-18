@@ -10,6 +10,7 @@
 
 class UAugmentCardSelectWidget;
 class UDataTable;
+class UStatusComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyKilledSignature, AActor*, KilledEnemy);
 
@@ -114,8 +115,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Augment")
 	TSubclassOf<UAugmentCardSelectWidget> AugmentCardSelectWidgetClass;
 
-	// 증강 카드 선택 UI 인스턴스
-	// CreateWidget으로 생성한 뒤, 선택 완료 시 RemoveFromParent 후 nullptr 처리한다.
 	UPROPERTY()
 	UAugmentCardSelectWidget* ActiveWidget;
 
@@ -150,6 +149,10 @@ protected:
 
 	void ShowAugmentCardSelectUI();
 	void HideAugmentCardSelectUI();
+
+	void SavePlayerHPToGameInstance();
+	void RestorePlayerHPFromGameInstance();
+	UStatusComponent* GetPlayerStatusComponent() const;
 
 	UFUNCTION()
 	void HandleAugmentSelected(FAugmentResult SelectedCardData);

@@ -5,10 +5,12 @@
 #include "InGameUI/AugmentCardSelectWidget.h"
 #include "Game/TeamGameInstance.h"
 #include "Data/EnemyWaveDataTable.h"
+#include "Component/StatusComponent.h"
 
 #include "Blueprint/UserWidget.h"
 #include "Engine/DataTable.h"
 #include "Engine/World.h"
+#include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -80,6 +82,8 @@ void AShooterInGameMode::BeginPlay()
 			);
 		}
 	}
+
+	RestorePlayerHPFromGameInstance();
 
 	StartWave();
 
@@ -271,6 +275,8 @@ void AShooterInGameMode::ContinueToNextWaveWithLevelReload()
 	bIsWaveInProgress = false;
 	bIsShopOpen = false;
 
+	SavePlayerHPToGameInstance();
+
 	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
 	if (GI)
 	{
@@ -330,6 +336,9 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 
 		// 인게임 웨이브 복구용 임시 데이터 초기화
 		GI->ClearInGameWaveData();
+
+		// 다음 게임 시작 시 이전 인게임 HP가 남지 않도록 초기화
+		GI->SetCurrentHp(0.0f);
 	}
 
 	// GameMode 내부 값 초기화
@@ -615,6 +624,71 @@ void AShooterInGameMode::ResumeGameplayInput()
 	PC->bShowMouseCursor = false;
 }
 
+UStatusComponent* AShooterInGameMode::GetPlayerStatusComponent() const
+{
+	APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
+	if (!PC)
+	{
+		return nullptr;
+	}
+
+	APawn* PlayerPawn = PC->GetPawn();
+	if (!PlayerPawn)
+	{
+		return nullptr;
+	}
+
+	return PlayerPawn->FindComponentByClass<UStatusComponent>();
+}
+
+void AShooterInGameMode::SavePlayerHPToGameInstance()
+{
+	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
+	if (!GI)
+	{
+		return;
+	}
+
+	UStatusComponent* PlayerStatusComponent = GetPlayerStatusComponent();
+	if (!PlayerStatusComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SavePlayerHPToGameInstance Failed. Player StatusComponent not found."));
+		return;
+	}
+
+	const float CurrentHP = PlayerStatusComponent->GetCurrentHP();
+	GI->SetCurrentHp(CurrentHP);
+
+	UE_LOG(LogTemp, Warning, TEXT("Save Player HP / HP: %.2f"), CurrentHP);
+}
+
+void AShooterInGameMode::RestorePlayerHPFromGameInstance()
+{
+	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
+	if (!GI)
+	{
+		return;
+	}
+
+	const float SavedHP = GI->GetCurrentHp();
+
+	if (SavedHP <= 0.0f)
+	{
+		return;
+	}
+
+	UStatusComponent* PlayerStatusComponent = GetPlayerStatusComponent();
+	if (!PlayerStatusComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RestorePlayerHPFromGameInstance Failed. Player StatusComponent not found."));
+		return;
+	}
+
+	PlayerStatusComponent->SetCurrentHP(SavedHP);
+
+	UE_LOG(LogTemp, Warning, TEXT("Restore Player HP / HP: %.2f"), SavedHP);
+}
+
 void AShooterInGameMode::ReloadCurrentLevel()
 {
 	UWorld* World = GetWorld();
@@ -648,6 +722,14 @@ void AShooterInGameMode::MoveToOutGameMap()
 	UGameplayStatics::OpenLevel(this, OutGameLevelName);
 }
 
+void AShooterInGameMode::EnemyKilled(AActor* KilledEnemy)
+{
+	if (OnEnemyKilledDelegate.IsBound())
+	{
+		OnEnemyKilledDelegate.Broadcast(KilledEnemy);
+	}
+}
+
 void AShooterInGameMode::CmdKillEnemy()
 {
 	OnCharacterDied(false);
@@ -666,12 +748,4 @@ void AShooterInGameMode::CmdStartNextWave()
 void AShooterInGameMode::CmdMoveOutGame()
 {
 	MoveToOutGameMap();
-}
-
-void AShooterInGameMode::EnemyKilled(AActor* KilledEnemy)
-{
-	if (OnEnemyKilledDelegate.IsBound())
-	{
-		OnEnemyKilledDelegate.Broadcast(KilledEnemy);
-	}
 }
