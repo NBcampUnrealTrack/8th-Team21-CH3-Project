@@ -11,6 +11,7 @@
 class UAugmentCardSelectWidget;
 class UDataTable;
 class UStatusComponent;
+class ASpawnManager;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyKilledSignature, AActor*, KilledEnemy);
 
@@ -131,6 +132,8 @@ protected:
 	int32 CalculateTargetKillCountForWave(int32 InWave) const;
 	int32 CalculateGoldPerKillForWave(int32 InWave) const;
 	FName MakeWaveDataRowName(int32 InWave) const;
+
+	bool TryStartWaveWithSpawnManager(int32 InWave);
 
 	void AddGold(int32 GoldAmount);
 
