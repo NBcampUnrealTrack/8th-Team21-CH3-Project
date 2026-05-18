@@ -2,28 +2,37 @@
 #include "TeamGameInstance.h"
 #include "TeamSaveGame.h"
 #include "Kismet/GameplayStatics.h"
+#include "Trait/SubSystem/TraitSubsystem.h"
 
 static const FString SaveSlotName = TEXT("PlayerSave");
 static constexpr int32 SaveUserIndex = 0;
 
 UTeamGameInstance::UTeamGameInstance(){
-	selectedWeaponType = EWeaponType::Rifle;
-	mouseSensitivity = 1.0f;
-	masterVolume = 100.0f;
-	playerTotalKillCount = 0;
-	playerGold = 10000;
-	bIsWin = false;
-	bHasMatchResult = false;
-
-	SavedCurrentWave = 1;
-	SavedCurrentGold = 0;
-	bHasSavedInGameWaveData = false;
+	ResetToDefaultValues();
 }
 
 void UTeamGameInstance::Init(){
 	Super::Init();
 
 	LoadGameData();
+	
+	ApplyGoldTraitBonus();
+}
+
+void UTeamGameInstance::ResetToDefaultValues()
+{
+	selectedWeaponType = EWeaponType::Rifle;
+	mouseSensitivity = 1.0f;
+	masterVolume = 100.0f;
+	playerTotalKillCount = 0;
+	playerGold = 10000;
+	goldGainMultiplier = 1.0f;
+	bIsWin = false;
+	bHasMatchResult = false;
+	traitLevels.Empty();
+	SavedCurrentWave = 1;
+	SavedCurrentGold = 0;
+	bHasSavedInGameWaveData = false;
 }
 
 EWeaponType UTeamGameInstance::GetSelectedWeaponType() const{ return selectedWeaponType; }
@@ -81,7 +90,7 @@ void UTeamGameInstance::SaveInGameWaveData(int32 InCurrentWave, int32 InCurrentG
 }
 
 void UTeamGameInstance::ClearInGameWaveData(){
-	playerGold += SavedCurrentGold;
+	AddPlayerGold(SavedCurrentGold);
 
 	UE_LOG(LogTemp, Warning, TEXT("SavedCurrentGold : %d \nplayerGold : %d"), SavedCurrentGold, playerGold);
 
@@ -97,7 +106,18 @@ int32 UTeamGameInstance::GetSavedCurrentWave() const{ return SavedCurrentWave; }
 
 int32 UTeamGameInstance::GetSavedCurrentGold() const{ return SavedCurrentGold; }
 
-void UTeamGameInstance::AddPlayerGold(int32 gold){ playerGold += gold; }
+float UTeamGameInstance::GetCurrentHp() const{ return currentPlayerHp; }
+
+void UTeamGameInstance::SetCurrentHp(float currentHp){ currentPlayerHp = currentHp; }
+
+void UTeamGameInstance::AddPlayerGold(int32 gold){
+	const int32 finalGold = FMath::RoundToInt(gold * goldGainMultiplier);
+	playerGold += finalGold;
+}
+
+void UTeamGameInstance::SetGoldGainMultiplier(float goldGain){
+	goldGainMultiplier = 1.0f + FMath::Max(0, goldGain); 
+}
 
 int32 UTeamGameInstance::GetPlayerGold() const{ return playerGold; }
 
@@ -144,22 +164,23 @@ void UTeamGameInstance::StartNewGame(){
 			UGameplayStatics::CreateSaveGameObject(UTeamSaveGame::StaticClass()));
 	}
 
-	selectedWeaponType = EWeaponType::Rifle;
-	mouseSensitivity = 1.0f;
-	masterVolume = 100.0f;
-	playerTotalKillCount = 0;
-	bIsWin = false;
-	bHasMatchResult = false;
-	traitLevels.Empty();
-	playerGold = 10000;
-	SavedCurrentWave = 1;
-	SavedCurrentGold = 0;
-	bHasSavedInGameWaveData = false;
+	ResetToDefaultValues();
 
 	SaveGameData();
 }
 
 #pragma region TraitSystme
+
+void UTeamGameInstance::ApplyGoldTraitBonus(){
+	if (traitDataTable == nullptr) return;
+	
+	UTraitSubsystem* subsystem = GetSubsystem<UTraitSubsystem>();
+	if (IsValid(subsystem) == false) return;
+	
+	const FPlayerTraitBonus bonus = subsystem->CalculateTotalTraitBonus(traitDataTable);
+
+	SetGoldGainMultiplier(bonus.goldGainBonus);
+}
 
 const TMap<FName, int32>& UTeamGameInstance::GetTraitLevels() const{
 	return traitLevels;
@@ -177,6 +198,7 @@ bool UTeamGameInstance::SpendPlayerGold(int32 Cost){
 
 void UTeamGameInstance::TraitLevelUp(FName traitId){
 	traitLevels.FindOrAdd(traitId)++;
+	ApplyGoldTraitBonus();
 	SaveGameData();
 }
 
