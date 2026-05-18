@@ -532,6 +532,17 @@ void APlayerCharacter::InputEndDash(const FInputActionValue& InValue)
 
 void APlayerCharacter::InputToggleSelector(const FInputActionValue& InValue)
 {
+	if (IsValid(CurrentWeapon) == false)
+	{
+		return;
+	}
+
+	if (CurrentWeapon->GetCanFullAuto() == false)
+	{
+		return;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Toggle not work"));
+
 	bIsFullAutoFire = !bIsFullAutoFire;
 }
 
