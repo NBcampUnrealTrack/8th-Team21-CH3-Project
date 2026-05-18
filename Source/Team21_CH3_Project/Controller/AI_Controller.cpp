@@ -2,18 +2,20 @@
 
 
 #include "Controller/AI_Controller.h"
+#include "Perception/AIPerceptionComponent.h"
+#include "Perception/AISenseConfig_Sight.h"
 #include "Navigation/CrowdFollowingComponent.h"
 #include "NavigationSystem.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "Character/NonPlayerCharacter.h"
+#include "Character/PlayerCharacter.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardData.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 
-const float AAI_Controller::PatrolRadius(2000.f);
 int32 AAI_Controller::ShowAIDebug(0);
-const FName AAI_Controller::StartPositionKey(TEXT("StartPosition"));
 const FName AAI_Controller::TargetCharacterKey(TEXT("TargetCharacter"));
 
 
@@ -28,6 +30,42 @@ AAI_Controller::AAI_Controller(const FObjectInitializer& ObjectInitializer)
 {
 	Blackboard = CreateDefaultSubobject<UBlackboardComponent>(TEXT("Blackboard"));
 	BrainComponent = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BrainComponent"));
+	AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerceptionComponent"));
+	SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Config_Sight"));
+
+	SightConfig->SightRadius = 2000.f;
+	SightConfig->LoseSightRadius = 2500.f;
+	SightConfig->PeripheralVisionAngleDegrees = 60.f;
+	SightConfig->SetMaxAge(0.f);
+
+	SightConfig->DetectionByAffiliation.bDetectEnemies = true;
+	SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
+	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
+
+	AIPerceptionComponent->ConfigureSense(*SightConfig);
+	AIPerceptionComponent->SetDominantSense(SightConfig->GetSenseImplementation());
+
+	AIPerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &ThisClass::OnTargetDetected);
+}
+
+void AAI_Controller::UpdateControlRotation(float DeltaTime,bool bUpdatePawn)
+{
+	Super::UpdateControlRotation(DeltaTime, bUpdatePawn);
+
+	if (bUpdatePawn)
+	{
+		ANonPlayerCharacter* NPC = Cast<ANonPlayerCharacter>(GetPawn());
+		if (NPC)
+		{
+			FRotator CurrentControlRot = GetControlRotation();
+			FRotator ActorRot = NPC->GetActorRotation();
+
+			FRotator RelativeRot = CurrentControlRot - ActorRot;
+			RelativeRot.Normalize();
+
+			AimPitch = RelativeRot.Pitch;
+		}
+	}
 }
 
 void AAI_Controller::BeginPlay()
@@ -98,5 +136,18 @@ void AAI_Controller::OnPossess(APawn* InPawn)
 				UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("BeginAI()")));
 			}
 		}
+	}
+}
+
+void AAI_Controller::OnTargetDetected(AActor* Actor, const FAIStimulus Stimulus)
+{
+	APlayerCharacter* Player = Cast<APlayerCharacter>(Actor);
+	if (Player && Stimulus.WasSuccessfullySensed())
+	{
+		GetBlackboardComponent()->SetValueAsObject(FName("TargetCharacter"), Player);
+	}
+	else
+	{
+		GetBlackboardComponent()->ClearValue(FName("TargetCharacter"));
 	}
 }
