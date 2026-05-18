@@ -23,6 +23,7 @@ ANonPlayerCharacter::ANonPlayerCharacter() : bIsNowAttacking(false)
 
 	AIControllerClass = AAI_Controller::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
 }
 
 void ANonPlayerCharacter::BeginPlay()
@@ -53,7 +54,10 @@ void ANonPlayerCharacter::BeginAttack()
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	if (IsValid(AnimInstance) == true && IsValid(AttackMeleeMontage) == true && AnimInstance->Montage_IsPlaying(AttackMeleeMontage) == false && bAttackRange == false)
 	{
-		if (bIsNowAttacking)return;
+		if (bIsNowAttacking == true)
+		{
+			return;
+		}
 		AnimInstance->Montage_Play(AttackMeleeMontage);
 
 
@@ -130,8 +134,6 @@ void ANonPlayerCharacter::InitializeHP(UStatusComponent* InStatusComponent)
 	OnCurrentHPChange(InStatusComponent->GetCurrentHP());
 }
 
-
-
 void ANonPlayerCharacter::OnMaxHPChange(float InMaxHP)
 {
 	if (LastUpdatedMaxHP == InMaxHP)
@@ -160,7 +162,7 @@ void ANonPlayerCharacter::TryFire()
 	}
 	if (IsValid(AIController) == true)
 	{
-		float FocalDistance = 400.f;
+		float FocalDistance = 900.f;
 		FVector FocalLocation;
 		FVector CameraLocation;
 		FRotator CameraRotation;

@@ -34,6 +34,7 @@ public:
 	void OnMaxHPChange(float InMaxHP);
 	UFUNCTION()
 	void OnCurrentHPChange(float InCurrentHP);
+
 protected:
 	virtual void BeginAttack();
 
