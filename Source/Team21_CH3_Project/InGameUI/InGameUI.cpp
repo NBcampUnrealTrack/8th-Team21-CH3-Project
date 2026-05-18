@@ -176,17 +176,17 @@ void UInGameUI::UpdateWaveInfo(
 	if (KillText)
 	{
 		KillText->SetText(FText::FromString(
-			FString::Printf(TEXT("KILL %d / %d"), CurrentKillCount, TargetKillCount)
+			FString::Printf(TEXT("%d / %d"), CurrentKillCount, TargetKillCount)
 		));
 	}
 
 	if (GoldText)
 	{
 		GoldText->SetText(FText::FromString(
-			FString::Printf(TEXT("GOLD %d"), CurrentGold)
+			FString::Printf(TEXT("%dG"), CurrentGold)
 		));
 	}
-
+		
 	if (GoldPerKillText)
 	{
 		GoldPerKillText->SetText(FText::FromString(
