@@ -50,6 +50,10 @@ public:
 	int32 GetSavedCurrentWave() const;
 	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Wave")
 	int32 GetSavedCurrentGold() const;
+	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Wave")
+	float GetCurrentHp() const;
+	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Wave")
+	void SetCurrentHp(float currentHp);
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Weapon", meta = (AllowPrivateAccess = "true"))
@@ -64,6 +68,8 @@ private:
 	int32 SavedCurrentGold;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Wave", meta = (AllowPrivateAccess = "true"))
 	bool bHasSavedInGameWaveData;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Wave", meta = (AllowPrivateAccess = "true"))
+	float currentPlayerHp;
 	
 #pragma region SaveGame
 	

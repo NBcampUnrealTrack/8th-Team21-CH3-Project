@@ -106,6 +106,10 @@ int32 UTeamGameInstance::GetSavedCurrentWave() const{ return SavedCurrentWave; }
 
 int32 UTeamGameInstance::GetSavedCurrentGold() const{ return SavedCurrentGold; }
 
+float UTeamGameInstance::GetCurrentHp() const{ return currentPlayerHp; }
+
+void UTeamGameInstance::SetCurrentHp(float currentHp){ currentPlayerHp = currentHp; }
+
 void UTeamGameInstance::AddPlayerGold(int32 gold){
 	const int32 finalGold = FMath::RoundToInt(gold * goldGainMultiplier);
 	playerGold += finalGold;
