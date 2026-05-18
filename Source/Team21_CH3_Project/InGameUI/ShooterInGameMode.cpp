@@ -25,7 +25,7 @@ AShooterInGameMode::AShooterInGameMode()
 	CurrentWaveKillCount = 0;
 	TargetKillCount = 0;
 
-	MaxWave = 3;
+	MaxWave = 4;
 	BaseTargetKillCount = 5;
 	TargetKillCountIncreasePerWave = 2;
 

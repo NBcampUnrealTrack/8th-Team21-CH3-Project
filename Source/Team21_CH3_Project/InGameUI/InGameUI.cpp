@@ -161,25 +161,32 @@ void UInGameUI::UpdateWaveInfo(
 {
 	if (WaveText)
 	{
-		WaveText->SetText(FText::FromString(
-			FString::Printf(TEXT("WAVE %d"), CurrentWave)
-		));
+		if (CurrentWave == 4)
+		{
+			WaveText->SetText(FText::FromString(TEXT("BOSS")));
+		}
+		else
+		{
+			WaveText->SetText(FText::FromString(
+				FString::Printf(TEXT("WAVE %d"), CurrentWave)
+			));
+		}
 	}
 
 	if (KillText)
 	{
 		KillText->SetText(FText::FromString(
-			FString::Printf(TEXT("KILL %d / %d"), CurrentKillCount, TargetKillCount)
+			FString::Printf(TEXT("%d / %d"), CurrentKillCount, TargetKillCount)
 		));
 	}
 
 	if (GoldText)
 	{
 		GoldText->SetText(FText::FromString(
-			FString::Printf(TEXT("GOLD %d"), CurrentGold)
+			FString::Printf(TEXT("%dG"), CurrentGold)
 		));
 	}
-
+		
 	if (GoldPerKillText)
 	{
 		GoldPerKillText->SetText(FText::FromString(
