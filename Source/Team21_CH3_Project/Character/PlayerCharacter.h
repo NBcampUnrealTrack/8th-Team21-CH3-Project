@@ -108,6 +108,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float TargetSpeed = 1200.f;
 
+public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float CurrentSpeed = 600.f;
 
