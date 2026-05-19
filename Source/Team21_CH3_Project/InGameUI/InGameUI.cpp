@@ -33,6 +33,12 @@ void UInGameUI::NativeConstruct()
 
 	// HP 위험 피드백도 처음에는 숨겨둔다.
 	HideHPDangerFeedback();
+
+	if (HitAlarmFrame)
+	{
+		HitAlarmFrame->SetVisibility(ESlateVisibility::Collapsed);
+		HitAlarmFrame->SetRenderOpacity(0.0f);
+	}
 }
 
 void UInGameUI::UpdateHealth(float CurrentHealth, float MaxHealth)
@@ -55,6 +61,13 @@ void UInGameUI::UpdateHealth(float CurrentHealth, float MaxHealth)
 
 	const float SafeHealth = FMath::Clamp(CurrentHealth, 0.f, MaxHealth);
 	const float HealthPercent = SafeHealth / MaxHealth;
+
+	if (LastPlayerHealth >= 0.0f && SafeHealth < LastPlayerHealth)
+	{
+		PlayHitAlarm();
+	}
+
+	LastPlayerHealth = SafeHealth;
 
 	if (HealthBar)
 	{
@@ -277,5 +290,19 @@ void UInGameUI::HideHPDangerFeedback()
 	if (HPDangerVignette)
 	{
 		HPDangerVignette->SetVisibility(ESlateVisibility::Collapsed);
+	}
+}
+
+void UInGameUI::PlayHitAlarm()
+{
+	if (HitAlarmFrame)
+	{
+		HitAlarmFrame->SetVisibility(ESlateVisibility::HitTestInvisible);
+	}
+
+	if (HitAlarmAnim)
+	{
+		StopAnimation(HitAlarmAnim);
+		PlayAnimation(HitAlarmAnim);
 	}
 }

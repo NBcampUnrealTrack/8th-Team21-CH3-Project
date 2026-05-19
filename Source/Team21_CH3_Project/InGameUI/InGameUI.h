@@ -11,6 +11,7 @@ class UTextBlock;
 class UImage;
 class UWidget;
 class UTexture2D;
+class UWidgetAnimation;
 
 // 인게임 화면에 표시되는 메인 HUD UI
 // 체력, 탄약, Wave, Kill, Gold 정보, 라운드 전환 메시지, HP 위험 피드백을 관리한다.
@@ -52,6 +53,9 @@ public:
 	// HP 위험 피드백 제거
 	// 사망, Result UI 표시, 라운드 전환 등에서 강제로 숨길 때 사용한다.
 	void HideHPDangerFeedback();
+
+	// 플레이어가 피격됐을 때 피격 알람 애니메이션 재생
+	void PlayHitAlarm();
 
 protected:
 	virtual void NativeConstruct() override;
@@ -144,10 +148,23 @@ protected:
 	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* RoundTransitionSubText;
 
+	// 피격 시 화면 주변에 표시할 알람 프레임
+	UPROPERTY(meta = (BindWidgetOptional))
+	UImage* HitAlarmFrame;
+
+	// 피격 알람 애니메이션
+	// WBP_InGameUI의 애니메이션 이름이 HitAlarmAnim이어야 자동 연결된다.
+	UPROPERTY(Transient, meta = (BindWidgetAnimOptional))
+	UWidgetAnimation* HitAlarmAnim;
+
 private:
 	// HP 비율을 검사해서 위험 피드백을 표시하거나 숨긴다.
 	void UpdateHPDangerFeedback(float CurrentHealth, float MaxHealth);
 
 	// 선택 무기에 맞는 Crosshair Texture 적용
 	void ApplyCrosshairTexture(UTexture2D* CrosshairTexture);
+
+	// 이전 프레임의 플레이어 HP 저장.
+	// HP가 감소했는지 비교해서 HitAlarm을 재생하기 위해 사용한다.
+	float LastPlayerHealth = -1.0f;
 };
