@@ -12,6 +12,7 @@ class UImage;
 class UWidget;
 class UTexture2D;
 class UWidgetAnimation;
+class UWidgetAnimation;
 
 // 인게임 화면에 표시되는 메인 HUD UI
 // 체력, 탄약, Wave, Kill, Gold 정보, 라운드 전환 메시지, HP 위험 피드백을 관리한다.
@@ -56,6 +57,9 @@ public:
 
 	// 플레이어가 피격됐을 때 피격 알람 애니메이션 재생
 	void PlayHitAlarm();
+
+	// 게임 시작 시 페이드 인 / 준비 UI 애니메이션 재생
+	void PlayGameStartTransition();
 
 protected:
 	virtual void NativeConstruct() override;
@@ -156,6 +160,19 @@ protected:
 	// WBP_InGameUI의 애니메이션 이름이 HitAlarmAnim이어야 자동 연결된다.
 	UPROPERTY(Transient, meta = (BindWidgetAnimOptional))
 	UWidgetAnimation* HitAlarmAnim;
+
+	// 게임 시작 시 화면을 덮는 페이드 이미지
+	UPROPERTY(meta = (BindWidgetOptional))
+	UImage* GameStartFadeImage;
+
+	// 게임 시작 준비 문구
+	UPROPERTY(meta = (BindWidgetOptional))
+	UTextBlock* GameStartReadyText;
+
+	// 게임 시작 Transition 애니메이션
+	// WBP_InGameUI의 애니메이션 이름이 GameStartAnim이어야 자동 연결된다.
+	UPROPERTY(Transient, meta = (BindWidgetAnimOptional))
+	UWidgetAnimation* GameStartAnim;
 
 private:
 	// HP 비율을 검사해서 위험 피드백을 표시하거나 숨긴다.

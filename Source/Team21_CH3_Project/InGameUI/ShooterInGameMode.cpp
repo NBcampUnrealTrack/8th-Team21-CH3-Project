@@ -87,7 +87,17 @@ void AShooterInGameMode::BeginPlay()
 
 	RestorePlayerHPFromGameInstance();
 
-	StartWave();
+	// 게임 시작 Transition이 끝난 뒤 Wave 시작
+	// 기존처럼 BeginPlay에서 바로 StartWave()를 호출하면
+	// Fade In / READY UI가 재생되는 동안 몬스터가 먼저 스폰될 수 있다.
+	GetWorldTimerManager().ClearTimer(GameStartWaveTimerHandle);
+	GetWorldTimerManager().SetTimer(
+		GameStartWaveTimerHandle,
+		this,
+		&AShooterInGameMode::StartWave,
+		GameStartTransitionDelay,
+		false
+	);
 
 	RequestHUDWaveInfoRefreshRetry();
 }
@@ -205,6 +215,9 @@ void AShooterInGameMode::ClearWave()
 
 	bIsWaveInProgress = false;
 
+	// Wave Clear 순간 화면 연출을 위해 잠깐 슬로우 모션 적용
+	StartWaveClearSlowMotion();
+
 	RefreshHUDWaveInfo();
 
 	UE_LOG(LogTemp, Warning, TEXT("ClearWave / Wave: %d / KillCount: %d / MaxWave: %d"),
@@ -238,6 +251,40 @@ void AShooterInGameMode::ClearWave()
 		NextWaveStartDelay,
 		false
 	);
+}
+
+void AShooterInGameMode::StartWaveClearSlowMotion()
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	// Wave Clear 순간 전체 게임 속도를 잠깐 느리게 만든다.
+	UGameplayStatics::SetGlobalTimeDilation(World, WaveClearSlowMotionDilation);
+
+	GetWorldTimerManager().ClearTimer(WaveClearSlowMotionTimerHandle);
+
+	GetWorldTimerManager().SetTimer(
+		WaveClearSlowMotionTimerHandle,
+		this,
+		&AShooterInGameMode::RestoreWaveClearSlowMotion,
+		WaveClearSlowMotionDuration,
+		false
+	);
+}
+
+void AShooterInGameMode::RestoreWaveClearSlowMotion()
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	// 슬로우 모션 복구
+	UGameplayStatics::SetGlobalTimeDilation(World, 1.0f);
 }
 
 void AShooterInGameMode::StartNextWave()
@@ -313,8 +360,13 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 	bIsWaveInProgress = false;
 	bIsShopOpen = false;
 
+	GetWorldTimerManager().ClearTimer(GameStartWaveTimerHandle);
 	GetWorldTimerManager().ClearTimer(NextWaveStartTimerHandle);
 	GetWorldTimerManager().ClearTimer(HUDWaveRefreshRetryTimerHandle);
+	GetWorldTimerManager().ClearTimer(WaveClearSlowMotionTimerHandle);
+
+	// 게임 종료 시 슬로우 모션이 남아 있지 않도록 복구
+	RestoreWaveClearSlowMotion();
 
 	HideAugmentCardSelectUI();
 

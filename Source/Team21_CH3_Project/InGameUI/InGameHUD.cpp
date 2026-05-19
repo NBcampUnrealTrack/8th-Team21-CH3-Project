@@ -20,6 +20,9 @@ void AInGameHUD::BeginPlay()
 		{
 			InGameUIInstance->AddToViewport();
 
+			// 게임 시작 시 페이드 인 / READY UI Transition 재생
+			InGameUIInstance->PlayGameStartTransition();
+
 			// HUD 위젯 생성이 완료된 직후 GameMode에 Wave/Kill/Gold UI 갱신을 다시 요청한다.
 			AShooterInGameMode* GameMode = Cast<AShooterInGameMode>(UGameplayStatics::GetGameMode(this));
 			if (GameMode)
