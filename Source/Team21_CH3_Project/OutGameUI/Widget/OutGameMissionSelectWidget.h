@@ -7,6 +7,7 @@
 #include "OutGameMissionSelectWidget.generated.h"
 
 class UButton;
+class UTextBlock;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API UOutGameMissionSelectWidget : public UOutGameWidgetBase{
@@ -24,6 +25,12 @@ protected:
 	TObjectPtr<UButton> HardButton;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> BackButton; 
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> normalUnlockKillCountText;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> hardUnlockKillCountText;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> playerTotalKillText;
 	
 	void LevelClicked();
 	

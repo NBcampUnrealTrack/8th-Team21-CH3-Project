@@ -2,6 +2,7 @@
 #include "OutGameUI/Widget/OutGameMissionSelectWidget.h"
 #include "OutGameUI/Widget/OutGameRootWidget.h"
 #include "Components/Button.h"
+#include "Components/TextBlock.h"
 #include "OutGameUI/Controller/OutGamePlayerController.h"
 #include "OutGameWeaponSelectWidget.h"
 
@@ -17,6 +18,17 @@ void UOutGameMissionSelectWidget::NativeOnInitialized(){
 	
 	normalUnlockKillCount = 30;
 	hardUnlockKillCount = 60;
+	
+	if (IsValid(normalUnlockKillCountText) == true) normalUnlockKillCountText->SetText(
+	FText::FromString(FString::Printf(TEXT("%d"), normalUnlockKillCount)));
+	if (IsValid(hardUnlockKillCountText) == true) hardUnlockKillCountText->SetText(
+		FText::FromString(FString::Printf(TEXT("%d"), hardUnlockKillCount)));
+	
+	if (UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetWorld()->GetGameInstance()))
+	{
+		if (IsValid(playerTotalKillText) == true) playerTotalKillText->SetText(
+			FText::FromString(FString::Printf(TEXT("%d"), GI->GetPlayerTotalKillCount())));
+	}
 	
 }
 
