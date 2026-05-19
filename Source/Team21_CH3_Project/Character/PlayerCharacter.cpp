@@ -484,7 +484,11 @@ void APlayerCharacter::TryFire()
 				float WeaponDamage = CurrentWeapon->GetAttackDamage();
 				//UKismetSystemLibrary::PrintString(this, BoneNameString);
 				//DrawDebugSphere(GetWorld(), HitResult.Location, 3.f, 16, FColor(255, 0, 0, 255), true, 20.f, 0U, 5.f); //피격위치(Bone) 디버그드로잉
-				
+				if (IsValid(AugmentComponent))
+				{
+					WeaponDamage = AugmentComponent->GetCalculatedDamage(WeaponDamage, HittedCharacter);
+				}
+
 				if (true == BoneNameString.Equals(FString(TEXT("HEAD")), ESearchCase::IgnoreCase))
 				{
 					HittedCharacter->TakeDamage(WeaponDamage * AttackDamageMul * 1.25f, DamageEvent, GetController(), this);
