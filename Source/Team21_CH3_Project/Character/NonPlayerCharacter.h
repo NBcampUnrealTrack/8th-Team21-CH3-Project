@@ -41,6 +41,8 @@ protected:
 	void TryFire();
 	//АјАн
 	void EndAttack();
+
+	void POW(bool bVulnerable);
 	virtual void EndAttack(UAnimMontage* InMontage, bool bInterruped);
 public:
 	bool bIsNowAttacking;
@@ -53,6 +55,8 @@ public:
 	float MaxHP = 100.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
 	float Damage =5.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Boss")
+	bool bInvulnerable;
 
 protected:
 	FOnAttackMontageEnded OnAttackMontageEndedDelegate;
@@ -61,4 +65,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<AWeapon>WeaponType;
+	UPROPERTY(VisibleAnywhere)
+	UStatusComponent* Status;
 };

@@ -17,12 +17,14 @@
 #include "InGameUI/ShooterInGameMode.h"
 #include "TimerManager.h"
 
-ANonPlayerCharacter::ANonPlayerCharacter() : bIsNowAttacking(false)
+ANonPlayerCharacter::ANonPlayerCharacter() : bIsNowAttacking(false) , bInvulnerable(false)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
 	AIControllerClass = AAI_Controller::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	Status = CreateDefaultSubobject<UStatusComponent>(TEXT("MonsterStatusComponent"));
 
 }
 
@@ -251,4 +253,15 @@ void ANonPlayerCharacter::TryFire()
 		}
 
 	}
+}
+
+void ANonPlayerCharacter::POW(bool bVulnerable)
+{
+	bInvulnerable = bVulnerable;
+	if (bInvulnerable == true)
+	{
+		Status->ApplyDamage(0);
+	}
+	else
+		return;
 }
