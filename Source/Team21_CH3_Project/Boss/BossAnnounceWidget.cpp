@@ -2,6 +2,7 @@
 #include "BossAnnounceWidget.h"
 #include "Animation/WidgetAnimation.h"
 #include "Components/TextBlock.h"
+#include "Kismet/GameplayStatics.h"
 
 void UBossAnnounceWidget::NativeOnInitialized(){
 	Super::NativeOnInitialized();
@@ -18,6 +19,11 @@ void UBossAnnounceWidget::NativeOnInitialized(){
 }
 
 void UBossAnnounceWidget::PlayAnnounceAnimation(){
+	if (IsValid(announceSound))
+	{
+		UGameplayStatics::PlaySound2D(this, announceSound);
+	}
+	
 	if (IsValid(announceAnim) == true)
 	{
 		PlayAnimation(announceAnim);

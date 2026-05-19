@@ -22,6 +22,8 @@ private:
 	TObjectPtr<UTextBlock> announceText;
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	TObjectPtr<UWidgetAnimation> announceAnim;
+	UPROPERTY(EditAnywhere, Category="Sound")
+	TObjectPtr<USoundBase> announceSound;
 	
 	UFUNCTION()
 	void HandleAnnounceFinished();
