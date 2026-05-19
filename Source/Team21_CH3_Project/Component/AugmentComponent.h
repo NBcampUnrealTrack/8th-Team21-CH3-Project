@@ -34,7 +34,10 @@ public:
     /** 최종 데미지 보정치를 계산하여 반환 (캐릭터의 공격 로직에서 호출) */
     float GetCalculatedDamage(float InBaseDamage, AActor* Target);
 
+    //카드증강 선택화면 호출 함수
+    void AugmentSelection();
 
+    UAugmentCardSelectWidget* GetAugmentWidget() const { return ActiveAugmentWidget; }
     // --- 이벤트 접점 함수 (캐릭터 담당자가 호출해줘야 함) ---
 
     /** 적 처치 시 호출 */
@@ -52,6 +55,8 @@ public:
     {
         return OwnedAugments.Contains(Type) ? OwnedAugments[Type] : 0;
     }
+
+    
 
 private:
     // --- 내부 관리 데이터 ---
@@ -77,8 +82,12 @@ private:
 
     const FAugmentTableData* GetAugmentData(EAugmentType Type);
 
+    TArray<FAugmentResult> RollRandomAugmentOptions();
+
     UPROPERTY()
     class UAugmentCardSelectWidget* ActiveWidget;
+
+    
 
 protected:
     UFUNCTION()
@@ -86,4 +95,9 @@ protected:
 
     bool bIsSpeedBuffActive = false;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Augment|Setup")
+    TSubclassOf<UUserWidget> AugmentWidgetClass;
+
+    UPROPERTY()
+    TObjectPtr<class UAugmentCardSelectWidget> ActiveAugmentWidget;
 };

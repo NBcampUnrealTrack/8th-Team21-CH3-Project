@@ -15,6 +15,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Gimmick/SpawnManager.h"
 
+#include "Component/AugmentComponent.h"
+
 AShooterInGameMode::AShooterInGameMode()
 {
 	WaveDataTable = nullptr;
@@ -43,7 +45,6 @@ AShooterInGameMode::AShooterInGameMode()
 	MaxHUDWaveRefreshRetryCount = 10;
 	HUDWaveRefreshRetryInterval = 0.05f;
 
-	ActiveWidget = nullptr;
 	AugmentKillInterval = 5;
 	bIsAugmentSelectOpen = false;
 	bPendingClearWaveAfterAugment = false;
@@ -552,60 +553,39 @@ void AShooterInGameMode::HandleHUDWaveInfoRefreshRetry()
 
 void AShooterInGameMode::ShowAugmentCardSelectUI()
 {
-	if (bIsMatchEnded || bIsAugmentSelectOpen)
-	{
-		return;
-	}
-
-	if (!AugmentCardSelectWidgetClass)
-	{
-		UE_LOG(LogTemp, Error, TEXT("AugmentCardSelectWidgetClass is not set."));
-		return;
-	}
+	if (bIsMatchEnded || bIsAugmentSelectOpen) return;
 
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	if (!PC)
-	{
-		return;
-	}
+	if (!PC) return;
 
-	ActiveWidget = CreateWidget<UAugmentCardSelectWidget>(PC, AugmentCardSelectWidgetClass);
-	if (!ActiveWidget)
-	{
-		return;
-	}
+	APawn* PlayerPawn = PC->GetPawn();
+	if (!PlayerPawn) return;
 
-	ActiveWidget->OnAugmentSelected.RemoveDynamic(this, &AShooterInGameMode::HandleAugmentSelected);
-	ActiveWidget->OnAugmentSelected.AddDynamic(this, &AShooterInGameMode::HandleAugmentSelected);
-
-	ActiveWidget->AddToViewport(200);
+	UAugmentComponent* AugmentComp = PlayerPawn->FindComponentByClass<UAugmentComponent>();
+	if (!AugmentComp) return;
 
 	bIsAugmentSelectOpen = true;
 
-	FInputModeUIOnly InputModeData;
-	InputModeData.SetWidgetToFocus(ActiveWidget->TakeWidget());
-	PC->SetInputMode(InputModeData);
-	PC->bShowMouseCursor = true;
 	PC->SetPause(true);
+	StopGameplayInput();
 
-	UE_LOG(LogTemp, Warning, TEXT("Augment Card Select UI Opened."));
+	AugmentComp->AugmentSelection();
+
+	if (UAugmentCardSelectWidget* ActiveWidget = AugmentComp->GetAugmentWidget())
+	{
+		FInputModeUIOnly InputModeData;
+		InputModeData.SetWidgetToFocus(ActiveWidget->TakeWidget());
+		PC->SetInputMode(InputModeData);
+	}
 }
 
 void AShooterInGameMode::HideAugmentCardSelectUI()
 {
-	if (ActiveWidget)
-	{
-		ActiveWidget->RemoveFromParent();
-		ActiveWidget = nullptr;
-	}
-
 	bIsAugmentSelectOpen = false;
 }
 
-void AShooterInGameMode::HandleAugmentSelected(FAugmentResult SelectedCardData)
+void AShooterInGameMode::NotifyAugmentSelectionComplete()
 {
-	// UE_LOG(LogTemp, Warning, TEXT("Augment Selected"));
-
 	HideAugmentCardSelectUI();
 
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
