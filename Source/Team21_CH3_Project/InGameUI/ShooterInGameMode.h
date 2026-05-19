@@ -169,6 +169,31 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
 	void TriggerResultUI(bool bPlayerWon);
 
+	// 게임 시작 Transition이 끝난 뒤 Wave를 시작하기 위한 타이머
+	FTimerHandle GameStartWaveTimerHandle;
+
+	// 게임 시작 Transition 재생 시간.
+	// WBP_InGameUI의 GameStartAnim 길이와 맞춰야 한다.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave|Transition")
+	float GameStartTransitionDelay = 2.2f;
+
+	// Wave Clear 순간 슬로우 모션을 복구하기 위한 타이머
+	FTimerHandle WaveClearSlowMotionTimerHandle;
+
+	// Wave Clear 시 적용할 글로벌 슬로우 배율
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave|Transition")
+	float WaveClearSlowMotionDilation = 0.25f;
+
+	// Wave Clear 슬로우 모션 유지 시간
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave|Transition")
+	float WaveClearSlowMotionDuration = 0.35f;
+
+	// Wave Clear 슬로우 모션 시작
+	void StartWaveClearSlowMotion();
+
+	// Wave Clear 슬로우 모션 복구
+	void RestoreWaveClearSlowMotion();
+
 public:
 	UFUNCTION(Exec)
 	void CmdKillEnemy();
