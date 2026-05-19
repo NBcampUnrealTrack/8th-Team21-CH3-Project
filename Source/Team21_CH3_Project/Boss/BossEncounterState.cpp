@@ -1,5 +1,7 @@
 ﻿// BossEncounterState.cpp
 #include "Boss/BossEncounterState.h"
+#include "Boss/BossMeteorStrikeActor.h"
+#include "Boss/BossAnnounceWidget.h"
 #include "Character/NonPlayerCharacter.h"
 #include "Component/StatusComponent.h"
 #include "Gimmick/SpawnManager.h"
@@ -14,6 +16,13 @@ ABossEncounterState::ABossEncounterState()
 	bossMaxHP = 1000.0f;
 	cachedBoss = nullptr;
 	requiredCoreCount = 3;
+	bIsPlayPhase = false;
+	
+	meteorCountPerWave = 3;
+	meteorInterval = 5.0f;
+	meteorSpawnRadius = 800.0f;
+	objectBreakCount = 0;
+	phaseStartObjectCount = 3;
 }
 
 void ABossEncounterState::BeginPlay()
@@ -43,13 +52,61 @@ void ABossEncounterState::HandleBossSpawned(ACharacter* SpawnedBoss)
 	
 	GetStatus()->SetMaxHP(bossMaxHP);
 	GetStatus()->SetCurrentHP(bossMaxHP);
-	
-	UE_LOG(LogTemp, Warning, TEXT("Boss HP Init: Max %.1f / Current %.1f"),
-	GetStatus()->GetMaxHP(),
-	GetStatus()->GetCurrentHP()
-	);
 
 	GetStatus()->OnCurrentHPChanged.AddUObject(this, &ThisClass::HandleBossCurrentHPChanged);
+}
+
+void ABossEncounterState::HandleBossCurrentHPChanged(float CurrentHP){
+	if (IsValid(cachedBoss) == false) return;
+	
+	const float maxHP = GetStatus()->GetMaxHP();
+	const float ratio = maxHP > 0.0f ? CurrentHP / maxHP : 0.0f;
+	
+	if (ratio <= phaseTriggerRatio && bIsPlayPhase == false)
+	{
+		bIsPlayPhase = true;
+		// Boss GimmickStart
+		// Boss GodMode
+		
+		// HealObject->OnObjectBreaked.RemoveDynamic(this, &ThisClass::HandlePhaseObjectBreak);
+		// HealObject->OnObjectBreaked.AddDynamic(this, &ThisClass::HandlePhaseObjectBreak);
+		
+		PlayAnnounceAnimation();
+		StartMeteorPattern();
+	}
+	
+	if (ratio <= KINDA_SMALL_NUMBER)
+	{
+		StopMeteorPattern();
+		return;
+	}
+}
+
+void ABossEncounterState::HandlePhaseObjectBreak(){
+	++objectBreakCount;
+	
+	if (objectBreakCount >= phaseStartObjectCount)
+	{
+		PhaseGimmickStart();
+	}
+}
+
+void ABossEncounterState::PhaseGimmickStart(){
+	// disabled God Mode
+	// 	PlayAnnounceAnimation(); -disabled God Mod Message
+}
+
+void ABossEncounterState::PlayAnnounceAnimation(){
+	if (IsValid(announceWidgetClass) == true)
+	{
+		APlayerController* PC = GetWorld()->GetFirstPlayerController();
+		announceWidgetInstance = CreateWidget<UBossAnnounceWidget>(PC, announceWidgetClass);
+		if (IsValid(announceWidgetInstance) == true )
+		{
+			announceWidgetInstance->AddToViewport();
+			announceWidgetInstance->PlayAnnounceAnimation();
+		}
+	}
 }
 
 UStatusComponent* ABossEncounterState::GetStatus(){
@@ -63,14 +120,65 @@ UStatusComponent* ABossEncounterState::GetStatus(){
 	return status;
 }
 
-void ABossEncounterState::HandleBossCurrentHPChanged(float CurrentHP){
-	if (IsValid(cachedBoss) == false) return;
-	
-	const float maxHP = GetStatus()->GetMaxHP();
-	const float ratio = maxHP > 0.0f ? CurrentHP / maxHP : 0.0f;
-	
-	if (ratio <= phaseTriggerRatio)
+#pragma region MeteorStrike
+
+void ABossEncounterState::StartMeteorPattern(){
+	if (GetWorldTimerManager().IsTimerActive(MeteorTimerHandle))
 	{
-		// Boss GimmickStart
+		UE_LOG(LogTemp, Warning, TEXT("MeteorTimerHandle is valid"));
+		return;
+	}
+	
+	GetWorldTimerManager().SetTimer(
+		MeteorTimerHandle,
+		this,
+		&ThisClass::SpawnMeteorPattern,
+		meteorInterval,
+		true
+	);
+}
+
+void ABossEncounterState::StopMeteorPattern(){
+	GetWorldTimerManager().ClearTimer(MeteorTimerHandle);
+}
+
+void ABossEncounterState::SpawnMeteorPattern(){
+	if (IsValid(meteorStrikeClass) == false)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BossEncounterState MeteorStrikeClass is Valid"));
+		return;
+	}
+	
+	ACharacter* playerCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
+	if (IsValid(playerCharacter) == false)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BossEncounterState playerCharacter is Valid"));
+		return;
+	}
+		
+	for (int32 i = 0; i < meteorCountPerWave; ++i)
+	{
+		const FVector2D randomCircle = FMath::RandPointInCircle(meteorSpawnRadius);
+		FVector spawnLocation = playerCharacter->GetActorLocation();
+		spawnLocation.X += randomCircle.X;
+		spawnLocation.Y += randomCircle.Y;
+	
+		FHitResult Hit;
+		const FVector traceStart = spawnLocation + FVector(0, 0, 1000.0f);
+		const FVector traceEnd = spawnLocation - FVector(0, 0, 3000.0f);
+	
+		if (GetWorld()->LineTraceSingleByChannel(Hit, traceStart, traceEnd, ECC_Visibility))
+		{
+			spawnLocation = Hit.ImpactPoint;
+		}
+	
+		GetWorld()->SpawnActor<ABossMeteorStrikeActor>(
+			meteorStrikeClass,
+			spawnLocation,
+			FRotator::ZeroRotator
+		);
 	}
 }
+
+
+#pragma endregion 

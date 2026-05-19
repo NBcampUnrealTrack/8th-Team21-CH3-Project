@@ -23,7 +23,4 @@ public:
 	int32 playerGold = 0;
 	UPROPERTY()
 	TMap<FName, int32> traitLevels;
-	
-	// Trait System save and load 
-	//TArray<OutGameTraitMananger> applyTrait; 
 };
