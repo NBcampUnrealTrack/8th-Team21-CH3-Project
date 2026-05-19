@@ -6,6 +6,7 @@
 #include "Game/TeamGameInstance.h"
 #include "Data/EnemyWaveDataTable.h"
 #include "Component/StatusComponent.h"
+#include "OutGameUI/Widget/OutGameRootWidget.h"
 
 #include "Blueprint/UserWidget.h"
 #include "Engine/DataTable.h"
@@ -40,6 +41,7 @@ AShooterInGameMode::AShooterInGameMode()
 
 	OutGameLevelName = TEXT("OutGameMap");
 	EndMatchReturnDelay = 3.0f;
+	EndMatchTransitionDelay = 1.0f;
 
 	HUDWaveRefreshRetryCount = 0;
 	MaxHUDWaveRefreshRetryCount = 10;
@@ -48,6 +50,8 @@ AShooterInGameMode::AShooterInGameMode()
 	AugmentKillInterval = 5;
 	bIsAugmentSelectOpen = false;
 	bPendingClearWaveAfterAugment = false;
+
+	RootWidgetInstance = nullptr;
 }
 
 void AShooterInGameMode::BeginPlay()
@@ -87,9 +91,6 @@ void AShooterInGameMode::BeginPlay()
 
 	RestorePlayerHPFromGameInstance();
 
-	// 게임 시작 Transition이 끝난 뒤 Wave 시작
-	// 기존처럼 BeginPlay에서 바로 StartWave()를 호출하면
-	// Fade In / READY UI가 재생되는 동안 몬스터가 먼저 스폰될 수 있다.
 	GetWorldTimerManager().ClearTimer(GameStartWaveTimerHandle);
 	GetWorldTimerManager().SetTimer(
 		GameStartWaveTimerHandle,
@@ -148,7 +149,6 @@ void AShooterInGameMode::StartWave()
 	if (!TryStartWaveWithSpawnManager(CurrentWave))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("SpawnManager not found. Fallback to RequestSpawnWave."));
-
 		RequestSpawnWave(CurrentWave, TargetKillCount);
 	}
 }
@@ -206,7 +206,6 @@ void AShooterInGameMode::ClearWave()
 
 	const int32 ClearedWaveKillCount = CurrentWaveKillCount;
 
-	// Wave가 끝날 때마다 해당 Wave의 KillCount를 TeamGameInstance에 누적 저장
 	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
 	if (GI)
 	{
@@ -215,7 +214,6 @@ void AShooterInGameMode::ClearWave()
 
 	bIsWaveInProgress = false;
 
-	// Wave Clear 순간 화면 연출을 위해 잠깐 슬로우 모션 적용
 	StartWaveClearSlowMotion();
 
 	RefreshHUDWaveInfo();
@@ -261,7 +259,6 @@ void AShooterInGameMode::StartWaveClearSlowMotion()
 		return;
 	}
 
-	// Wave Clear 순간 전체 게임 속도를 잠깐 느리게 만든다.
 	UGameplayStatics::SetGlobalTimeDilation(World, WaveClearSlowMotionDilation);
 
 	GetWorldTimerManager().ClearTimer(WaveClearSlowMotionTimerHandle);
@@ -283,7 +280,6 @@ void AShooterInGameMode::RestoreWaveClearSlowMotion()
 		return;
 	}
 
-	// 슬로우 모션 복구
 	UGameplayStatics::SetGlobalTimeDilation(World, 1.0f);
 }
 
@@ -362,10 +358,11 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 
 	GetWorldTimerManager().ClearTimer(GameStartWaveTimerHandle);
 	GetWorldTimerManager().ClearTimer(NextWaveStartTimerHandle);
+	GetWorldTimerManager().ClearTimer(EndMatchReturnTimerHandle);
+	GetWorldTimerManager().ClearTimer(EndMatchTransitionTimerHandle);
 	GetWorldTimerManager().ClearTimer(HUDWaveRefreshRetryTimerHandle);
 	GetWorldTimerManager().ClearTimer(WaveClearSlowMotionTimerHandle);
 
-	// 게임 종료 시 슬로우 모션이 남아 있지 않도록 복구
 	RestoreWaveClearSlowMotion();
 
 	HideAugmentCardSelectUI();
@@ -389,18 +386,11 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 		GI->SetIsWin(bPlayerWon);
 		GI->SetMatch(true);
 
-		// 게임 종료 직전 마지막 Wave / Gold 값을 한 번 저장한다.
-		// ClearInGameWaveData() 내부에서 SavedCurrentGold를 playerGold에 더하고 저장함.
 		GI->SaveInGameWaveData(CurrentWave, FinalGold);
-
-		// 인게임 웨이브 복구용 임시 데이터 초기화
 		GI->ClearInGameWaveData();
-
-		// 다음 게임 시작 시 이전 인게임 HP가 남지 않도록 초기화
 		GI->SetCurrentHp(0.0f);
 	}
 
-	// GameMode 내부 값 초기화
 	CurrentWaveKillCount = 0;
 	CurrentGold = 0;
 
@@ -416,8 +406,6 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 		*OutGameLevelName.ToString(),
 		EndMatchReturnDelay
 	);
-
-	GetWorldTimerManager().ClearTimer(EndMatchReturnTimerHandle);
 
 	GetWorldTimerManager().SetTimer(
 		EndMatchReturnTimerHandle,
@@ -777,7 +765,50 @@ void AShooterInGameMode::ReloadCurrentLevel()
 
 void AShooterInGameMode::HandleEndMatchReturnToOutGame()
 {
-	MoveToOutGameMap();
+	APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
+	if (!PC)
+	{
+		MoveToOutGameMap();
+		return;
+	}
+
+	if (!OutGameRootWidgetClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OutGameRootWidgetClass is not set. MoveToOutGameMap directly."));
+		MoveToOutGameMap();
+		return;
+	}
+
+	if (!RootWidgetInstance)
+	{
+		RootWidgetInstance = CreateWidget<UOutGameRootWidget>(PC, OutGameRootWidgetClass);
+
+		if (RootWidgetInstance)
+		{
+			RootWidgetInstance->AddToViewport(1000);
+		}
+	}
+
+	if (!RootWidgetInstance)
+	{
+		MoveToOutGameMap();
+		return;
+	}
+
+	// 팀원 코드에서 FadeIn / FadeOut 의미가 반대로 작성되어 있다고 했으므로
+	// 게임 종료 후 맵 이동 전 화면을 검게 덮는 쪽으로 ShowTransitionFadein()을 먼저 사용한다.
+	// 만약 화면이 검게 덮이지 않으면 이 줄을 ShowTransitionFadeOut()으로 바꾸면 된다.
+	RootWidgetInstance->ShowTransitionFadeOut();
+
+	GetWorldTimerManager().ClearTimer(EndMatchTransitionTimerHandle);
+
+	GetWorldTimerManager().SetTimer(
+		EndMatchTransitionTimerHandle,
+		this,
+		&AShooterInGameMode::MoveToOutGameMap,
+		EndMatchTransitionDelay,
+		false
+	);
 }
 
 void AShooterInGameMode::MoveToOutGameMap()
