@@ -4,6 +4,8 @@
 #include "GameFramework/PlayerController.h"
 #include "InGameUI/InGameHUD.h"
 #include "Character/PlayerCharacter.h"
+#include "Component/AugmentComponent.h"
+#include "GameFramework/Character.h"
 
 AWeapon::AWeapon()
 {
@@ -56,6 +58,17 @@ void AWeapon::Reload()
 	CurrentBullets = MaxBullets;
 	OnAmmoChanged.Broadcast(CurrentBullets, MaxBullets);
 	UE_LOG(LogTemp, Warning, TEXT("[리로딩 완료] %d / %d"), CurrentBullets, MaxBullets);
+
+	ACharacter* OwnerChar = Cast<ACharacter>(GetOwner());
+	if (OwnerChar)
+	{
+		UAugmentComponent* AugmentComp = OwnerChar->FindComponentByClass<UAugmentComponent>();
+
+		if (AugmentComp)
+		{
+			AugmentComp->HandleReloadFinished();
+		}
+	}
 }
 
 bool AWeapon::UseBullets()
