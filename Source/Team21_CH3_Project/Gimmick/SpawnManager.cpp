@@ -2,6 +2,8 @@
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
+#include "Character/NonPlayerCharacter.h"
+#include "Component/StatusComponent.h"
 
 ASpawnManager::ASpawnManager()
 {
@@ -53,31 +55,54 @@ void ASpawnManager::SpawnRoutine()
 		return;
 	}
 
+	ACharacter* SpawnedEnemy = nullptr;
+	float TargetMaxHP = 100.0f;
+	bool bIsBoss = false;
+
 	if (RemainingBoss > 0)
 	{
-
-		ACharacter* SpawnedBoss = SpawnEnemy(BossEnemyClass);
+		SpawnedEnemy = SpawnEnemy(BossEnemyClass);
+		TargetMaxHP = BossMaxHealth;
 		RemainingBoss--;
-
-		if (SpawnedBoss && OnBossSpawned.IsBound())
-		{
-			OnBossSpawned.Broadcast(SpawnedBoss);
-		}
+		bIsBoss = true;
 	}
 	else if (RemainingShooter > 0)
 	{
-		SpawnEnemy(ShooterEnemyClass);
+		SpawnedEnemy = SpawnEnemy(ShooterEnemyClass);
+		TargetMaxHP = ShooterMaxHealth;
 		RemainingShooter--;
 	}
 	else if (RemainingRusher > 0)
 	{
-		SpawnEnemy(RusherEnemyClass);
+		SpawnedEnemy = SpawnEnemy(RusherEnemyClass);
+		TargetMaxHP = RusherMaxHealth;
 		RemainingRusher--;
 	}
 	else if (RemainingNormal > 0)
 	{
-		SpawnEnemy(NormalEnemyClass);
+		SpawnedEnemy = SpawnEnemy(NormalEnemyClass);
+		TargetMaxHP = NormalMaxHealth;
 		RemainingNormal--;
+	}
+
+
+	if (IsValid(SpawnedEnemy))
+	{
+		UStatusComponent* Status = GetStatus(SpawnedEnemy);
+		if (IsValid(Status))
+		{
+
+			Status->SetMaxHP(TargetMaxHP);
+			Status->SetCurrentHP(TargetMaxHP);
+
+			UE_LOG(LogTemp, Log, TEXT("Monster Spawned with HP: %f"), TargetMaxHP);
+		}
+
+
+		if (bIsBoss && OnBossSpawned.IsBound())
+		{
+			OnBossSpawned.Broadcast(SpawnedEnemy);
+		}
 	}
 }
 
@@ -100,4 +125,16 @@ ACharacter* ASpawnManager::SpawnEnemy(TSubclassOf<ACharacter> EnemyClass)
 	}
 
 	return nullptr;
+}
+
+UStatusComponent* ASpawnManager::GetStatus(ACharacter* temp)
+{
+	ANonPlayerCharacter* nonTemp = Cast<ANonPlayerCharacter>(temp);
+
+	if(IsValid(nonTemp)==false)	return nullptr;
+	
+	UStatusComponent* status = nonTemp->GetStatusComponent();
+	if (IsValid(status) == false) return nullptr;
+
+	return status;
 }

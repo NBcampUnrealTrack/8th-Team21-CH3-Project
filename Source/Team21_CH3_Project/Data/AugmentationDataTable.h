@@ -40,6 +40,9 @@ struct FAugmentTableData : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString UnitText;     // "회복", "%", "발" 등
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TObjectPtr<UTexture2D> icon = nullptr;
 };
 
 USTRUCT(BlueprintType)
@@ -57,5 +60,8 @@ struct FAugmentResult
     FString Description;
 
     UPROPERTY(BlueprintReadWrite)
-    int32 CurrentLevel; // 현재 몇 단계인지 UI에 표시용
+    int32 CurrentLevel;
+
+    UPROPERTY(BlueprintReadWrite)
+    TObjectPtr<UTexture2D> icon = nullptr;
 };

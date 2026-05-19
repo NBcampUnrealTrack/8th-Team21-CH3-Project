@@ -175,7 +175,27 @@ void UAugmentComponent::HandleEnemyKilled(AActor* KilledEnemy)
             }
         }
     }
+    
+    if (OwnedAugments.Contains(EAugmentType::ChainKill))
+    {
+        KillCount++;
 
+        if (KillCount >= 2)
+        {
+            bIsChainKillActive = true;
+        }
+        
+        
+
+
+        GetWorld()->GetTimerManager().SetTimer(
+            ChainKillTimerHandle,
+            this,
+            &UAugmentComponent::ResetchainKill,
+            5.0f,
+            false
+        );
+    }
 }
 
 
@@ -198,6 +218,12 @@ void UAugmentComponent::AugmentSelection()
 
         BindAugmentWidget(ActiveAugmentWidget);
     }
+}
+
+void UAugmentComponent::ResetchainKill()
+{
+    bIsChainKillActive = false;
+    KillCount = 0;
 }
 
 const FAugmentTableData* UAugmentComponent::GetAugmentData(EAugmentType Type)
@@ -373,6 +399,42 @@ float UAugmentComponent::GetCalculatedDamage(float InBaseDamage, AActor* Target)
                 }
             }
         }
+    }
+
+    //ChainKill
+    if (OwnedAugments.Contains(EAugmentType::ChainKill))
+    {
+        if (bIsChainKillActive)
+        {
+            const FAugmentTableData* Data = GetAugmentData(EAugmentType::ChainKill);
+            if (Data)
+            {
+                int32 Level = OwnedAugments[EAugmentType::ChainKill];
+                float BonusValue = (Data->BaseValue + (Level - 1) * Data->UpgradeValue) / 100.0f;
+                FinalModifier += BonusValue;
+
+                UE_LOG(LogTemp, Log, TEXT("ChainKill Activate!"));
+            }
+        }
+    }
+
+    //ReloadReward
+    if (OwnedAugments.Contains(EAugmentType::ReloadReward))
+    {
+        if (bIsReloadRewardActive) 
+        {
+            const FAugmentTableData* Data = GetAugmentData(EAugmentType::ReloadReward);
+            if (Data)
+            {
+                int32 Level = OwnedAugments[EAugmentType::ReloadReward];
+                float BonusValue = (Data->BaseValue + (Level - 1) * Data->UpgradeValue) / 100.0f;
+                FinalModifier += BonusValue;
+
+                bIsReloadRewardActive = false;
+
+            }
+        }
+        
     }
 
     return InBaseDamage * FinalModifier;

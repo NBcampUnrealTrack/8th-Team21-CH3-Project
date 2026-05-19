@@ -9,6 +9,8 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBossSpawnedSignature, ACharacter*, SpawnedBoss);
 
+class UStatusComponent;
+
 UCLASS()
 class TEAM21_CH3_PROJECT_API ASpawnManager : public AActor
 {
@@ -32,6 +34,8 @@ public:
 protected:
     /** 일정한 간격마다 몬스터를 스폰하는 핵심 함수 */
     void SpawnRoutine();
+
+    
 
 
 protected:
@@ -71,6 +75,20 @@ private:
     int32 RemainingBoss;
 
     ACharacter* SpawnEnemy(TSubclassOf<ACharacter> EnemyClass);
+
+    UStatusComponent* GetStatus(ACharacter* temp);
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MonsterHP", meta = (AllowPrivateAccess = "true"))
+    float NormalMaxHealth = 100.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MonsterHP", meta = (AllowPrivateAccess = "true"))
+    float RusherMaxHealth = 100.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MonsterHP", meta = (AllowPrivateAccess = "true"))
+    float ShooterMaxHealth = 100.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MonsterHP", meta = (AllowPrivateAccess = "true"))
+    float BossMaxHealth = 100.0f;
 
 public:
     UPROPERTY(BlueprintAssignable, Category = "Events")

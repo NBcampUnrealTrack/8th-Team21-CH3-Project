@@ -45,10 +45,8 @@ public:
     void HandleEnemyKilled(AActor* KilledEnemy);
 
     /** 재장전 완료 시 호출 */
-    void HandleReloadFinished();
+    void HandleReloadFinished() { bIsReloadRewardActive = true; }
 
-    /** 발사 시 호출 */
-    void HandleWeaponFired();
 
     /** 특정 증강의 현재 레벨을 반환 (없으면 0) */
     int32 GetAugmentLevel(EAugmentType Type) const
@@ -74,18 +72,18 @@ private:
     /** 연속 처치 버프용 타이머 핸들 */
     FTimerHandle ChainKillTimerHandle;
     bool bIsChainKillActive = false;
+    int KillCount = 0;
+    void ResetchainKill();
 
     /** 장전 보상 활성화 여부 (다음 1발) */
     bool bIsReloadRewardActive = false;
-
-    float GetAugmentCurrentValue(EAugmentType Type);
 
     const FAugmentTableData* GetAugmentData(EAugmentType Type);
 
     TArray<FAugmentResult> RollRandomAugmentOptions();
 
     UPROPERTY()
-    class UAugmentCardSelectWidget* ActiveWidget;
+    UAugmentCardSelectWidget* ActiveWidget;
 
     
 
@@ -99,5 +97,5 @@ protected:
     TSubclassOf<UUserWidget> AugmentWidgetClass;
 
     UPROPERTY()
-    TObjectPtr<class UAugmentCardSelectWidget> ActiveAugmentWidget;
+    TObjectPtr<UAugmentCardSelectWidget> ActiveAugmentWidget;
 };
