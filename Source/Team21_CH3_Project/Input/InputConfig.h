@@ -36,4 +36,6 @@ public:
 	TObjectPtr<UInputAction> ReLoad;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UInputAction> QuitUI;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UInputAction> Sliding;
 };

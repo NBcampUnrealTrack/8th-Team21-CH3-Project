@@ -692,34 +692,9 @@ void APlayerCharacter::InputReLoad(const FInputActionValue& InValue)
 
 void APlayerCharacter::InputQuitUI(const FInputActionValue& InValue)
 {
-	if (IsValid(InGameQuitWidgetInstance) == false)
-	{
-		return;
-	}
 
-	APlayerController* PC = GetController<APlayerController>();
-	if (IsValid(PC) == false)
-	{
-		return;
-	}
+	InGameQuitWidgetInstance->HandleBackRequested();
 
-		//UI상태 -> InGame돌아가기
-	if (InGameQuitWidgetInstance->GetVisibility() == ESlateVisibility::Visible)
-	{
-		InGameQuitWidgetInstance->SetVisibility(ESlateVisibility::Collapsed);
-		PC->SetPause(false);
-		PC->SetInputMode(FInputModeGameOnly());
-		PC->bShowMouseCursor = false;
-	}
-	
-		//InGame -> UI 오픈
-	else
-	{
-		InGameQuitWidgetInstance->SetVisibility(ESlateVisibility::Visible);
-		PC->SetPause(true);
-		PC->SetInputMode(FInputModeGameAndUI());
-		PC->bShowMouseCursor = true;
-	}
 }
 
 void APlayerCharacter::ApplyWeaponRecoil()
