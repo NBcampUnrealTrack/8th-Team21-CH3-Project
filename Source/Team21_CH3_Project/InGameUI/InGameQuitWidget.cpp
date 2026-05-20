@@ -41,7 +41,18 @@ void UInGameQuitWidget::ShowWidget(EWidgetState widget){
 }
 
 void UInGameQuitWidget::HandleBackRequested(){
-	if (bIsOpening) return;
+	if (bIsOpening)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("bIsOpening is true"));
+		return;
+	}
+	APlayerController* PC = GetOwningPlayer();
+	if (IsValid(PC) == false) return;
+	
+	FInputModeGameAndUI inputMode;
+	inputMode.SetHideCursorDuringCapture(false); // Drag and Click -> don't hide cursor
+	PC->SetInputMode(inputMode);
+	PC->bShowMouseCursor = true;
 	
 	if (currentState == EQuitWindowState::Opened && currentWidgetState == EWidgetState::Setting)
 	{
@@ -50,12 +61,25 @@ void UInGameQuitWidget::HandleBackRequested(){
 	else if (currentState == EQuitWindowState::Closed && currentWidgetState == EWidgetState::Quit)
 	{
 		bIsOpening = true;
+		SetVisibility(ESlateVisibility::Visible);
+		UGameplayStatics::SetGamePaused(GetWorld(), true);
 		if (IsValid(popInAnim) == true) PlayAnimation(popInAnim);
 	}
 	else if (currentState == EQuitWindowState::Opened && currentWidgetState == EWidgetState::Quit)
 	{
 		bIsOpening = true;
-		if (IsValid(popOutAnim) == true) PlayAnimation(popOutAnim);
+		
+		if (IsValid(PC) == false) return;
+		UGameplayStatics::SetGamePaused(GetWorld(), false);
+		FInputModeGameOnly inputModeGameOnly;
+		PC->SetInputMode(inputModeGameOnly);
+		PC->bShowMouseCursor = false;
+	
+
+		if (IsValid(popOutAnim) == true) {
+			PlayAnimation(popOutAnim);
+			UE_LOG(LogTemp, Warning, TEXT("popOutAnim On"));
+		}
 	}
 }
 
@@ -68,13 +92,14 @@ void UInGameQuitWidget::HandleSettingClicked(){
 }
 
 void UInGameQuitWidget::HandlePopInFinished(){
-	SetVisibility(ESlateVisibility::Visible);
+
 	currentState = EQuitWindowState::Opened;
 	bIsOpening = false;
 }
 
 void UInGameQuitWidget::HandlePopOutFinished(){
+	UE_LOG(LogTemp, Warning, TEXT("popOutAnim Finished"));
+	bIsOpening = false;
 	SetVisibility(ESlateVisibility::Collapsed);
 	currentState = EQuitWindowState::Closed;
-	bIsOpening = false;
 }
