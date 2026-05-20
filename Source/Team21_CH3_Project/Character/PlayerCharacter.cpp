@@ -24,6 +24,7 @@
 #include "Component/AugmentComponent.h"
 #include "Data/PlayerTraitBonus.h"   
 #include "Trait/SubSystem/TraitSubsystem.h"
+#include "InGameUI/InGameQuitWidget.h"
 
 
 
@@ -125,6 +126,21 @@ void APlayerCharacter::BeginPlay()
 	if (IsValid(StatusComponent))
 	{
 		StatusComponent->SetCurrentHP(StatusComponent->GetMaxHP());
+	}
+
+	if (IsValid(PlayerController))
+	{
+		if (IsValid(InGameQuitWidgetClass))
+		{
+			InGameQuitWidgetInstance = CreateWidget<UInGameQuitWidget>(
+				PlayerController,
+				InGameQuitWidgetClass
+			);
+
+			InGameQuitWidgetInstance->AddToViewport(100);
+			InGameQuitWidgetInstance->SetVisibility(ESlateVisibility::Collapsed);
+
+		}
 	}
 }
 
@@ -242,6 +258,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		CharacterInputComponent->BindAction(CharacterInputConfig->AttackRanged, ETriggerEvent::Completed, this, &ThisClass::InputStopFullAutoFire);
 		CharacterInputComponent->BindAction(CharacterInputConfig->Interaction, ETriggerEvent::Started, this, &ThisClass::InputInteraction);
 		CharacterInputComponent->BindAction(CharacterInputConfig->ReLoad, ETriggerEvent::Started, this, &ThisClass::InputReLoad);
+		CharacterInputComponent->BindAction(CharacterInputConfig->QuitUI,ETriggerEvent::Started,this,&ThisClass::InputQuitUI);
 		//UE_LOG(LogTemp, Warning, TEXT("InputComponent Bind Suceess"));
 	}
 }
@@ -671,6 +688,38 @@ void APlayerCharacter::InputReLoad(const FInputActionValue& InValue)
 	FOnMontageEnded EndDelegate;
 	EndDelegate.BindUObject(this, &APlayerCharacter::OnReloadMontageEnded);
 	AnimInstance->Montage_SetEndDelegate(EndDelegate, ReloadMontage);
+}
+
+void APlayerCharacter::InputQuitUI(const FInputActionValue& InValue)
+{
+	if (IsValid(InGameQuitWidgetInstance) == false)
+	{
+		return;
+	}
+
+	APlayerController* PC = GetController<APlayerController>();
+	if (IsValid(PC) == false)
+	{
+		return;
+	}
+
+		//UI상태 -> InGame돌아가기
+	if (InGameQuitWidgetInstance->GetVisibility() == ESlateVisibility::Visible)
+	{
+		InGameQuitWidgetInstance->SetVisibility(ESlateVisibility::Collapsed);
+		PC->SetPause(false);
+		PC->SetInputMode(FInputModeGameOnly());
+		PC->bShowMouseCursor = false;
+	}
+	
+		//InGame -> UI 오픈
+	else
+	{
+		InGameQuitWidgetInstance->SetVisibility(ESlateVisibility::Visible);
+		PC->SetPause(true);
+		PC->SetInputMode(FInputModeGameAndUI());
+		PC->bShowMouseCursor = true;
+	}
 }
 
 void APlayerCharacter::ApplyWeaponRecoil()
