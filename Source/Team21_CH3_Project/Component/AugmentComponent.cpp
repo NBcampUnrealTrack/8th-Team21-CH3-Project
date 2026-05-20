@@ -266,6 +266,8 @@ TArray<FAugmentResult> UAugmentComponent::RollRandomAugmentOptions()
         FAugmentResult Option;
         Option.Type = Row->Type;
 
+        Option.icon = Row->icon;
+
         int32 CurrentLevel = GetAugmentLevel(Row->Type);
         Option.CurrentLevel = CurrentLevel + 1;
         Option.DisplayTitle = FString::Printf(TEXT("%s (Lv.%d)"), *Row->AugmentName, Option.CurrentLevel);

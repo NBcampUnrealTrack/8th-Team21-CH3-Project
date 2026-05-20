@@ -68,6 +68,7 @@ void AAugmentCard::AugmentSelection(UAugmentComponent* AugmentComp)
             FAugmentResult Option;
             Option.Type = Row->Type;
 
+            Option.icon = Row->icon;
 
             int32 CurrentLevel = AugmentComp->GetAugmentLevel(Row->Type);
             Option.CurrentLevel = CurrentLevel + 1;
