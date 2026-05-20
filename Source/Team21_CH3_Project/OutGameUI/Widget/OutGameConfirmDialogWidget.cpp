@@ -28,6 +28,7 @@ void UOutGameConfirmDialogWidget::NativeOnInitialized(){
 	bIsPlay = false;
 	State = EQuitConfirmState::Closed;
 	SetVisibility(ESlateVisibility::Collapsed);
+	if (IsValid(okButton) == true) okButton->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 bool UOutGameConfirmDialogWidget::IsOpend(){

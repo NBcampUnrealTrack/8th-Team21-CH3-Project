@@ -283,10 +283,10 @@ void APlayerCharacter::InputAttackRanged(const FInputActionValue& InValue)
 	//	return; //코드 실행 X
 	//}
 
-	//if (GetCharacterMovement()->IsFalling())
-	//{
-	//	return;
-	//}
+	if (GetCharacterMovement()->IsFalling())
+	{
+		return;
+	}
 	
 	if (IsValid(CurrentWeapon) == false) // 무기를 줍지 않았다면
 	{
