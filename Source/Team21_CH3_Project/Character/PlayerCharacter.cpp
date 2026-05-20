@@ -277,10 +277,15 @@ void APlayerCharacter::InputLook(const FInputActionValue& InValue)
 
 void APlayerCharacter::InputAttackRanged(const FInputActionValue& InValue)
 {
-	if (0.f < GetCharacterMovement()->Velocity.Size())
-		//캐릭터의 속도(벡터의 크기)가 0이상이면 -> 움직이고 있다면
+	//if (0.f < GetCharacterMovement()->Velocity.Size())
+	//	//캐릭터의 속도(벡터의 크기)가 0이상이면 -> 움직이고 있다면
+	//{
+	//	return; //코드 실행 X
+	//}
+
+	if (GetCharacterMovement()->IsFalling())
 	{
-		return; //코드 실행 X
+		return;
 	}
 	
 	if (IsValid(CurrentWeapon) == false) // 무기를 줍지 않았다면
@@ -500,6 +505,8 @@ void APlayerCharacter::TryFire()
 			}
 		}
 
+		ApplyWeaponRecoil();
+
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		if (IsValid(AnimInstance) == true)
 		{
@@ -513,7 +520,7 @@ void APlayerCharacter::TryFire()
 
 		if (IsValid(AttackRangedCameraShake) == true)
 		{
-			PlayerController->ClientStartCameraShake(AttackRangedCameraShake);
+			PlayerController->ClientStartCameraShake(AttackRangedCameraShake,4.f);
 		}
 	}
 }
@@ -664,6 +671,15 @@ void APlayerCharacter::InputReLoad(const FInputActionValue& InValue)
 	FOnMontageEnded EndDelegate;
 	EndDelegate.BindUObject(this, &APlayerCharacter::OnReloadMontageEnded);
 	AnimInstance->Montage_SetEndDelegate(EndDelegate, ReloadMontage);
+}
+
+void APlayerCharacter::ApplyWeaponRecoil()
+{
+	const float PitchRecoil = -1.2f; // 위로 튀게. 부호는 프로젝트 입력 방향에 따라 테스트 필요
+	const float YawRecoil = FMath::RandRange(-0.4f, 0.4f);
+
+	AddControllerPitchInput(PitchRecoil);
+	AddControllerYawInput(YawRecoil);
 }
 
 void APlayerCharacter::ApplyAugment_AttackDamage(float InAdd)

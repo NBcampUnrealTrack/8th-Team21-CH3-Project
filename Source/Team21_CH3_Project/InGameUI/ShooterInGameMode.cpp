@@ -327,6 +327,16 @@ void AShooterInGameMode::ContinueToNextWaveWithLevelReload()
 
 	SavePlayerHPToGameInstance();
 
+	APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
+	if (PC && PC->GetPawn())
+	{
+		UAugmentComponent* AugmentComp = PC->GetPawn()->FindComponentByClass<UAugmentComponent>();
+		if (AugmentComp)
+		{
+			AugmentComp->SaveToGameInstance();
+		}
+	}
+
 	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
 	if (GI)
 	{
@@ -389,6 +399,8 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 		GI->SaveInGameWaveData(CurrentWave, FinalGold);
 		GI->ClearInGameWaveData();
 		GI->SetCurrentHp(0.0f);
+
+		GI->ClearSavedAugments();
 	}
 
 	CurrentWaveKillCount = 0;

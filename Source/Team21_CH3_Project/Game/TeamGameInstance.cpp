@@ -182,6 +182,7 @@ void UTeamGameInstance::ApplyGoldTraitBonus(){
 	SetGoldGainMultiplier(bonus.goldGainBonus);
 }
 
+
 const TMap<FName, int32>& UTeamGameInstance::GetTraitLevels() const{
 	return traitLevels;
 }
@@ -211,4 +212,24 @@ int32 UTeamGameInstance::GetTraitLevel(FName traitId) const{
 	return 0;
 }
 
+#pragma endregion
+
+#pragma region AugmentationSaveLoad
+
+void UTeamGameInstance::SaveCharacterAugments(const TMap<EAugmentType, int32>& InAugments)
+{
+	SavedAugments = InAugments;
+}
+
+
+TMap<EAugmentType, int32> UTeamGameInstance::LoadCharacterAugments() const
+{
+	return SavedAugments;
+}
+
+
+void UTeamGameInstance::ClearSavedAugments()
+{
+	SavedAugments.Empty();
+}
 #pragma endregion

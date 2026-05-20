@@ -9,6 +9,7 @@
 #include "Character/PlayerCharacter.h"
 #include "Item/Weapon.h"
 #include "Character/CharacterBase.h"
+#include "Game/TeamGameInstance.h"
 
 UAugmentComponent::UAugmentComponent()
 {
@@ -50,6 +51,8 @@ void UAugmentComponent::BeginPlay()
             StatusComp->OnCurrentHPChanged.AddUObject(this, &UAugmentComponent::CheckLowHPSpeedBuff);
         }
     }
+
+    LoadFromGameInstance();
 }
 
 
@@ -198,6 +201,42 @@ void UAugmentComponent::HandleEnemyKilled(AActor* KilledEnemy)
     }
 }
 
+void UAugmentComponent::SaveToGameInstance()
+{
+    if (UWorld* World = GetWorld())
+    {
+        UTeamGameInstance* GI = Cast <UTeamGameInstance>(World->GetGameInstance());
+        
+        if (GI)
+        {
+            GI->SaveCharacterAugments(OwnedAugments);
+        }
+    }
+}
+
+void UAugmentComponent::LoadFromGameInstance()
+{
+    if (UWorld* World = GetWorld())
+    {
+        UTeamGameInstance* GI = Cast<UTeamGameInstance>(World->GetGameInstance());
+        if (GI && GI->SavedAugments.Num() > 0)
+        {
+            OwnedAugments = GI->LoadCharacterAugments();
+
+
+            ACharacter* OwnerChar = Cast<ACharacter>(GetOwner());
+            if (OwnerChar)
+            {
+                UStatusComponent* StatusComp = OwnerChar->FindComponentByClass<UStatusComponent>();
+                if (StatusComp)
+                {
+                    CheckLowHPSpeedBuff(StatusComp->GetCurrentHP());
+                }
+            }
+        }
+    }
+}
+
 
 void UAugmentComponent::AugmentSelection()
 {
@@ -265,6 +304,8 @@ TArray<FAugmentResult> UAugmentComponent::RollRandomAugmentOptions()
 
         FAugmentResult Option;
         Option.Type = Row->Type;
+
+        Option.icon = Row->icon;
 
         int32 CurrentLevel = GetAugmentLevel(Row->Type);
         Option.CurrentLevel = CurrentLevel + 1;

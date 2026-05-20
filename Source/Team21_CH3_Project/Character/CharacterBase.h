@@ -50,7 +50,7 @@ protected:
 	float AttackMeleeRange = 50.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float AttackMeleeRadius = 20.f;
+	float AttackMeleeRadius = 30.f;
 
 #pragma region HP
 
