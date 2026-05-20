@@ -513,7 +513,7 @@ void APlayerCharacter::TryFire()
 
 		if (IsValid(AttackRangedCameraShake) == true)
 		{
-			PlayerController->ClientStartCameraShake(AttackRangedCameraShake);
+			PlayerController->ClientStartCameraShake(AttackRangedCameraShake,4.f);
 		}
 	}
 }
