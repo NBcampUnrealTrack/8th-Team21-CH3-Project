@@ -11,6 +11,7 @@ class UInputConfig;
 class UInputMappingContext;
 class UAugmentComponent;
 class UDataTable;
+class UInGameQuitWidget;
 struct FPlayerTraitBonus;
 
 UCLASS()
@@ -79,6 +80,7 @@ private:
 	void InputStopFullAutoFire(const FInputActionValue& InValue);
 	void InputInteraction(const FInputActionValue& InValue);
 	void InputReLoad(const FInputActionValue& InValue);
+	void InputQuitUI(const FInputActionValue& InValue);
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess))
@@ -207,5 +209,14 @@ protected:
 
 public:
 	void ApplyTraitBonus(const FPlayerTraitBonus& Bonus);
+#pragma endregion
+
+#pragma region QuitUI
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UInGameQuitWidget> InGameQuitWidgetClass;
+	UPROPERTY()
+	TObjectPtr<UInGameQuitWidget> InGameQuitWidgetInstance;
+
 #pragma endregion
 };

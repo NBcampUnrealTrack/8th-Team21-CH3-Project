@@ -34,4 +34,6 @@ public:
 	TObjectPtr<UInputAction> Interaction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UInputAction> ReLoad;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UInputAction> QuitUI;
 };
