@@ -3,6 +3,7 @@
 #include "InGameUI/AugmentCardWidget.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
+#include "Components/Image.h"
 
 void UAugmentCardWidget::NativeConstruct()
 {
@@ -59,8 +60,8 @@ void UAugmentCardWidget::SetAugmentResult(const FAugmentResult& InCardData){
 	{
 		CardDescriptionText->SetText(FText::FromString(CurrentCardData.Description));
 	}
-
-
+	
+	if (IsValid(cardIcon) == true) cardIcon->SetBrushFromTexture(InCardData.icon);
 }
 
 const FAugmentResult& UAugmentCardWidget::GetAugmentCardData() const
