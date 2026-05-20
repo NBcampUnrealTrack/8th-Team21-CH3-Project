@@ -12,7 +12,7 @@ class UAugmentCardSelectWidget;
 class UDataTable;
 class UStatusComponent;
 class ASpawnManager;
-class UOutGameRootWidget;
+class UOutGameTransitionWidget;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyKilledSignature, AActor*, KilledEnemy);
 
@@ -132,6 +132,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Augment")
 	bool bPendingClearWaveAfterAugment;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI|Transition")
+	TSubclassOf<UOutGameTransitionWidget> OutGameTransitionWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UOutGameTransitionWidget> OutGameTransitionWidgetInstance;
+
 protected:
 	int32 CalculateTargetKillCountForWave(int32 InWave) const;
 	int32 CalculateGoldPerKillForWave(int32 InWave) const;
@@ -198,16 +204,6 @@ protected:
 
 	// Wave Clear 슬로우 모션 복구
 	void RestoreWaveClearSlowMotion();
-
-protected:
-	// 게임 종료 후 OutGameMap으로 이동하기 전 검은 화면 전환을 재생하기 위한 Root Widget Class
-	// BP_ShooterInGameMode에서 WBP_OutGameRootWidget 또는 팀원이 만든 Root Widget BP를 지정해야 한다.
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI|Transition")
-	TSubclassOf<UOutGameRootWidget> OutGameRootWidgetClass;
-
-	// 게임 종료 전환용 OutGame Root Widget 인스턴스
-	UPROPERTY()
-	TObjectPtr<UOutGameRootWidget> RootWidgetInstance;
 
 public:
 	UFUNCTION(Exec)

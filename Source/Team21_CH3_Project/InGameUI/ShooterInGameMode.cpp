@@ -6,7 +6,7 @@
 #include "Game/TeamGameInstance.h"
 #include "Data/EnemyWaveDataTable.h"
 #include "Component/StatusComponent.h"
-#include "OutGameUI/Widget/OutGameRootWidget.h"
+#include "OutGameUI/Widget/OutGameTransitionWidget.h"
 
 #include "Blueprint/UserWidget.h"
 #include "Engine/DataTable.h"
@@ -51,7 +51,7 @@ AShooterInGameMode::AShooterInGameMode()
 	bIsAugmentSelectOpen = false;
 	bPendingClearWaveAfterAugment = false;
 
-	RootWidgetInstance = nullptr;
+	OutGameTransitionWidgetInstance = nullptr;
 }
 
 void AShooterInGameMode::BeginPlay()
@@ -784,33 +784,34 @@ void AShooterInGameMode::HandleEndMatchReturnToOutGame()
 		return;
 	}
 
-	if (!OutGameRootWidgetClass)
+	if (!OutGameTransitionWidgetClass)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("OutGameRootWidgetClass is not set. MoveToOutGameMap directly."));
+		UE_LOG(LogTemp, Warning, TEXT("OutGameTransitionWidgetClass is not set. MoveToOutGameMap directly."));
 		MoveToOutGameMap();
 		return;
 	}
 
-	if (!RootWidgetInstance)
+	if (!OutGameTransitionWidgetInstance)
 	{
-		RootWidgetInstance = CreateWidget<UOutGameRootWidget>(PC, OutGameRootWidgetClass);
+		OutGameTransitionWidgetInstance = CreateWidget<UOutGameTransitionWidget>(
+			PC,
+			OutGameTransitionWidgetClass
+		);
 
-		if (RootWidgetInstance)
+		if (OutGameTransitionWidgetInstance)
 		{
-			RootWidgetInstance->AddToViewport(1000);
+			OutGameTransitionWidgetInstance->AddToViewport(10000);
 		}
 	}
 
-	if (!RootWidgetInstance)
+	if (!OutGameTransitionWidgetInstance)
 	{
 		MoveToOutGameMap();
 		return;
 	}
 
-	// 팀원 코드에서 FadeIn / FadeOut 의미가 반대로 작성되어 있다고 했으므로
-	// 게임 종료 후 맵 이동 전 화면을 검게 덮는 쪽으로 ShowTransitionFadein()을 먼저 사용한다.
-	// 만약 화면이 검게 덮이지 않으면 이 줄을 ShowTransitionFadeOut()으로 바꾸면 된다.
-	RootWidgetInstance->ShowTransitionFadeOut();
+	// 맵 이동 전 화면을 검게 덮는 전환 재생
+	OutGameTransitionWidgetInstance->PlayFadeOut();
 
 	GetWorldTimerManager().ClearTimer(EndMatchTransitionTimerHandle);
 
