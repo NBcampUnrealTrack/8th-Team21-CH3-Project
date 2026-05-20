@@ -3,6 +3,7 @@
 #include "Animation/WidgetAnimation.h"
 #include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
+#include "Game/TeamGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -84,6 +85,10 @@ void UInGameQuitWidget::HandleBackRequested(){
 }
 
 void UInGameQuitWidget::HandleQuitClicked(){
+	if (UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetWorld()->GetGameInstance()))
+	{
+		GI->ClearInGameWaveData();
+	}
 	UGameplayStatics::OpenLevel(this, TEXT("OutGameMap"));
 }
 
@@ -102,4 +107,6 @@ void UInGameQuitWidget::HandlePopOutFinished(){
 	bIsOpening = false;
 	SetVisibility(ESlateVisibility::Collapsed);
 	currentState = EQuitWindowState::Closed;
+	
+
 }

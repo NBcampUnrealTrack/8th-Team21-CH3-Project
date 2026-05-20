@@ -60,11 +60,5 @@ private:
 	bool bIsOpening;
 	EQuitWindowState currentState;
 	EWidgetState currentWidgetState;
-	
-#pragma region Setting
-	
 
-	
-	
-#pragma endregion 
 };
