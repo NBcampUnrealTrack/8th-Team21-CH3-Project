@@ -160,6 +160,17 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	if (bIsSliding)
+	{
+		FVector InputDirection = GetLastMovementInputVector().GetSafeNormal2D();
+
+		// 키 입력이 있을 때만 방향 전환
+		if (InputDirection.IsNearlyZero() == false)
+		{
+			GetCharacterMovement()->Velocity = InputDirection * SlideSpeed;
+		}
+	}
+
 	CurrentFOV = FMath::FInterpTo(CurrentFOV, TargetFOV, DeltaSeconds, 25.f);
 	CameraComp->SetFieldOfView(CurrentFOV);
 	 
@@ -259,6 +270,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		CharacterInputComponent->BindAction(CharacterInputConfig->Interaction, ETriggerEvent::Started, this, &ThisClass::InputInteraction);
 		CharacterInputComponent->BindAction(CharacterInputConfig->ReLoad, ETriggerEvent::Started, this, &ThisClass::InputReLoad);
 		CharacterInputComponent->BindAction(CharacterInputConfig->QuitUI,ETriggerEvent::Started,this,&ThisClass::InputQuitUI);
+		CharacterInputComponent->BindAction(CharacterInputConfig->Slide,ETriggerEvent::Started,this,&ThisClass::InputSlide
+		);
 		//UE_LOG(LogTemp, Warning, TEXT("InputComponent Bind Suceess"));
 	}
 }
@@ -695,6 +708,51 @@ void APlayerCharacter::InputQuitUI(const FInputActionValue& InValue)
 
 	InGameQuitWidgetInstance->HandleBackRequested();
 
+}
+
+void APlayerCharacter::InputSlide(const FInputActionValue& InValue)
+{
+	if (bIsSliding)
+	{
+		return;
+	}
+	if (GetCharacterMovement()->IsFalling())
+	{
+		return;
+	}
+	if (GetCharacterMovement()->Velocity.Size2D() <= 0.f)
+	{
+		return;
+	}
+
+	SlideDuration = 0.7f;
+	SlideSpeed = 1000.f;
+	bIsSliding = true;
+	
+	FVector SlideDirection = GetCharacterMovement()->Velocity.GetSafeNormal2D();
+	GetCharacterMovement()->Velocity = SlideDirection * SlideSpeed;
+		//벡터값(f,f,f) * float = 각 항에 분배되어 곱셈
+	//Crouch(); //앉기, 언리얼 내장 함수
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (IsValid(AnimInstance))
+	{
+		if (IsValid(SlideMontage))
+		{
+			AnimInstance->Montage_Play(SlideMontage);
+		}
+	}
+
+	GetWorldTimerManager().SetTimer(SlideTimerHandle, this, &APlayerCharacter::EndSlide, SlideDuration, false);
+}
+
+void APlayerCharacter::EndSlide()
+{
+	bIsSliding = false;
+
+	//UnCrouch();
+
+	GetCharacterMovement()->MaxWalkSpeed = CurrentSpeed;
 }
 
 void APlayerCharacter::ApplyWeaponRecoil()
