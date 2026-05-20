@@ -37,5 +37,5 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UInputAction> QuitUI;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<UInputAction> Sliding;
+	TObjectPtr<UInputAction> Slide;
 };

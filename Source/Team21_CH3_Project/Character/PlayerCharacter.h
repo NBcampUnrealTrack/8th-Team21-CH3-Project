@@ -81,6 +81,8 @@ private:
 	void InputInteraction(const FInputActionValue& InValue);
 	void InputReLoad(const FInputActionValue& InValue);
 	void InputQuitUI(const FInputActionValue& InValue);
+	void InputSlide(const FInputActionValue& InValue);
+	void EndSlide();
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess))
@@ -217,6 +219,27 @@ public:
 	TSubclassOf<UInGameQuitWidget> InGameQuitWidgetClass;
 	UPROPERTY()
 	TObjectPtr<UInGameQuitWidget> InGameQuitWidgetInstance;
+
+#pragma endregion
+
+#pragma region Slide
+
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Slide")
+	bool bIsSliding = false;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Slide")
+	UAnimMontage* SlideMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Slide")
+	float SlideDuration = 0.7f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Slide")
+	float SlideSpeed = 1000.f;
+
+private:
+	FTimerHandle SlideTimerHandle;
 
 #pragma endregion
 };
