@@ -54,7 +54,9 @@ public:
         return OwnedAugments.Contains(Type) ? OwnedAugments[Type] : 0;
     }
 
-    
+    void SaveToGameInstance();
+
+    void LoadFromGameInstance();
 
 private:
     // --- 郴何 包府 单捞磐 ---

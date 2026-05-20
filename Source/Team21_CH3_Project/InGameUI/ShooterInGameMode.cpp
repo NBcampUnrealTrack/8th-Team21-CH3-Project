@@ -331,6 +331,16 @@ void AShooterInGameMode::ContinueToNextWaveWithLevelReload()
 
 	SavePlayerHPToGameInstance();
 
+	APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
+	if (PC && PC->GetPawn())
+	{
+		UAugmentComponent* AugmentComp = PC->GetPawn()->FindComponentByClass<UAugmentComponent>();
+		if (AugmentComp)
+		{
+			AugmentComp->SaveToGameInstance();
+		}
+	}
+
 	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
 	if (GI)
 	{
@@ -398,6 +408,8 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 
 		// 다음 게임 시작 시 이전 인게임 HP가 남지 않도록 초기화
 		GI->SetCurrentHp(0.0f);
+
+		GI->ClearSavedAugments();
 	}
 
 	// GameMode 내부 값 초기화

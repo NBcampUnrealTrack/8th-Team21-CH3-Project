@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "Data/AugmentationDataTable.h"
 #include "TeamGameInstance.generated.h"
 
 UENUM(BlueprintType)
@@ -142,4 +143,18 @@ private:
 	TMap<FName, int32> traitLevels;
 	
 #pragma endregion 
+
+#pragma region AugmentationSaveLoad
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Augment Save Data")
+	TMap<EAugmentType, int32> SavedAugments;
+
+	void SaveCharacterAugments(const TMap<EAugmentType, int32>& InAugments);
+
+	TMap<EAugmentType, int32> LoadCharacterAugments() const;
+
+	void ClearSavedAugments();
+
+#pragma endregion
 };
