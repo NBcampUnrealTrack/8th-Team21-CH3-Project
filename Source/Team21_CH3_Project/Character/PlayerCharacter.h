@@ -95,6 +95,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UCameraShakeBase> AttackRangedCameraShake;
 
+private:
+	void ApplyWeaponRecoil();
+
 #pragma endregion 
 
 #pragma region Zoom
