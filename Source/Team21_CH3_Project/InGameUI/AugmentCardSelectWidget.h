@@ -9,6 +9,7 @@
 #include "AugmentCardSelectWidget.generated.h"
 
 class UAugmentCardWidget;
+class UWidgetAnimation;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAugmentSelectedSignature, FAugmentResult, SelectedCardData);
 
@@ -26,18 +27,38 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-
-protected:
+	
 	UPROPERTY(meta = (BindWidget))
 	UAugmentCardWidget* CardChoice_1;
-
 	UPROPERTY(meta = (BindWidget))
 	UAugmentCardWidget* CardChoice_2;
-
 	UPROPERTY(meta = (BindWidget))
 	UAugmentCardWidget* CardChoice_3;
 
 private:
 	UFUNCTION()
-	void HandleCardSelected(FAugmentResult SelectedCardData);
+	void HandleFadeInFinished();
+	UFUNCTION()
+	void HandleFirstCardSelected(FAugmentResult SelectedCardData);
+	UFUNCTION()
+	void HandleSecondCardSelected(FAugmentResult SelectedCardData);
+	UFUNCTION()
+	void HandleThirdCardSelected(FAugmentResult SelectedCardData);
+	UFUNCTION()
+	void HandleSelectedAnimFinished();
+	
+	void StartCardSelected(FAugmentResult selectedCardData, UWidgetAnimation* selectedAnim);
+	
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	TObjectPtr<UWidgetAnimation> fadeInAnim;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	TObjectPtr<UWidgetAnimation> firstCardSelectedAnim;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	TObjectPtr<UWidgetAnimation> secondCardSelectedAnim;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	TObjectPtr<UWidgetAnimation> thirdCardSelectedAnim;
+	UPROPERTY()
+	FAugmentResult pendingSelectedCardData;
+
+	bool bIsSelecting = false;
 };

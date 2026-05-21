@@ -4,8 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Data/EnemyWaveDataTable.h" // 작성하신 데이터 구조체 헤더
+#include "Data/EnemyWaveDataTable.h"
 #include "SpawnManager.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBossSpawnedSignature, ACharacter*, SpawnedBoss);
+
+class UStatusComponent;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API ASpawnManager : public AActor
@@ -31,8 +35,8 @@ protected:
     /** 일정한 간격마다 몬스터를 스폰하는 핵심 함수 */
     void SpawnRoutine();
 
-    /** 실제로 월드에 액터를 배치하는 헬퍼 함수 */
-    void SpawnEnemy(TSubclassOf<ACharacter> EnemyClass);
+    
+
 
 protected:
     // --- 에디터 설정 데이터 ---
@@ -69,4 +73,24 @@ private:
     int32 RemainingRusher;
     int32 RemainingShooter;
     int32 RemainingBoss;
+
+    ACharacter* SpawnEnemy(TSubclassOf<ACharacter> EnemyClass);
+
+    UStatusComponent* GetStatus(ACharacter* temp);
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MonsterHP", meta = (AllowPrivateAccess = "true"))
+    float NormalMaxHealth = 100.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MonsterHP", meta = (AllowPrivateAccess = "true"))
+    float RusherMaxHealth = 100.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MonsterHP", meta = (AllowPrivateAccess = "true"))
+    float ShooterMaxHealth = 100.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MonsterHP", meta = (AllowPrivateAccess = "true"))
+    float BossMaxHealth = 100.0f;
+
+public:
+    UPROPERTY(BlueprintAssignable, Category = "Events")
+    FOnBossSpawnedSignature OnBossSpawned;
 };

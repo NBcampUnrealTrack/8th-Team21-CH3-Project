@@ -9,6 +9,7 @@ void UOutGameConfirmDialogWidget::NativeOnInitialized(){
 	
 	if (IsValid(confirmButton) == true) confirmButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleConfirmClicked);
 	if (IsValid(cancelButton) == true) cancelButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleCancelClicked);
+	if (IsValid(okButton) == true) okButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleOkClicked);
 	
 	if (IsValid(FadeOutAnim) == true)
 	{
@@ -27,6 +28,7 @@ void UOutGameConfirmDialogWidget::NativeOnInitialized(){
 	bIsPlay = false;
 	State = EQuitConfirmState::Closed;
 	SetVisibility(ESlateVisibility::Collapsed);
+	if (IsValid(okButton) == true) okButton->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 bool UOutGameConfirmDialogWidget::IsOpend(){
@@ -46,6 +48,12 @@ void UOutGameConfirmDialogWidget::ShowConfirmDialog(const FText& InTitle, const 
 	if (IsValid(FadeOutAnim) == true) PlayAnimation(FadeOutAnim);
 }
 
+void UOutGameConfirmDialogWidget::EnableOkButton(){
+	if (IsValid(confirmButton) == true) confirmButton->SetVisibility(ESlateVisibility::Collapsed);
+	if (IsValid(cancelButton) == true) cancelButton->SetVisibility(ESlateVisibility::Collapsed);
+	if (IsValid(okButton) == true) okButton->SetVisibility(ESlateVisibility::Visible);
+}
+
 void UOutGameConfirmDialogWidget::HideConfirmDialog(){
 	if (bIsPlay == true) return;
 	bIsPlay = true;
@@ -54,12 +62,16 @@ void UOutGameConfirmDialogWidget::HideConfirmDialog(){
 }
 
 void UOutGameConfirmDialogWidget::HandleConfirmClicked(){
-	//UKismetSystemLibrary::QuitGame(this, GetOwningPlayer(), EQuitPreference::Quit, true);
 	HideConfirmDialog();
 	OnConfirmed.Broadcast();
 }
 
 void UOutGameConfirmDialogWidget::HandleCancelClicked(){
+	HideConfirmDialog();
+	OnCanceled.Broadcast();
+}
+
+void UOutGameConfirmDialogWidget::HandleOkClicked(){
 	HideConfirmDialog();
 	OnCanceled.Broadcast();
 }
@@ -73,4 +85,7 @@ void UOutGameConfirmDialogWidget::HandleFadeInFinished(){
 	bIsPlay = false;
 	State = EQuitConfirmState::Closed;
 	SetVisibility(ESlateVisibility::Collapsed);
+	if (IsValid(okButton) == true) okButton->SetVisibility(ESlateVisibility::Collapsed);
+	if (IsValid(confirmButton) == true) confirmButton->SetVisibility(ESlateVisibility::Visible);
+	if (IsValid(cancelButton) == true) cancelButton->SetVisibility(ESlateVisibility::Visible);
 }

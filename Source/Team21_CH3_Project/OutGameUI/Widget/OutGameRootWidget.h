@@ -19,8 +19,9 @@ enum class EOutGameWidgetType : uint8{
 	Store = 3 UMETA(DisplayName = "Store"),
 	WeaponSelect = 4 UMETA(DisplayName = "WeaponSelect"),
 	Settings = 5 UMETA(DisplayName = "Settings"),
-	Result = 6 UMETA(DisplayName = "Result"),
-	None = 7
+	Trait = 6 UMETA(DisplayName = "Trait"),
+	Result = 7 UMETA(DisplayName = "Result"),
+	None = 8
 };
 
 UENUM(BlueprintType)
@@ -34,7 +35,8 @@ UENUM(BlueprintType)
 enum class EConfirmAction : uint8{
 	None = 0 UMETA(DisplayName = "None"),
 	QuitGame = 1 UMETA(DisplayName = "QuitGame"),
-	NewGame = 2 UMETA(DisplayName = "NewGame")
+	NewGame = 2 UMETA(DisplayName = "NewGame"),
+	MissionSelect = 3 UMETA(DisplayName = "MissionSelect")
 };
 
 UCLASS()
@@ -63,6 +65,10 @@ public:
 	void OpenSelectedLevel();
 	UFUNCTION()
 	void PlayResultCinematic(bool bIsWin);
+	UFUNCTION()
+	void UpdateGoldUI();
+	UFUNCTION()
+	void UpdateTraitUI();
 	
 	UFUNCTION()
 	void HandleNavigateHorizontal(int32 direction);
@@ -104,6 +110,7 @@ private:
 public:
 	void ShowQuitConfirm();
 	void ShowNewGameConfirm();	
+	void ShowMissionSelectConfirm();
 	
 private:
 	UPROPERTY(meta = (BindWidget))

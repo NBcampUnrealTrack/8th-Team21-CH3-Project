@@ -2,6 +2,7 @@
 #include "OutGameUI/Widget/OutGameRootWidget.h"
 #include "OutGameMainMenuWidget.h"
 #include "OutGameSettingsWidget.h"
+#include "OutGameTraitWidget.h"
 #include "OutGameUI/Controller/OutGamePlayerController.h"
 #include "OutGameUI/Widget/OutGameTransitionWidget.h"
 #include "OutGameUI/Widget/UOutGameCommonHeaderWidget.h"
@@ -44,6 +45,7 @@ void UOutGameRootWidget::ShowWidget(EOutGameWidgetType widgetType)
 	currentWidgetType = widgetType;
 	ScreenSwitcher->SetActiveWidgetIndex(int32(widgetType));
 	commonHeaderWidget->SetActiveTab(widgetType); // commonHeaderWidget 
+	commonHeaderWidget->UpdateCommonUI();
 	
 	if (widgetType == EOutGameWidgetType::WeaponSelect)
 	{
@@ -142,6 +144,17 @@ void UOutGameRootWidget::PlayResultCinematic(bool bIsWin){
 	cinematicManager->OnCinematicFinished.AddDynamic(this, &ThisClass::HandleResultCinematicFinished);
 	
 	cinematicManager->PlayResultCinematic(bIsWin);
+}
+
+void UOutGameRootWidget::UpdateGoldUI(){
+	commonHeaderWidget->UpdateCommonUI();
+}
+
+void UOutGameRootWidget::UpdateTraitUI(){
+	if (UOutGameTraitWidget* traitWidget = Cast<UOutGameTraitWidget>(ScreenSwitcher->GetActiveWidget()))
+	{
+		traitWidget->RefreshAllTraitCards();
+	}
 }
 
 void UOutGameRootWidget::HandleTransitionFadeOutFinished(){
@@ -259,6 +272,17 @@ void UOutGameRootWidget::ShowNewGameConfirm(){
 	);
 }
 
+void UOutGameRootWidget::ShowMissionSelectConfirm(){
+	pendingConfirmAction = EConfirmAction::MissionSelect;
+	
+	if (IsValid(confirmDialogWidget) == false) return;
+	confirmDialogWidget->EnableOkButton();
+	confirmDialogWidget->ShowConfirmDialog(
+		FText::FromString(TEXT("Map Select")),
+		FText::FromString(TEXT("해금하기위한 킬 수가 부족합니다!"))
+		);
+}
+
 void UOutGameRootWidget::HandleConfirmAccepted(){
 	switch (pendingConfirmAction)
 	{
@@ -274,6 +298,9 @@ void UOutGameRootWidget::HandleConfirmAccepted(){
 		{
 			ShowLobby();
 		});
+		break;
+	case EConfirmAction::MissionSelect:
+		
 		break;
 	default:
 		break;

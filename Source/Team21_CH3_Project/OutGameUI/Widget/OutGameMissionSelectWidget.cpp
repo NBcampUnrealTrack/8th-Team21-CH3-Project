@@ -2,6 +2,7 @@
 #include "OutGameUI/Widget/OutGameMissionSelectWidget.h"
 #include "OutGameUI/Widget/OutGameRootWidget.h"
 #include "Components/Button.h"
+#include "Components/TextBlock.h"
 #include "OutGameUI/Controller/OutGamePlayerController.h"
 #include "OutGameWeaponSelectWidget.h"
 
@@ -14,6 +15,21 @@ void UOutGameMissionSelectWidget::NativeOnInitialized(){
 	if (IsValid(BackButton) == true) BackButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleBackClicked);
 	
 	selectedMapLevel = EMapLevel::Easy;
+	
+	normalUnlockKillCount = 30;
+	hardUnlockKillCount = 60;
+	
+	if (IsValid(normalUnlockKillCountText) == true) normalUnlockKillCountText->SetText(
+	FText::FromString(FString::Printf(TEXT("%d"), normalUnlockKillCount)));
+	if (IsValid(hardUnlockKillCountText) == true) hardUnlockKillCountText->SetText(
+		FText::FromString(FString::Printf(TEXT("%d"), hardUnlockKillCount)));
+	
+	if (UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetWorld()->GetGameInstance()))
+	{
+		if (IsValid(playerTotalKillText) == true) playerTotalKillText->SetText(
+			FText::FromString(FString::Printf(TEXT("%d"), GI->GetPlayerTotalKillCount())));
+	}
+	
 }
 
 void UOutGameMissionSelectWidget::LevelClicked(){
@@ -38,13 +54,47 @@ void UOutGameMissionSelectWidget::HandleEasyClicked(){
 }
 
 void UOutGameMissionSelectWidget::HandleNormalClicked(){
-	selectedMapLevel = EMapLevel::Normal;
-	LevelClicked();
+	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetWorld()->GetGameInstance());
+	if (IsValid(GI) == false) return;
+	
+	if (normalUnlockKillCount <= GI->GetPlayerTotalKillCount())
+	{
+		selectedMapLevel = EMapLevel::Normal;
+		LevelClicked();
+	}
+	else
+	{
+		if (AOutGamePlayerController* pc = GetOwningPlayer<AOutGamePlayerController>())
+		{
+			if (UOutGameRootWidget* rootWidgetInstance = pc->GetRootWidget())
+			{
+				rootWidgetInstance->ShowMissionSelectConfirm();
+			}
+		}
+	}
+
 }
 
 void UOutGameMissionSelectWidget::HandleHardClicked(){
-	selectedMapLevel = EMapLevel::Hard;
-	LevelClicked();
+	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetWorld()->GetGameInstance());
+	if (IsValid(GI) == false) return;
+	
+	if (hardUnlockKillCount <= GI->GetPlayerTotalKillCount())
+	{
+		selectedMapLevel = EMapLevel::Hard;
+		LevelClicked();
+	}
+	else
+	{
+		if (AOutGamePlayerController* pc = GetOwningPlayer<AOutGamePlayerController>())
+		{
+			if (UOutGameRootWidget* rootWidgetInstance = pc->GetRootWidget())
+			{
+				rootWidgetInstance->ShowMissionSelectConfirm();
+			}
+		}
+	}
+
 }
 
 void UOutGameMissionSelectWidget::HandleBackClicked(){

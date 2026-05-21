@@ -5,11 +5,17 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "TimerManager.h"
+#include "Containers/Ticker.h"
+#include "Data/AugmentationDataTable.h"
 #include "ShooterInGameMode.generated.h"
 
 class UAugmentCardSelectWidget;
 class UDataTable;
-struct FAugmentCardData;
+class UStatusComponent;
+class ASpawnManager;
+class UOutGameTransitionWidget;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyKilledSignature, AActor*, KilledEnemy);
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API AShooterInGameMode : public AGameModeBase
@@ -40,6 +46,13 @@ public:
 	void RequestHUDWaveInfoRefreshRetry();
 
 	void EndMatch(bool bPlayerWon);
+
+public:
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnEnemyKilledSignature OnEnemyKilledDelegate;
+
+	UFUNCTION(BlueprintCallable, Category = "Events")
+	void EnemyKilled(AActor* KilledEnemy);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave Data")
@@ -80,6 +93,11 @@ protected:
 
 	FTimerHandle NextWaveStartTimerHandle;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave|Transition")
+	float WaveLevelTransitionDelay;
+
+	FTimerHandle WaveLevelTransitionTimerHandle;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Match State")
 	bool bIsMatchEnded;
 
@@ -91,6 +109,11 @@ protected:
 
 	FTimerHandle EndMatchReturnTimerHandle;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match State")
+	float EndMatchTransitionDelay;
+
+	FTimerHandle EndMatchTransitionTimerHandle;
+
 	FTimerHandle HUDWaveRefreshRetryTimerHandle;
 
 	int32 HUDWaveRefreshRetryCount;
@@ -101,14 +124,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	float HUDWaveRefreshRetryInterval;
 
+	UFUNCTION(Exec)
+	void CmdDamageBoss();
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Augment")
 	TSubclassOf<UAugmentCardSelectWidget> AugmentCardSelectWidgetClass;
-
-	// 증강 카드 선택 UI 인스턴스
-	// CreateWidget으로 생성한 뒤, 선택 완료 시 RemoveFromParent 후 nullptr 처리한다.
-	UPROPERTY()
-	UAugmentCardSelectWidget* ActiveWidget;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Augment")
 	int32 AugmentKillInterval;
@@ -119,10 +140,18 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Augment")
 	bool bPendingClearWaveAfterAugment;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI|Transition")
+	TSubclassOf<UOutGameTransitionWidget> OutGameTransitionWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UOutGameTransitionWidget> OutGameTransitionWidgetInstance;
+
 protected:
 	int32 CalculateTargetKillCountForWave(int32 InWave) const;
 	int32 CalculateGoldPerKillForWave(int32 InWave) const;
 	FName MakeWaveDataRowName(int32 InWave) const;
+
+	bool TryStartWaveWithSpawnManager(int32 InWave);
 
 	void AddGold(int32 GoldAmount);
 
@@ -142,8 +171,29 @@ protected:
 	void ShowAugmentCardSelectUI();
 	void HideAugmentCardSelectUI();
 
-	UFUNCTION()
-	void HandleAugmentSelected(FAugmentCardData SelectedCardData);
+	// Boss HP Bar
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Boss")
+	int32 BossWaveIndex = 4;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Boss")
+	FName BossActorTag = TEXT("Boss");
+
+	FTimerHandle BossHPBarFindTimerHandle;
+
+	FTimerHandle BossHPBarUpdateTimerHandle;
+
+	UPROPERTY()
+	TObjectPtr<UStatusComponent> BossStatusComponentForUI;
+
+	float BossMaxHPForUI = 1.0f;
+
+	void TryShowBossHPBar();
+	void HideBossHPBar();
+	void UpdateBossHPBarByTimer();
+
+	void SavePlayerHPToGameInstance();
+	void RestorePlayerHPFromGameInstance();
+	UStatusComponent* GetPlayerStatusComponent() const;
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Wave")
@@ -158,6 +208,21 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
 	void TriggerResultUI(bool bPlayerWon);
 
+	FTimerHandle GameStartWaveTimerHandle;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave|Transition")
+	float GameStartTransitionDelay = 2.2f;
+
+	FTSTicker::FDelegateHandle WaveClearPauseTickerHandle;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave|Transition")
+	float WaveClearPauseDuration = 0.35f;
+
+	void StartWaveClearPause();
+	void RestoreWaveClearPause();
+	void ClearWaveClearPauseTicker();
+	bool HandleWaveClearPauseFinished(float DeltaTime);
+
 public:
 	UFUNCTION(Exec)
 	void CmdKillEnemy();
@@ -170,4 +235,6 @@ public:
 
 	UFUNCTION(Exec)
 	void CmdMoveOutGame();
+
+	void NotifyAugmentSelectionComplete();
 };

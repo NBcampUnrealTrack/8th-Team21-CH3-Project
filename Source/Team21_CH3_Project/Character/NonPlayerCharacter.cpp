@@ -4,22 +4,29 @@
 #include "Character/NonPlayerCharacter.h"
 #include "Controller/AI_Controller.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Component/StatusComponent.h"
 #include "Animation/CharacterAnimInstance.h"
 #include "Item/Weapon.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "Engine/EngineTypes.h"
 #include "Engine/DamageEvents.h"
 #include "Component/PickupComponent.h"
 #include "Team21_CH3_Project.h"
+#include "Character/PlayerCharacter.h"
 #include "InGameUI/ShooterInGameMode.h"
+#include "TimerManager.h"
 
-ANonPlayerCharacter::ANonPlayerCharacter() : bIsNowAttacking(false)
+ANonPlayerCharacter::ANonPlayerCharacter() : bIsNowAttacking(false) , bInvulnerable(false)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
 	AIControllerClass = AAI_Controller::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	Status = CreateDefaultSubobject<UStatusComponent>(TEXT("MonsterStatusComponent"));
+
 }
 
 void ANonPlayerCharacter::BeginPlay()
@@ -50,7 +57,10 @@ void ANonPlayerCharacter::BeginAttack()
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	if (IsValid(AnimInstance) == true && IsValid(AttackMeleeMontage) == true && AnimInstance->Montage_IsPlaying(AttackMeleeMontage) == false && bAttackRange == false)
 	{
-
+		if (bIsNowAttacking == true)
+		{
+			return;
+		}
 		AnimInstance->Montage_Play(AttackMeleeMontage);
 
 
@@ -63,10 +73,12 @@ void ANonPlayerCharacter::BeginAttack()
 
 		}
 	}
-
 	if (bAttackRange == true)
 	{
+		bIsNowAttacking = true;
+
 		TryFire();
+		GetWorldTimerManager().SetTimer(AttackTimer, this, &ANonPlayerCharacter::EndAttack, 0.3f, false);
 	}
 }
 
@@ -80,15 +92,32 @@ float ANonPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 		AAI_Controller* AIController = Cast<AAI_Controller>(GetController());
 		if (IsValid(AIController) == true)
 		{
+			if (IsValid(CurrentWeapon))
+			{
+				CurrentWeapon->SetLifeSpan(0.1f);
+				CurrentWeapon = nullptr;
+			}
 			AIController->EndAI();
 			bool bNPCWin = false;
 			GameMode->OnCharacterDied(bNPCWin);
-			SetLifeSpan(0.1f);
+
+			Destroyed();
+			AShooterInGameMode* GM = Cast<AShooterInGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+			if (IsValid(GM))
+			{
+				GM->EnemyKilled(this);
+			}
 		}
 
 	}
 
 	return FinalDamageAmount;
+}
+void ANonPlayerCharacter::EndAttack()
+{
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+
+	bIsNowAttacking = false;
 }
 
 void ANonPlayerCharacter::EndAttack(UAnimMontage* InMontage, bool bInterruped)
@@ -137,7 +166,7 @@ void ANonPlayerCharacter::TryFire()
 	}
 	if (IsValid(AIController) == true)
 	{
-		float FocalDistance = 400.f;
+		float FocalDistance = 900.f;
 		FVector FocalLocation;
 		FVector CameraLocation;
 		FRotator CameraRotation;
@@ -174,6 +203,9 @@ void ANonPlayerCharacter::TryFire()
 		FCollisionQueryParams TraceParams(NAME_None, false, this);
 		TraceParams.AddIgnoredActor(CurrentWeapon);
 
+		//TArray<AActor*> IgnoredMonsters;
+		//UGameplayStatics::GetAllActorsOfClass(GetWorld(), ANonPlayerCharacter::StaticClass(), IgnoredMonsters);
+		//TraceParams.AddIgnoredActors(IgnoredMonsters);
 		bool IsCollided = GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_ATTACK, TraceParams);
 		if (IsCollided == false)
 		{
@@ -204,7 +236,7 @@ void ANonPlayerCharacter::TryFire()
 
 		if (IsCollided == true)
 		{
-			ACharacterBase* HittedCharacter = Cast<ACharacterBase>(HitResult.GetActor());
+			APlayerCharacter* HittedCharacter = Cast<APlayerCharacter>(HitResult.GetActor());
 			if (IsValid(HittedCharacter) == true)
 			{
 				FDamageEvent DamageEvent;
@@ -223,4 +255,15 @@ void ANonPlayerCharacter::TryFire()
 		}
 
 	}
+}
+
+void ANonPlayerCharacter::POW(bool bVulnerable)
+{
+	bInvulnerable = bVulnerable;
+	if (bInvulnerable == true)
+	{
+		Status->ApplyDamage(0);
+	}
+	else
+		return;
 }

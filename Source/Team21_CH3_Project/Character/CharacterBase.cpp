@@ -46,8 +46,8 @@ ACharacterBase::ACharacterBase()
 
 	GetCharacterMovement()->MaxWalkSpeed = 500.f; //이동속도
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f; //최저속도(이동시작시 속도)
-	GetCharacterMovement()->JumpZVelocity = 600.f; // 점프시 튕겨 올라가는 속도
-	GetCharacterMovement()->AirControl = 0.5f; //공중에서 컨트롤 정도
+	GetCharacterMovement()->JumpZVelocity = 700.f; // 점프시 튕겨 올라가는 속도
+	GetCharacterMovement()->AirControl = 0.35f; //공중에서 컨트롤 정도
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f; // 이동키를 뗐을때 감속속도
 	GetCharacterMovement()->MaxAcceleration = 2048.f;
 
@@ -61,30 +61,30 @@ void ACharacterBase::BeginPlay()
 
 	GameMode = Cast<AShooterInGameMode>(GetWorld()->GetAuthGameMode());
 
-	UTeamGameInstance* GameInstance = Cast<UTeamGameInstance>(GetGameInstance());
-	if (IsValid(GameInstance) == false)
-	{
-		return;
-	}
-	TSubclassOf<AWeapon> SelectWeapon = nullptr;
-	EWeaponType SelectType = GameInstance->GetSelectedWeaponType();
-
-	if (SelectType == EWeaponType::Rifle)
-	{
-		SelectWeapon = RifleClass;
-	}
-	else if (SelectType == EWeaponType::Shotgun)
-	{
-		SelectWeapon = ShotgunClass;
-	}
-	else if (SelectType == EWeaponType::Pistol)
-	{
-		SelectWeapon = PistolClass;
-	}
-	else
-		SelectWeapon = RifleClass;
-	
-	GetWeapon(SelectWeapon);
+	//UTeamGameInstance* GameInstance = Cast<UTeamGameInstance>(GetGameInstance());
+	//if (IsValid(GameInstance) == false)
+	//{
+	//	return;
+	//}
+	//TSubclassOf<AWeapon> SelectWeapon = nullptr;
+	//EWeaponType SelectType = GameInstance->GetSelectedWeaponType();
+	//
+	//if (SelectType == EWeaponType::Rifle)
+	//{
+	//	SelectWeapon = RifleClass;
+	//}
+	//else if (SelectType == EWeaponType::Shotgun)
+	//{
+	//	SelectWeapon = ShotgunClass;
+	//}
+	//else if (SelectType == EWeaponType::Pistol)
+	//{
+	//	SelectWeapon = PistolClass;
+	//}
+	//else
+	//	SelectWeapon = RifleClass;
+	//
+	//GetWeapon(SelectWeapon);
 }
 
 float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

@@ -23,6 +23,7 @@ AAugmentCard::AAugmentCard()
     CollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AAugmentCard::OnOverlapBegin);
 }
 
+
 void AAugmentCard::BeginPlay()
 {
     Super::BeginPlay();
@@ -34,11 +35,20 @@ void AAugmentCard::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 {
     if (!OtherActor || OtherActor == this) return;
 
-    // 1. ���� ������Ʈ�� �ִ� ����(�÷��̾�)���� Ȯ��
     UAugmentComponent* AugmentComp = OtherActor->FindComponentByClass<UAugmentComponent>();
     if (!AugmentComp || !AugmentDataTable || !AugmentWidgetClass) return;
+    
+    AugmentSelection(AugmentComp);
 
-    // 2. ���� ����
+    Destroy();
+}
+
+
+void AAugmentCard::AugmentSelection(UAugmentComponent* AugmentComp)
+{
+    if (!AugmentDataTable || !AugmentWidgetClass) return;
+
+
     TArray<FName> RowNames = AugmentDataTable->GetRowNames();
     if (RowNames.Num() < 3) return;
 
@@ -48,7 +58,7 @@ void AAugmentCard::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
         RowNames.Swap(i, j);
     }
 
-    // 3. ������ ����
+
     TArray<FAugmentResult> FinalOptions;
     for (int32 i = 0; i < 3; i++)
     {
@@ -58,15 +68,16 @@ void AAugmentCard::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
             FAugmentResult Option;
             Option.Type = Row->Type;
 
-            // ������Ʈ���� ���� ���¸� �о��
+            Option.icon = Row->icon;
+
             int32 CurrentLevel = AugmentComp->GetAugmentLevel(Row->Type);
             Option.CurrentLevel = CurrentLevel + 1;
             Option.DisplayTitle = FString::Printf(TEXT("%s (Lv.%d)"), *Row->AugmentName, Option.CurrentLevel);
 
-            // ��ġ ��� (��ø Ƚ����ŭ ����)
+
             float DisplayValue = Row->BaseValue + (CurrentLevel * Row->UpgradeValue);
 
-            // ���� ����
+
             FFormatNamedArguments Args;
             Args.Add(TEXT("Value"), FText::AsNumber(FMath::FloorToInt(DisplayValue)));
             Args.Add(TEXT("Unit"), FText::FromString(Row->UnitText));
@@ -75,14 +86,15 @@ void AAugmentCard::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
             FinalOptions.Add(Option);
         }
     }
-    
-    // 4. ���� ���� �� ���
+
+
     if (UAugmentCardSelectWidget* WidgetInstance = CreateWidget<UAugmentCardSelectWidget>(GetWorld(), AugmentWidgetClass))
     {
         WidgetInstance->OnDataReceived(FinalOptions);
         WidgetInstance->AddToViewport();
 
-        // ��Ʈ�ѷ� ���� ���� (������ ����)
+        AugmentComp->BindAugmentWidget(WidgetInstance);
+
         if (APlayerController* PC = Cast<APlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
         {
             PC->SetPause(true);
@@ -92,6 +104,4 @@ void AAugmentCard::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
             PC->SetInputMode(InputMode);
         }
     }
-    
-    Destroy(); // ī�� ����
 }

@@ -5,8 +5,7 @@
 #include "Controller/AI_Controller.h"
 #include "Character/NonPlayerCharacter.h"
 #include "BehaviorTree/BlackboardComponent.h"
-
-const float UBTDecorator_IsInAttackRange::AttackRange(200.f);
+#include "Character/PlayerCharacter.h"
 
 UBTDecorator_IsInAttackRange::UBTDecorator_IsInAttackRange()
 {
@@ -23,11 +22,46 @@ bool UBTDecorator_IsInAttackRange::CalculateRawConditionValue(UBehaviorTreeCompo
 
 	ANonPlayerCharacter* NPC = Cast<ANonPlayerCharacter>(AIController->GetPawn());
 	checkf(IsValid(NPC) == true, TEXT("Invalid NPC."));
+	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
 
-	ACharacterBase* TargetPlayerCharacter = Cast<ACharacterBase>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(AAI_Controller::TargetCharacterKey));
+	APlayerCharacter* TargetPlayerCharacter = Cast<APlayerCharacter>(BB->GetValueAsObject(TargetCharacterKey.SelectedKeyName));
+	if (!TargetPlayerCharacter) return false;
+	FVector NPCLocation = NPC->GetActorLocation();
+	FVector TargetLocation = TargetPlayerCharacter->GetActorLocation();
+
+	float HorizontalDistance = FVector::Dist2D(NPCLocation, TargetLocation);
+	float HeightDifference = FMath::Abs(TargetLocation.Z - NPCLocation.Z);
+	float VerticalAttackRange;
+	if (NPC->bAttackRange == true)
+	{
+		VerticalAttackRange = 800.f;
+		BB->SetValueAsFloat(AttackRangeKey.SelectedKeyName, 1200.f);
+	}
+	else
+	{
+		VerticalAttackRange = 50.f;
+		BB->SetValueAsFloat(AttackRangeKey.SelectedKeyName, 45.f);
+	}
+	float AttackRange = BB->GetValueAsFloat(AttackRangeKey.SelectedKeyName);
 	if (IsValid(TargetPlayerCharacter) == true && TargetPlayerCharacter->IsPlayerControlled() == true)
 	{
-		return NPC->GetDistanceTo(TargetPlayerCharacter) <= AttackRange;
+		if (HorizontalDistance <= AttackRange + 50.f && HeightDifference <= VerticalAttackRange)
+		{
+			FHitResult SightHitResult;
+			FCollisionQueryParams SightParams;
+			SightParams.AddIgnoredActor(NPC);
+
+			FVector TraceStart = NPCLocation + FVector(0.f, 0.f, 60.f);
+			FVector TraceEnd = TargetPlayerCharacter->GetActorLocation();
+
+			bool bHitWall = GetWorld()->LineTraceSingleByChannel(SightHitResult, TraceStart, TraceEnd, ECC_Visibility, SightParams);
+
+			if (bHitWall && SightHitResult.GetActor() != TargetPlayerCharacter)
+			{
+				return false;
+			}
+			return true;
+		}
 	}
 	return false;
 }

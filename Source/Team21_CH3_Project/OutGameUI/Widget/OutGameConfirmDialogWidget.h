@@ -33,12 +33,14 @@ public:
 	void ShowConfirmDialog(const FText& InTitle, const FText& InMessage);
 	UFUNCTION()
 	void HideConfirmDialog();
+	UFUNCTION()
+	void EnableOkButton();
 	
 	UPROPERTY()
 	FOnConfirmDialogAction OnConfirmed;
 	UPROPERTY()
 	FOnConfirmDialogAction OnCanceled;
-
+	
 private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> titleText;
@@ -48,15 +50,20 @@ private:
 	TObjectPtr<UButton> confirmButton;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> cancelButton;
+	UPROPERTY(meta = (BindWIdget))
+	TObjectPtr<UButton> okButton;
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	TObjectPtr<UWidgetAnimation> FadeOutAnim;
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	TObjectPtr<UWidgetAnimation> FadeInAnim;
 
+	
 	UFUNCTION()
 	void HandleConfirmClicked();
 	UFUNCTION()
 	void HandleCancelClicked();
+	UFUNCTION()
+	void HandleOkClicked();
 	UFUNCTION()
 	void HandleFadeOutFinished();
 	UFUNCTION()

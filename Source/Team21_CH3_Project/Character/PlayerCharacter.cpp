@@ -22,6 +22,9 @@
 #include "InGameUI/InGameHUD.h"
 #include "Kismet/GameplayStatics.h"
 #include "Component/AugmentComponent.h"
+#include "Data/PlayerTraitBonus.h"   
+#include "Trait/SubSystem/TraitSubsystem.h"
+#include "InGameUI/InGameQuitWidget.h"
 
 
 
@@ -36,7 +39,7 @@ APlayerCharacter::APlayerCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 500.f, 0.f);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->bUseControllerDesiredRotation = false;
-	GetCharacterMovement()->MaxWalkSpeed = 600.f;
+	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->SetupAttachment(RootComponent);
@@ -87,6 +90,64 @@ void APlayerCharacter::BeginPlay()
 		RefreshPlayerHealthUI();
 	}
 	//CurrentWeapon = nullptr;
+
+	UTeamGameInstance* GameInstance = Cast<UTeamGameInstance>(GetGameInstance());
+	if (IsValid(GameInstance) == false)
+	{
+		return;
+	}
+	TSubclassOf<AWeapon> SelectWeapon = nullptr;
+	EWeaponType SelectType = GameInstance->GetSelectedWeaponType();
+
+	if (SelectType == EWeaponType::Rifle)
+	{
+		SelectWeapon = RifleClass;
+	}
+	else if (SelectType == EWeaponType::Shotgun)
+	{
+		SelectWeapon = ShotgunClass;
+	}
+	else if (SelectType == EWeaponType::Pistol)
+	{
+		SelectWeapon = PistolClass;
+	}
+	else
+		SelectWeapon = RifleClass;
+
+	GetWeapon(SelectWeapon);
+
+	UTraitSubsystem* TraitSub = GetGameInstance()->GetSubsystem<UTraitSubsystem>();
+	if (IsValid(TraitSub) && IsValid(TraitDataTable))
+	{
+		FPlayerTraitBonus Bonus = TraitSub->CalculateTotalTraitBonus(TraitDataTable);
+		ApplyTraitBonus(Bonus);
+	}
+
+	if (IsValid(StatusComponent))
+	{
+		StatusComponent->SetCurrentHP(StatusComponent->GetMaxHP());
+	}
+
+	if (IsValid(GameInstance) && IsValid(StatusComponent) && GameInstance->GetCurrentHp() > 0.f)
+	{
+		float SavedHP = FMath::Min(GameInstance->GetCurrentHp(), StatusComponent->GetMaxHP());
+		StatusComponent->SetCurrentHP(SavedHP);
+	}
+
+	if (IsValid(PlayerController))
+	{
+		if (IsValid(InGameQuitWidgetClass))
+		{
+			InGameQuitWidgetInstance = CreateWidget<UInGameQuitWidget>(
+				PlayerController,
+				InGameQuitWidgetClass
+			);
+
+			InGameQuitWidgetInstance->AddToViewport(100);
+			InGameQuitWidgetInstance->SetVisibility(ESlateVisibility::Collapsed);
+
+		}
+	}
 }
 
 void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -104,6 +165,17 @@ void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void APlayerCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	if (bIsSliding)
+	{
+		FVector InputDirection = GetLastMovementInputVector().GetSafeNormal2D();
+	
+		// 키 입력이 있을 때만 방향 전환
+		if (InputDirection.IsNearlyZero() == false)
+		{
+			GetCharacterMovement()->Velocity = InputDirection * CurrentMoveSpeed;
+		}
+	}
 
 	CurrentFOV = FMath::FInterpTo(CurrentFOV, TargetFOV, DeltaSeconds, 25.f);
 	CameraComp->SetFieldOfView(CurrentFOV);
@@ -203,6 +275,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		CharacterInputComponent->BindAction(CharacterInputConfig->AttackRanged, ETriggerEvent::Completed, this, &ThisClass::InputStopFullAutoFire);
 		CharacterInputComponent->BindAction(CharacterInputConfig->Interaction, ETriggerEvent::Started, this, &ThisClass::InputInteraction);
 		CharacterInputComponent->BindAction(CharacterInputConfig->ReLoad, ETriggerEvent::Started, this, &ThisClass::InputReLoad);
+		CharacterInputComponent->BindAction(CharacterInputConfig->QuitUI,ETriggerEvent::Started,this,&ThisClass::InputQuitUI);
+		CharacterInputComponent->BindAction(CharacterInputConfig->Slide,ETriggerEvent::Started,this,&ThisClass::InputSlide
+		);
 		//UE_LOG(LogTemp, Warning, TEXT("InputComponent Bind Suceess"));
 	}
 }
@@ -238,10 +313,15 @@ void APlayerCharacter::InputLook(const FInputActionValue& InValue)
 
 void APlayerCharacter::InputAttackRanged(const FInputActionValue& InValue)
 {
-	if (0.f < GetCharacterMovement()->Velocity.Size())
-		//캐릭터의 속도(벡터의 크기)가 0이상이면 -> 움직이고 있다면
+	//if (0.f < GetCharacterMovement()->Velocity.Size())
+	//	//캐릭터의 속도(벡터의 크기)가 0이상이면 -> 움직이고 있다면
+	//{
+	//	return; //코드 실행 X
+	//}
+
+	if (GetCharacterMovement()->IsFalling())
 	{
-		return; //코드 실행 X
+		return;
 	}
 	
 	if (IsValid(CurrentWeapon) == false) // 무기를 줍지 않았다면
@@ -254,6 +334,11 @@ void APlayerCharacter::InputAttackRanged(const FInputActionValue& InValue)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("AttackMontage가 nullptr"));
 		return; //코드 실행 X
+	}
+
+	if (bIsSliding == true)
+	{
+		return;
 	}
 	
 	//UE_LOG(LogTemp, Warning, TEXT("사격 조건 통과"));
@@ -274,6 +359,13 @@ void APlayerCharacter::InputAttackRanged(const FInputActionValue& InValue)
 
 	if (false == bIsFullAutoFire)
 	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (IsValid(AnimInstance)) 
+			if (AnimInstance->Montage_IsPlaying(GetCurrentWeaponAttackAnimMontage()))
+			{
+				return; //단발 사격 시 애님몽타주 재생중에는 사격 불가능
+			}
+		
 		TryFire();
 	}
 
@@ -435,19 +527,34 @@ void APlayerCharacter::TryFire()
 			{
 				FDamageEvent DamageEvent;
 				FString BoneNameString = HitResult.BoneName.ToString();
+				float WeaponDamage = CurrentWeapon->GetAttackDamage();
 				//UKismetSystemLibrary::PrintString(this, BoneNameString);
 				//DrawDebugSphere(GetWorld(), HitResult.Location, 3.f, 16, FColor(255, 0, 0, 255), true, 20.f, 0U, 5.f); //피격위치(Bone) 디버그드로잉
-				
+				if (IsValid(AugmentComponent))
+				{
+					WeaponDamage = AugmentComponent->GetCalculatedDamage(WeaponDamage, HittedCharacter);
+				}
+
 				if (true == BoneNameString.Equals(FString(TEXT("HEAD")), ESearchCase::IgnoreCase))
 				{
-					HittedCharacter->TakeDamage(50.f * AttackDamageMul * 1.25f, DamageEvent, GetController(), this);
+					HittedCharacter->TakeDamage(WeaponDamage * AttackDamageMul * 1.25f, DamageEvent, GetController(), this);
 				}
 				else
 				{
-					HittedCharacter->TakeDamage(50.f * AttackDamageMul, DamageEvent, GetController(), this);
+					HittedCharacter->TakeDamage(WeaponDamage * AttackDamageMul, DamageEvent, GetController(), this);
 				}
 			}
+
+			else if (AActor* HittedActor = HitResult.GetActor())
+			{
+				FDamageEvent DamageEvent;
+				HittedActor->TakeDamage(
+					CurrentWeapon->GetAttackDamage() * AttackDamageMul,
+					DamageEvent, GetController(), this);
+			}
 		}
+
+		ApplyWeaponRecoil();
 
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		if (IsValid(AnimInstance) == true)
@@ -462,7 +569,7 @@ void APlayerCharacter::TryFire()
 
 		if (IsValid(AttackRangedCameraShake) == true)
 		{
-			PlayerController->ClientStartCameraShake(AttackRangedCameraShake);
+			PlayerController->ClientStartCameraShake(AttackRangedCameraShake,4.f);
 		}
 	}
 }
@@ -492,6 +599,17 @@ void APlayerCharacter::InputEndDash(const FInputActionValue& InValue)
 
 void APlayerCharacter::InputToggleSelector(const FInputActionValue& InValue)
 {
+	if (IsValid(CurrentWeapon) == false)
+	{
+		return;
+	}
+
+	if (CurrentWeapon->GetCanFullAuto() == false)
+	{
+		return;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Toggle not work"));
+
 	bIsFullAutoFire = !bIsFullAutoFire;
 }
 
@@ -512,10 +630,7 @@ void APlayerCharacter::InputStartFullAutoFire(const FInputActionValue& InValue)
 
 void APlayerCharacter::InputStopFullAutoFire(const FInputActionValue& InValue)
 {
-	if (true == bIsFullAutoFire)
-	{
-		GetWorldTimerManager().ClearTimer(FullAutoTimerHandle);
-	}
+	GetWorldTimerManager().ClearTimer(FullAutoTimerHandle);
 }
 
 void APlayerCharacter::InputInteraction(const FInputActionValue& InValue)
@@ -596,12 +711,67 @@ void APlayerCharacter::InputReLoad(const FInputActionValue& InValue)
 
 	bIsReloading = true;
 
-	AnimInstance->Montage_Play(ReloadMontage);
+	AnimInstance->Montage_Play(ReloadMontage, ReloadSpeedMul);
 	//UE_LOG(LogTemp, Warning, TEXT("재생 직후 IsPlaying: %s"), AnimInstance->Montage_IsPlaying(ReloadMontage) ? TEXT("O") : TEXT("X"));
 
 	FOnMontageEnded EndDelegate;
 	EndDelegate.BindUObject(this, &APlayerCharacter::OnReloadMontageEnded);
 	AnimInstance->Montage_SetEndDelegate(EndDelegate, ReloadMontage);
+}
+
+void APlayerCharacter::InputQuitUI(const FInputActionValue& InValue)
+{
+
+	InGameQuitWidgetInstance->HandleBackRequested();
+
+}
+
+void APlayerCharacter::InputSlide(const FInputActionValue& InValue)
+{
+	if (bIsSliding)
+	{
+		return;
+	}
+	if (GetCharacterMovement()->IsFalling())
+	{
+		return;
+	}
+	if (GetCharacterMovement()->Velocity.Size2D() <= 0.f)
+	{
+		return;
+	}
+	bIsSliding = true;
+	
+
+	CurrentMoveSpeed = GetCharacterMovement()->Velocity.Size2D();
+	FVector SlideDirection = GetCharacterMovement()->Velocity.GetSafeNormal2D();
+	
+	GetCharacterMovement()->Velocity = SlideDirection * CurrentMoveSpeed;
+		//벡터값(f,f,f) * float = 각 항에 분배되어 곱셈
+	GetCharacterMovement()->MaxWalkSpeed = CurrentMoveSpeed;
+
+	Crouch(); //앉기, 언리얼 내장 함수
+
+
+	GetWorldTimerManager().SetTimer(SlideTimerHandle, this, &APlayerCharacter::EndSlide, SlideDuration, false);
+}
+
+void APlayerCharacter::EndSlide()
+{
+	bIsSliding = false;
+
+	UnCrouch();
+
+	GetCharacterMovement()->MaxWalkSpeed = CurrentSpeed;
+}
+
+void APlayerCharacter::ApplyWeaponRecoil()
+{
+	const float PitchRecoil = -0.4f; // 위로 튀게. 부호는 프로젝트 입력 방향에 따라 테스트 필요
+	const float YawRecoil = FMath::RandRange(-0.2f, 0.2f);
+
+	AddControllerPitchInput(PitchRecoil);
+	AddControllerYawInput(YawRecoil);
 }
 
 void APlayerCharacter::ApplyAugment_AttackDamage(float InAdd)
@@ -653,4 +823,36 @@ void APlayerCharacter::OnAmmoChanged(int32 CurrentBullets, int32 MaxBullets)
 	if (IsValid(InGameHUD) == false) return;
 
 	InGameHUD->RefreshAmmoUI(CurrentBullets, MaxBullets);
+}
+
+void APlayerCharacter::ApplyTraitBonus(const FPlayerTraitBonus& Bonus)
+{
+	// 무기 피해량 (%)
+	AttackDamageMul += Bonus.weaponDamageBonus;
+
+	// 이동속도 (%)
+	if (Bonus.moveSpeedBonus != 0.f)
+	{
+		CurrentSpeed = FMath::Max(100.f, CurrentSpeed + (CurrentSpeed * Bonus.moveSpeedBonus));
+		GetCharacterMovement()->MaxWalkSpeed = CurrentSpeed;
+	}
+
+	// 최대 체력 (절댓값)
+	if (IsValid(StatusComponent) && Bonus.maxHPBonus != 0.f)
+	{
+		float NewMaxHP = StatusComponent->GetMaxHP() + Bonus.maxHPBonus;
+		StatusComponent->SetMaxHP(NewMaxHP);
+
+		float ClampedHP = FMath::Min(StatusComponent->GetCurrentHP(), NewMaxHP);
+		StatusComponent->SetCurrentHP(ClampedHP);
+	}
+
+	// 재장전 속도 (%)
+	ReloadSpeedMul += Bonus.reloadSpeedBonus;
+}
+
+void APlayerCharacter::ForceStopFire()
+{
+	bIsFullAutoFire = false;  
+	GetWorldTimerManager().ClearTimer(FullAutoTimerHandle);
 }

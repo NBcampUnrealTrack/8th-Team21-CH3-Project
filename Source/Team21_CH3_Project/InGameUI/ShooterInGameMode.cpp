@@ -5,12 +5,19 @@
 #include "InGameUI/AugmentCardSelectWidget.h"
 #include "Game/TeamGameInstance.h"
 #include "Data/EnemyWaveDataTable.h"
+#include "Component/StatusComponent.h"
+#include "OutGameUI/Widget/OutGameTransitionWidget.h"
+#include "GameFramework/Character.h"
 
 #include "Blueprint/UserWidget.h"
 #include "Engine/DataTable.h"
 #include "Engine/World.h"
+#include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "Gimmick/SpawnManager.h"
+
+#include "Component/AugmentComponent.h"
 
 AShooterInGameMode::AShooterInGameMode()
 {
@@ -20,7 +27,7 @@ AShooterInGameMode::AShooterInGameMode()
 	CurrentWaveKillCount = 0;
 	TargetKillCount = 0;
 
-	MaxWave = 3;
+	MaxWave = 4;
 	BaseTargetKillCount = 5;
 	TargetKillCountIncreasePerWave = 2;
 
@@ -32,18 +39,24 @@ AShooterInGameMode::AShooterInGameMode()
 	bIsMatchEnded = false;
 
 	NextWaveStartDelay = 3.0f;
+	WaveLevelTransitionDelay = 1.0f;
 
 	OutGameLevelName = TEXT("OutGameMap");
 	EndMatchReturnDelay = 3.0f;
+	EndMatchTransitionDelay = 1.0f;
 
 	HUDWaveRefreshRetryCount = 0;
 	MaxHUDWaveRefreshRetryCount = 10;
 	HUDWaveRefreshRetryInterval = 0.05f;
 
-	ActiveAugmentCardSelectWidget = nullptr;
 	AugmentKillInterval = 5;
 	bIsAugmentSelectOpen = false;
 	bPendingClearWaveAfterAugment = false;
+
+	OutGameTransitionWidgetInstance = nullptr;
+
+	BossStatusComponentForUI = nullptr;
+	BossMaxHPForUI = 1.0f;
 }
 
 void AShooterInGameMode::BeginPlay()
@@ -81,7 +94,16 @@ void AShooterInGameMode::BeginPlay()
 		}
 	}
 
-	StartWave();
+	RestorePlayerHPFromGameInstance();
+
+	GetWorldTimerManager().ClearTimer(GameStartWaveTimerHandle);
+	GetWorldTimerManager().SetTimer(
+		GameStartWaveTimerHandle,
+		this,
+		&AShooterInGameMode::StartWave,
+		GameStartTransitionDelay,
+		false
+	);
 
 	RequestHUDWaveInfoRefreshRetry();
 }
@@ -129,7 +151,33 @@ void AShooterInGameMode::StartWave()
 		GoldPerEnemyKill
 	);
 
-	RequestSpawnWave(CurrentWave, TargetKillCount);
+	if (!TryStartWaveWithSpawnManager(CurrentWave))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SpawnManager not found. Fallback to RequestSpawnWave."));
+		RequestSpawnWave(CurrentWave, TargetKillCount);
+	}
+
+	// Boss Waveï¿½ï¿½ ï¿½ï¿½ Boss Actorï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ HP Barï¿½ï¿½ Ã£ï¿½Â´ï¿½.
+	if (CurrentWave == BossWaveIndex)
+	{
+		BossStatusComponentForUI = nullptr;
+		BossMaxHPForUI = 1.0f;
+
+		GetWorldTimerManager().ClearTimer(BossHPBarFindTimerHandle);
+		GetWorldTimerManager().ClearTimer(BossHPBarUpdateTimerHandle);
+
+		GetWorldTimerManager().SetTimer(
+			BossHPBarFindTimerHandle,
+			this,
+			&AShooterInGameMode::TryShowBossHPBar,
+			0.2f,
+			true
+		);
+	}
+	else
+	{
+		HideBossHPBar();
+	}
 }
 
 void AShooterInGameMode::HandleEnemyDied()
@@ -185,7 +233,6 @@ void AShooterInGameMode::ClearWave()
 
 	const int32 ClearedWaveKillCount = CurrentWaveKillCount;
 
-	// Wave°¡ ³¡³¯ ¶§¸¶´Ù ÇØ´ç WaveÀÇ KillCount¸¦ TeamGameInstance¿¡ ´©Àû ÀúÀå
 	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
 	if (GI)
 	{
@@ -193,6 +240,8 @@ void AShooterInGameMode::ClearWave()
 	}
 
 	bIsWaveInProgress = false;
+
+	HideBossHPBar();
 
 	RefreshHUDWaveInfo();
 
@@ -202,13 +251,32 @@ void AShooterInGameMode::ClearWave()
 		MaxWave
 	);
 
+	// ¸¶Áö¸· ¿þÀÌºê´Â º¸½º »ç¸Á ¿¬ÃâÀÌ ¸ØÃßÁö ¾Êµµ·Ï Pause¸¦ °ÉÁö ¾Ê´Â´Ù.
 	if (CurrentWave >= MaxWave)
 	{
 		EndMatch(true);
 		return;
 	}
 
+	// ¸¶Áö¸· ¿þÀÌºê°¡ ¾Æ´Ò ¶§¸¸ Wave Clear Pause Àû¿ë
+	StartWaveClearPause();
+
 	bIsShopOpen = true;
+
+	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	if (IsValid(PlayerCharacter))
+	{
+		UFunction* ForceStopFullAutoFireFunction = PlayerCharacter->FindFunction(TEXT("ForceStopFire"));
+
+		if (ForceStopFullAutoFireFunction)
+		{
+			PlayerCharacter->ProcessEvent(ForceStopFullAutoFireFunction, nullptr);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ForceStopFullAutoFire function not found on PlayerCharacter."));
+		}
+	}
 
 	StopGameplayInput();
 
@@ -227,6 +295,62 @@ void AShooterInGameMode::ClearWave()
 		NextWaveStartDelay,
 		false
 	);
+}
+
+void AShooterInGameMode::StartWaveClearPause()
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	ClearWaveClearPauseTicker();
+
+	if (WaveClearPauseDuration <= 0.0f)
+	{
+		RestoreWaveClearPause();
+		return;
+	}
+
+	UGameplayStatics::SetGamePaused(World, true);
+
+	WaveClearPauseTickerHandle = FTSTicker::GetCoreTicker().AddTicker(
+		FTickerDelegate::CreateUObject(
+			this,
+			&AShooterInGameMode::HandleWaveClearPauseFinished
+		),
+		WaveClearPauseDuration
+	);
+}
+
+bool AShooterInGameMode::HandleWaveClearPauseFinished(float DeltaTime)
+{
+	RestoreWaveClearPause();
+
+	WaveClearPauseTickerHandle.Reset();
+
+	return false;
+}
+
+void AShooterInGameMode::RestoreWaveClearPause()
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	UGameplayStatics::SetGamePaused(World, false);
+}
+
+void AShooterInGameMode::ClearWaveClearPauseTicker()
+{
+	if (WaveClearPauseTickerHandle.IsValid())
+	{
+		FTSTicker::GetCoreTicker().RemoveTicker(WaveClearPauseTickerHandle);
+		WaveClearPauseTickerHandle.Reset();
+	}
 }
 
 void AShooterInGameMode::StartNextWave()
@@ -271,6 +395,20 @@ void AShooterInGameMode::ContinueToNextWaveWithLevelReload()
 	bIsWaveInProgress = false;
 	bIsShopOpen = false;
 
+	HideBossHPBar();
+
+	SavePlayerHPToGameInstance();
+
+	APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
+	if (PC && PC->GetPawn())
+	{
+		UAugmentComponent* AugmentComp = PC->GetPawn()->FindComponentByClass<UAugmentComponent>();
+		if (AugmentComp)
+		{
+			AugmentComp->SaveToGameInstance();
+		}
+	}
+
 	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
 	if (GI)
 	{
@@ -282,7 +420,24 @@ void AShooterInGameMode::ContinueToNextWaveWithLevelReload()
 		CurrentGold
 	);
 
-	ReloadCurrentLevel();
+	if (PC)
+	{
+		AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
+		if (MyHUD)
+		{
+			MyHUD->PlayLevelTransitionFadeOut();
+		}
+	}
+
+	GetWorldTimerManager().ClearTimer(WaveLevelTransitionTimerHandle);
+
+	GetWorldTimerManager().SetTimer(
+		WaveLevelTransitionTimerHandle,
+		this,
+		&AShooterInGameMode::ReloadCurrentLevel,
+		WaveLevelTransitionDelay,
+		false
+	);
 }
 
 void AShooterInGameMode::EndMatch(bool bPlayerWon)
@@ -300,9 +455,20 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 	bIsWaveInProgress = false;
 	bIsShopOpen = false;
 
+	GetWorldTimerManager().ClearTimer(GameStartWaveTimerHandle);
 	GetWorldTimerManager().ClearTimer(NextWaveStartTimerHandle);
+	GetWorldTimerManager().ClearTimer(WaveLevelTransitionTimerHandle);
+	GetWorldTimerManager().ClearTimer(BossHPBarFindTimerHandle);
+	GetWorldTimerManager().ClearTimer(BossHPBarUpdateTimerHandle);
+	GetWorldTimerManager().ClearTimer(EndMatchReturnTimerHandle);
+	GetWorldTimerManager().ClearTimer(EndMatchTransitionTimerHandle);
 	GetWorldTimerManager().ClearTimer(HUDWaveRefreshRetryTimerHandle);
 
+	ClearWaveClearPauseTicker();
+
+	RestoreWaveClearPause();
+
+	HideBossHPBar();
 	HideAugmentCardSelectUI();
 
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
@@ -324,15 +490,13 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 		GI->SetIsWin(bPlayerWon);
 		GI->SetMatch(true);
 
-		// °ÔÀÓ Á¾·á Á÷Àü ¸¶Áö¸· Wave / Gold °ªÀ» ÇÑ ¹ø ÀúÀåÇÑ´Ù.
-		// ClearInGameWaveData() ³»ºÎ¿¡¼­ SavedCurrentGold¸¦ playerGold¿¡ ´õÇÏ°í ÀúÀåÇÔ.
 		GI->SaveInGameWaveData(CurrentWave, FinalGold);
-
-		// ÀÎ°ÔÀÓ ¿þÀÌºê º¹±¸¿ë ÀÓ½Ã µ¥ÀÌÅÍ ÃÊ±âÈ­
 		GI->ClearInGameWaveData();
+		GI->SetCurrentHp(0.0f);
+
+		GI->ClearSavedAugments();
 	}
 
-	// GameMode ³»ºÎ °ª ÃÊ±âÈ­
 	CurrentWaveKillCount = 0;
 	CurrentGold = 0;
 
@@ -348,8 +512,6 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 		*OutGameLevelName.ToString(),
 		EndMatchReturnDelay
 	);
-
-	GetWorldTimerManager().ClearTimer(EndMatchReturnTimerHandle);
 
 	GetWorldTimerManager().SetTimer(
 		EndMatchReturnTimerHandle,
@@ -428,6 +590,39 @@ int32 AShooterInGameMode::CalculateGoldPerKillForWave(int32 InWave) const
 	return GoldPerEnemyKill;
 }
 
+bool AShooterInGameMode::TryStartWaveWithSpawnManager(int32 InWave)
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return false;
+	}
+
+	TArray<AActor*> FoundSpawnManagers;
+	UGameplayStatics::GetAllActorsOfClass(
+		World,
+		ASpawnManager::StaticClass(),
+		FoundSpawnManagers
+	);
+
+	if (FoundSpawnManagers.Num() <= 0)
+	{
+		return false;
+	}
+
+	ASpawnManager* SpawnManager = Cast<ASpawnManager>(FoundSpawnManagers[0]);
+	if (!SpawnManager)
+	{
+		return false;
+	}
+
+	SpawnManager->StartWave(InWave);
+
+	UE_LOG(LogTemp, Warning, TEXT("SpawnManager StartWave Called / Wave: %d"), InWave);
+
+	return true;
+}
+
 void AShooterInGameMode::AddGold(int32 GoldAmount)
 {
 	if (GoldAmount <= 0)
@@ -502,64 +697,194 @@ void AShooterInGameMode::HandleHUDWaveInfoRefreshRetry()
 	);
 }
 
-void AShooterInGameMode::ShowAugmentCardSelectUI()
+void AShooterInGameMode::TryShowBossHPBar()
 {
-	if (bIsMatchEnded || bIsAugmentSelectOpen)
+	UWorld* World = GetWorld();
+	if (!World)
 	{
 		return;
 	}
 
-	if (!AugmentCardSelectWidgetClass)
+	TArray<AActor*> FoundBossActors;
+	UGameplayStatics::GetAllActorsWithTag(
+		World,
+		BossActorTag,
+		FoundBossActors
+	);
+
+	if (FoundBossActors.Num() <= 0)
 	{
-		UE_LOG(LogTemp, Error, TEXT("AugmentCardSelectWidgetClass is not set."));
+		UE_LOG(LogTemp, Warning, TEXT("Boss actor not found yet. Tag: %s"), *BossActorTag.ToString());
 		return;
 	}
 
-	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	AActor* BossActor = FoundBossActors[0];
+	if (!IsValid(BossActor))
+	{
+		return;
+	}
+
+	UStatusComponent* BossStatusComponent = nullptr;
+
+	TArray<UStatusComponent*> StatusComponents;
+	BossActor->GetComponents<UStatusComponent>(StatusComponents);
+
+	float HighestCurrentHP = -1.0f;
+
+	for (UStatusComponent* StatusComp : StatusComponents)
+	{
+		if (!IsValid(StatusComp))
+		{
+			continue;
+		}
+
+		const float CurrentHP = StatusComp->GetCurrentHP();
+
+		UE_LOG(LogTemp, Warning, TEXT("Boss Status Candidate / Name: %s / Class: %s / CurrentHP: %.2f"),
+			*StatusComp->GetName(),
+			*StatusComp->GetClass()->GetName(),
+			CurrentHP
+		);
+
+		if (CurrentHP > HighestCurrentHP)
+		{
+			HighestCurrentHP = CurrentHP;
+			BossStatusComponent = StatusComp;
+		}
+	}
+
+	if (!IsValid(BossStatusComponent))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Boss StatusComponent not found."));
+		return;
+	}
+
+	BossStatusComponentForUI = BossStatusComponent;
+	BossMaxHPForUI = FMath::Max(1.0f, BossStatusComponent->GetCurrentHP());
+
+	APlayerController* PC = World->GetFirstPlayerController();
 	if (!PC)
 	{
 		return;
 	}
 
-	ActiveAugmentCardSelectWidget = CreateWidget<UAugmentCardSelectWidget>(PC, AugmentCardSelectWidgetClass);
-	if (!ActiveAugmentCardSelectWidget)
+	AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
+	if (!MyHUD)
 	{
 		return;
 	}
 
-	ActiveAugmentCardSelectWidget->OnAugmentSelected.RemoveDynamic(this, &AShooterInGameMode::HandleAugmentSelected);
-	ActiveAugmentCardSelectWidget->OnAugmentSelected.AddDynamic(this, &AShooterInGameMode::HandleAugmentSelected);
+	MyHUD->ShowBossHPBar();
 
-	ActiveAugmentCardSelectWidget->AddToViewport(200);
+	GetWorldTimerManager().ClearTimer(BossHPBarFindTimerHandle);
+	GetWorldTimerManager().ClearTimer(BossHPBarUpdateTimerHandle);
+
+	GetWorldTimerManager().SetTimer(
+		BossHPBarUpdateTimerHandle,
+		this,
+		&AShooterInGameMode::UpdateBossHPBarByTimer,
+		0.05f,
+		true
+	);
+
+	UpdateBossHPBarByTimer();
+
+	UE_LOG(LogTemp, Warning, TEXT("Boss HP Bar Shown. Boss: %s / BoundComponent: %s / MaxHPForUI: %.2f"),
+		*BossActor->GetName(),
+		*BossStatusComponent->GetName(),
+		BossMaxHPForUI
+	);
+}
+
+void AShooterInGameMode::UpdateBossHPBarByTimer()
+{
+	if (!IsValid(BossStatusComponentForUI))
+	{
+		HideBossHPBar();
+		return;
+	}
+
+	const float CurrentHP = FMath::Max(0.0f, BossStatusComponentForUI->GetCurrentHP());
+	const float MaxHP = FMath::Max(1.0f, BossMaxHPForUI);
+
+	APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
+	if (!PC)
+	{
+		return;
+	}
+
+	AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
+	if (!MyHUD)
+	{
+		return;
+	}
+
+	MyHUD->UpdateBossHPBar(CurrentHP, MaxHP);
+
+	if (CurrentHP <= 0.0f)
+	{
+		HideBossHPBar();
+	}
+}
+
+void AShooterInGameMode::HideBossHPBar()
+{
+	GetWorldTimerManager().ClearTimer(BossHPBarFindTimerHandle);
+	GetWorldTimerManager().ClearTimer(BossHPBarUpdateTimerHandle);
+
+	BossStatusComponentForUI = nullptr;
+	BossMaxHPForUI = 1.0f;
+
+	APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
+	if (!PC)
+	{
+		return;
+	}
+
+	AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
+	if (!MyHUD)
+	{
+		return;
+	}
+
+	MyHUD->HideBossHPBar();
+}
+
+void AShooterInGameMode::ShowAugmentCardSelectUI()
+{
+	if (bIsMatchEnded || bIsAugmentSelectOpen) return;
+
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (!PC) return;
+
+	APawn* PlayerPawn = PC->GetPawn();
+	if (!PlayerPawn) return;
+
+	UAugmentComponent* AugmentComp = PlayerPawn->FindComponentByClass<UAugmentComponent>();
+	if (!AugmentComp) return;
 
 	bIsAugmentSelectOpen = true;
 
-	FInputModeUIOnly InputModeData;
-	InputModeData.SetWidgetToFocus(ActiveAugmentCardSelectWidget->TakeWidget());
-	PC->SetInputMode(InputModeData);
-	PC->bShowMouseCursor = true;
 	PC->SetPause(true);
+	StopGameplayInput();
 
-	UE_LOG(LogTemp, Warning, TEXT("Augment Card Select UI Opened."));
+	AugmentComp->AugmentSelection();
+
+	if (UAugmentCardSelectWidget* ActiveWidget = AugmentComp->GetAugmentWidget())
+	{
+		FInputModeUIOnly InputModeData;
+		InputModeData.SetWidgetToFocus(ActiveWidget->TakeWidget());
+		PC->SetInputMode(InputModeData);
+	}
 }
 
 void AShooterInGameMode::HideAugmentCardSelectUI()
 {
-	if (ActiveAugmentCardSelectWidget)
-	{
-		ActiveAugmentCardSelectWidget->RemoveFromParent();
-		ActiveAugmentCardSelectWidget = nullptr;
-	}
-
 	bIsAugmentSelectOpen = false;
 }
 
-void AShooterInGameMode::HandleAugmentSelected(FAugmentResult SelectedCardData)
+void AShooterInGameMode::NotifyAugmentSelectionComplete()
 {
-	// UE_LOG(LogTemp, Warning, TEXT("Augment Selected: %s"),
-	// 	*SelectedCardData.CardName.ToString()
-	// );
-
 	HideAugmentCardSelectUI();
 
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
@@ -617,6 +942,71 @@ void AShooterInGameMode::ResumeGameplayInput()
 	PC->bShowMouseCursor = false;
 }
 
+UStatusComponent* AShooterInGameMode::GetPlayerStatusComponent() const
+{
+	APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
+	if (!PC)
+	{
+		return nullptr;
+	}
+
+	APawn* PlayerPawn = PC->GetPawn();
+	if (!PlayerPawn)
+	{
+		return nullptr;
+	}
+
+	return PlayerPawn->FindComponentByClass<UStatusComponent>();
+}
+
+void AShooterInGameMode::SavePlayerHPToGameInstance()
+{
+	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
+	if (!GI)
+	{
+		return;
+	}
+
+	UStatusComponent* PlayerStatusComponent = GetPlayerStatusComponent();
+	if (!PlayerStatusComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SavePlayerHPToGameInstance Failed. Player StatusComponent not found."));
+		return;
+	}
+
+	const float CurrentHP = PlayerStatusComponent->GetCurrentHP();
+	GI->SetCurrentHp(CurrentHP);
+
+	UE_LOG(LogTemp, Warning, TEXT("Save Player HP / HP: %.2f"), CurrentHP);
+}
+
+void AShooterInGameMode::RestorePlayerHPFromGameInstance()
+{
+	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
+	if (!GI)
+	{
+		return;
+	}
+
+	const float SavedHP = GI->GetCurrentHp();
+
+	if (SavedHP <= 0.0f)
+	{
+		return;
+	}
+
+	UStatusComponent* PlayerStatusComponent = GetPlayerStatusComponent();
+	if (!PlayerStatusComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RestorePlayerHPFromGameInstance Failed. Player StatusComponent not found."));
+		return;
+	}
+
+	PlayerStatusComponent->SetCurrentHP(SavedHP);
+
+	UE_LOG(LogTemp, Warning, TEXT("Restore Player HP / HP: %.2f"), SavedHP);
+}
+
 void AShooterInGameMode::ReloadCurrentLevel()
 {
 	UWorld* World = GetWorld();
@@ -634,7 +1024,50 @@ void AShooterInGameMode::ReloadCurrentLevel()
 
 void AShooterInGameMode::HandleEndMatchReturnToOutGame()
 {
-	MoveToOutGameMap();
+	APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
+	if (!PC)
+	{
+		MoveToOutGameMap();
+		return;
+	}
+
+	if (!OutGameTransitionWidgetClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OutGameTransitionWidgetClass is not set. MoveToOutGameMap directly."));
+		MoveToOutGameMap();
+		return;
+	}
+
+	if (!OutGameTransitionWidgetInstance)
+	{
+		OutGameTransitionWidgetInstance = CreateWidget<UOutGameTransitionWidget>(
+			PC,
+			OutGameTransitionWidgetClass
+		);
+
+		if (OutGameTransitionWidgetInstance)
+		{
+			OutGameTransitionWidgetInstance->AddToViewport(10000);
+		}
+	}
+
+	if (!OutGameTransitionWidgetInstance)
+	{
+		MoveToOutGameMap();
+		return;
+	}
+
+	OutGameTransitionWidgetInstance->PlayFadeOut();
+
+	GetWorldTimerManager().ClearTimer(EndMatchTransitionTimerHandle);
+
+	GetWorldTimerManager().SetTimer(
+		EndMatchTransitionTimerHandle,
+		this,
+		&AShooterInGameMode::MoveToOutGameMap,
+		EndMatchTransitionDelay,
+		false
+	);
 }
 
 void AShooterInGameMode::MoveToOutGameMap()
@@ -648,6 +1081,14 @@ void AShooterInGameMode::MoveToOutGameMap()
 	UE_LOG(LogTemp, Warning, TEXT("MoveToOutGameMap Called. Target Level: %s"), *OutGameLevelName.ToString());
 
 	UGameplayStatics::OpenLevel(this, OutGameLevelName);
+}
+
+void AShooterInGameMode::EnemyKilled(AActor* KilledEnemy)
+{
+	if (OnEnemyKilledDelegate.IsBound())
+	{
+		OnEnemyKilledDelegate.Broadcast(KilledEnemy);
+	}
 }
 
 void AShooterInGameMode::CmdKillEnemy()
@@ -668,4 +1109,74 @@ void AShooterInGameMode::CmdStartNextWave()
 void AShooterInGameMode::CmdMoveOutGame()
 {
 	MoveToOutGameMap();
+}
+
+void AShooterInGameMode::CmdDamageBoss()
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	TArray<AActor*> FoundBossActors;
+	UGameplayStatics::GetAllActorsWithTag(
+		World,
+		BossActorTag,
+		FoundBossActors
+	);
+
+	if (FoundBossActors.Num() <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CmdDamageBoss Failed. Boss actor not found. Tag: %s"), *BossActorTag.ToString());
+		return;
+	}
+
+	AActor* BossActor = FoundBossActors[0];
+	if (!IsValid(BossActor))
+	{
+		return;
+	}
+
+	UStatusComponent* BossStatusComponent = nullptr;
+
+	TArray<UStatusComponent*> StatusComponents;
+	BossActor->GetComponents<UStatusComponent>(StatusComponents);
+
+	float HighestCurrentHP = -1.0f;
+
+	for (UStatusComponent* StatusComp : StatusComponents)
+	{
+		if (!IsValid(StatusComp))
+		{
+			continue;
+		}
+
+		const float CurrentHP = StatusComp->GetCurrentHP();
+
+		if (CurrentHP > HighestCurrentHP)
+		{
+			HighestCurrentHP = CurrentHP;
+			BossStatusComponent = StatusComp;
+		}
+	}
+
+	if (!IsValid(BossStatusComponent))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CmdDamageBoss Failed. Boss StatusComponent not found."));
+		return;
+	}
+
+	const float DamageAmount = 9999.0f;
+	const float CurrentHP = BossStatusComponent->GetCurrentHP();
+	const float NewHP = FMath::Max(0.0f, CurrentHP - DamageAmount);
+
+	BossStatusComponent->SetCurrentHP(NewHP);
+
+	UE_LOG(LogTemp, Warning, TEXT("CmdDamageBoss / Boss: %s / Damage: %.2f / HP: %.2f -> %.2f"),
+		*BossActor->GetName(),
+		DamageAmount,
+		CurrentHP,
+		NewHP
+	);
 }

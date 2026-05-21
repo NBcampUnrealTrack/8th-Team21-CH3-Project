@@ -7,6 +7,7 @@
 
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "OutGameUI/Widget/OutGameTransitionWidget.h"
 
 void AInGameHUD::BeginPlay()
 {
@@ -19,6 +20,31 @@ void AInGameHUD::BeginPlay()
 		if (InGameUIInstance)
 		{
 			InGameUIInstance->AddToViewport();
+
+			if (InGameStartTransitionWidgetClass)
+			{
+				InGameStartTransitionWidgetInstance = CreateWidget<UOutGameTransitionWidget>(
+					GetWorld(),
+					InGameStartTransitionWidgetClass
+				);
+
+				if (InGameStartTransitionWidgetInstance)
+				{
+					InGameStartTransitionWidgetInstance->AddToViewport(10000);
+					InGameStartTransitionWidgetInstance->PlayFadeIn();
+				}
+			}
+
+			// OutGame -> InGame 진입 FadeIn이 끝난 뒤 READY / SET / START 연출을 재생한다.
+			GetWorldTimerManager().ClearTimer(InGameStartReadyTimerHandle);
+
+			GetWorldTimerManager().SetTimer(
+				InGameStartReadyTimerHandle,
+				this,
+				&AInGameHUD::PlayGameStartReadyTransition,
+				InGameStartReadyDelay,
+				false
+			);
 
 			// HUD 위젯 생성이 완료된 직후 GameMode에 Wave/Kill/Gold UI 갱신을 다시 요청한다.
 			AShooterInGameMode* GameMode = Cast<AShooterInGameMode>(UGameplayStatics::GetGameMode(this));
@@ -112,5 +138,65 @@ void AInGameHUD::HideHPDangerFeedback()
 	if (InGameUIInstance)
 	{
 		InGameUIInstance->HideHPDangerFeedback();
+	}
+}
+
+void AInGameHUD::PlayGameStartReadyTransition()
+{
+	if (InGameUIInstance)
+	{
+		InGameUIInstance->PlayGameStartTransition();
+	}
+}
+
+void AInGameHUD::PlayLevelTransitionFadeOut()
+{
+	if (!InGameStartTransitionWidgetClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("InGameStartTransitionWidgetClass is not set in InGameHUD."));
+		return;
+	}
+
+	if (!InGameStartTransitionWidgetInstance)
+	{
+		InGameStartTransitionWidgetInstance = CreateWidget<UOutGameTransitionWidget>(
+			GetWorld(),
+			InGameStartTransitionWidgetClass
+		);
+
+		if (InGameStartTransitionWidgetInstance)
+		{
+			InGameStartTransitionWidgetInstance->AddToViewport(10000);
+		}
+	}
+
+	if (InGameStartTransitionWidgetInstance)
+	{
+		// 웨이브 전환 / 레벨 리로드 직전 화면을 검게 덮는다.
+		InGameStartTransitionWidgetInstance->PlayFadeOut();
+	}
+}
+
+void AInGameHUD::ShowBossHPBar()
+{
+	if (InGameUIInstance)
+	{
+		InGameUIInstance->ShowBossHPBar();
+	}
+}
+
+void AInGameHUD::HideBossHPBar()
+{
+	if (InGameUIInstance)
+	{
+		InGameUIInstance->HideBossHPBar();
+	}
+}
+
+void AInGameHUD::UpdateBossHPBar(float CurrentHP, float MaxHP)
+{
+	if (InGameUIInstance)
+	{
+		InGameUIInstance->UpdateBossHPBar(CurrentHP, MaxHP);
 	}
 }

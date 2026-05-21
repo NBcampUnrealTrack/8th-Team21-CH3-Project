@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/CharacterBase.h"
+#include "Character/PlayerCharacter.h"
 #include "NonPlayerCharacter.generated.h"
 
 
@@ -34,27 +35,37 @@ public:
 	void OnMaxHPChange(float InMaxHP);
 	UFUNCTION()
 	void OnCurrentHPChange(float InCurrentHP);
+
 protected:
 	virtual void BeginAttack();
 
 	void TryFire();
 	//АјАн
+	void EndAttack();
 
+	void POW(bool bVulnerable);
 	virtual void EndAttack(UAnimMontage* InMontage, bool bInterruped);
 public:
 	bool bIsNowAttacking;
-
+	FTimerHandle AttackTimer;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
-	bool bAttackRange = false;
+	bool bAttackRange;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
 	float MoveSpeed = 400.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
 	float MaxHP = 100.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
 	float Damage =5.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Boss")
+	bool bInvulnerable;
 
 protected:
 	FOnAttackMontageEnded OnAttackMontageEndedDelegate;
 	float LastUpdatedMaxHP = 0.f;
 	float LastUpdatedCurrentHP = 0.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<AWeapon>WeaponType;
+	UPROPERTY(VisibleAnywhere)
+	UStatusComponent* Status;
 };

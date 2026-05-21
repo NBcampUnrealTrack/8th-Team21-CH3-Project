@@ -9,7 +9,7 @@
 
 class UTextBlock;
 class UButton;
-
+class UImage;
 /*
 USTRUCT(BlueprintType)
 struct FAugmentCardData
@@ -56,15 +56,12 @@ protected:
 protected:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* CardNameText;
-
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* CardDescriptionText;
-
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* CardEffectText;
-
 	UPROPERTY(meta = (BindWidget))
 	UButton* Button_Select;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> cardIcon;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Augment")

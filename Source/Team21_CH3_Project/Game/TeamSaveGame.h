@@ -21,7 +21,6 @@ public:
 	int32 playerTotalKillCount = 0;
 	UPROPERTY()
 	int32 playerGold = 0;
-	
-	// Trait System save and load 
-	//TArray<OutGameTraitMananger> applyTrait; 
+	UPROPERTY()
+	TMap<FName, int32> traitLevels;
 };

@@ -3,28 +3,28 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AIController.h"
-#include "Perception/AIPerceptionComponent.h"
-#include "Perception/AISenseConfig_Sight.h"
-#include "Perception/AISenseConfig_Hearing.h"
+#include "DetourCrowdAIController.h"
 #include "Perception/AIPerceptionTypes.h"
 #include "AI_Controller.generated.h"
 
 class UBlackboardData;
 class UBehaviorTree;
+class UAIPerceptionComponent;
+class UAISenseConfig_Sight;
+class APlayerCharacter;
 
 /**
  * 
  */
-UCLASS()
-class TEAM21_CH3_PROJECT_API AAI_Controller : public AAIController
+UCLASS(Blueprintable)
+class TEAM21_CH3_PROJECT_API AAI_Controller : public ADetourCrowdAIController
 {
 	GENERATED_BODY()
 	
 	friend class ANonPlayerCharacter;
 public:
-	AAI_Controller();
-
+	AAI_Controller(const FObjectInitializer& ObjectInitializer);
+	virtual void UpdateControlRotation(float DeltaTime, bool bUpdatePawn) override;
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -32,14 +32,10 @@ protected:
 	void BeginAI(APawn* InPawn);
 	void EndAI();
 
-	UFUNCTION()
-	void OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors);
-
 public:
 	static const float PatrolRadius;
 	static int32 ShowAIDebug;
-	static const FName StartPatrolPositionKey;
-	static const FName EndPatrolPositionKey;
+	static const FName StartPositionKey;
 	static const FName TargetCharacterKey;
 	
 private:
@@ -47,12 +43,13 @@ private:
 	TObjectPtr<UBlackboardData> BlackboardDataAsset;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (AllowPrivateAccess))
 	TObjectPtr<UBehaviorTree> BehaviorTree;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess))
-	class UAIPerceptionComponent* AIPerception;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess))
-	class UAISenseConfig_Sight* SightConfig;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess))
-	class UAISenseConfig_Hearing* HearingConfig;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess))
-	class UAISenseConfig_Damage* DamageSenseConfig;
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
+	UAIPerceptionComponent* AIPerceptionComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
+	UAISenseConfig_Sight* SightConfig;
+	UPROPERTY(BlueprintReadOnly, Category = "AI")
+	float AimPitch;
+	UFUNCTION()
+	void OnTargetDetected(AActor* Actor, const FAIStimulus Stimulus);
 };

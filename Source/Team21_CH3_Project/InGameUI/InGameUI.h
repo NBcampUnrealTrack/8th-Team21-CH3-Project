@@ -9,6 +9,9 @@
 class UProgressBar;
 class UTextBlock;
 class UImage;
+class UWidget;
+class UTexture2D;
+class UWidgetAnimation;
 
 // 인게임 화면에 표시되는 메인 HUD UI
 // 체력, 탄약, Wave, Kill, Gold 정보, 라운드 전환 메시지, HP 위험 피드백을 관리한다.
@@ -19,7 +22,6 @@ class TEAM21_CH3_PROJECT_API UInGameUI : public UUserWidget
 
 public:
 	// 플레이어 체력 UI 갱신
-	// HealthBar, PlayerHPText, HP 위험 피드백을 함께 갱신한다.
 	void UpdateHealth(float CurrentHealth, float MaxHealth);
 
 	// 탄약 UI 갱신
@@ -34,8 +36,10 @@ public:
 		int32 GoldPerKill
 	);
 
+	// 선택한 무기에 맞는 우측 하단 무기 UI와 Crosshair 갱신
+	void RefreshWeaponUI();
+
 	// 라운드 전환 메시지 표시
-	// 예: Round Win / Round Lose
 	void ShowRoundTransitionMessage(const FText& MainMessage, const FText& SubMessage);
 
 	// 라운드 전환 메시지 숨김
@@ -45,77 +49,120 @@ public:
 	bool IsRoundTransitionMessageVisible() const;
 
 	// HP 위험 피드백 제거
-	// 사망, Result UI 표시, 라운드 전환 등에서 강제로 숨길 때 사용한다.
 	void HideHPDangerFeedback();
+
+	// 플레이어가 피격됐을 때 피격 알람 애니메이션 재생
+	void PlayHitAlarm();
+
+	// 게임 시작 시 페이드 인 / 준비 UI 애니메이션 재생
+	void PlayGameStartTransition();
+
+	// 보스 HP Bar 표시
+	void ShowBossHPBar();
+
+	// 화면 고정형 보스 HP Text
+	// WBP_InGameUI의 TextBlock 이름이 BossHPText여야 연결된다.
+	UPROPERTY(meta = (BindWidgetOptional))
+	UTextBlock* BossHPText;
+
+	// 보스 HP Bar 숨김
+	void HideBossHPBar();
+
+	// 보스 HP Bar 비율 갱신
+	void UpdateBossHPBar(float CurrentHP, float MaxHP);
 
 protected:
 	virtual void NativeConstruct() override;
 
 protected:
-	// 플레이어 HP ProgressBar
-	// WBP_InGameUI 안의 ProgressBar 이름이 HealthBar여야 연결된다.
 	UPROPERTY(meta = (BindWidget))
 	UProgressBar* HealthBar;
 
-	// 플레이어 HP 숫자 Text
-	// HealthBar 위에 100 / 100 형태로 표시된다.
 	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* PlayerHPText;
 
-	// HP 30% 이하일 때 화면 가장자리에 표시할 빨간 위험 효과 Image
 	UPROPERTY(meta = (BindWidgetOptional))
 	UImage* HPDangerVignette;
 
-	// 탄약 Text
-	// 예: 30 / 30
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* AmmoText;
 
-	// 조준점 이미지
 	UPROPERTY(meta = (BindWidget))
 	UImage* CrosshairImage;
 
-	// Wave Text
-	// 예: WAVE 1
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon UI")
+	UTexture2D* RifleCrosshairTexture;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon UI")
+	UTexture2D* ShotgunCrosshairTexture;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon UI")
+	UTexture2D* PistolCrosshairTexture;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	UWidget* RifleWeaponUI;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	UWidget* ShotgunWeaponUI;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	UWidget* PistolWeaponUI;
+
 	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* WaveText;
 
-	// Kill Count Text
-	// 예: KILL 0 / 5
 	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* KillText;
 
-	// Gold Text
-	// 예: GOLD 0
 	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* GoldText;
 
-	// 처치당 골드 Text
-	// 예: GOLD/KILL +10
 	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* GoldPerKillText;
 
-	// 기존 플레이어 점수 Text
 	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* PlayerScoreText;
 
-	// 기존 AI 점수 Text
 	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* AIScoreText;
 
-	// 기존 라운드 Text
 	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* RoundText;
 
-	// 라운드 전환 메인 메시지 Text
 	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* RoundTransitionText;
 
-	// 라운드 전환 서브 메시지 Text
 	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* RoundTransitionSubText;
 
+	UPROPERTY(meta = (BindWidgetOptional))
+	UImage* HitAlarmFrame;
+
+	UPROPERTY(Transient, meta = (BindWidgetAnimOptional))
+	UWidgetAnimation* HitAlarmAnim;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	UImage* GameStartFadeImage;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	UTextBlock* GameStartReadyText;
+
+	UPROPERTY(Transient, meta = (BindWidgetAnimOptional))
+	UWidgetAnimation* GameStartAnim;
+
+	// 화면 고정형 보스 HP Bar 전체 패널
+	// WBP_InGameUI의 Border 이름이 BossHPPanel이어야 연결된다.
+	UPROPERTY(meta = (BindWidgetOptional))
+	UWidget* BossHPPanel;
+
+	// 화면 고정형 보스 HP ProgressBar
+	// WBP_InGameUI의 ProgressBar 이름이 BossHPBar여야 연결된다.
+	UPROPERTY(meta = (BindWidgetOptional))
+	UProgressBar* BossHPBar;
+
 private:
-	// HP 비율을 검사해서 위험 피드백을 표시하거나 숨긴다.
 	void UpdateHPDangerFeedback(float CurrentHealth, float MaxHealth);
+	void ApplyCrosshairTexture(UTexture2D* CrosshairTexture);
+
+	float LastPlayerHealth = -1.0f;
 };

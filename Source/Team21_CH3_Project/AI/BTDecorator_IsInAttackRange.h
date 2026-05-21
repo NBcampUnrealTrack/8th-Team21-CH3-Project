@@ -6,6 +6,7 @@
 #include "BehaviorTree/BTDecorator.h"
 #include "BTDecorator_IsInAttackRange.generated.h"
 
+class ANonPlayerCharacter;
 /**
  * 
  */
@@ -19,7 +20,8 @@ public:
 
 protected:
 	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
-
-public:
-	static const float AttackRange;
+	UPROPERTY(EditAnywhere, Category = "Blackboard")
+	FBlackboardKeySelector AttackRangeKey;
+	UPROPERTY(EditAnywhere, Category = "Blackboard")
+	FBlackboardKeySelector TargetCharacterKey;
 };

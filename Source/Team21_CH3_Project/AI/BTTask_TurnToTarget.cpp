@@ -16,21 +16,21 @@ EBTNodeResult::Type UBTTask_TurnToTarget::ExecuteTask(UBehaviorTreeComponent& Ow
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
 
 	AAI_Controller* AIController = Cast<AAI_Controller>(OwnerComp.GetAIOwner());
-	checkf(IsValid(AIController) == true, TEXT("Invalid AIController."));
+	checkf(IsValid(AIController) == true, TEXT("InValid AIController"));
 
 	ANonPlayerCharacter* NPC = Cast<ANonPlayerCharacter>(AIController->GetPawn());
-	checkf(IsValid(NPC) == true, TEXT("Invalid NPC."));
+	checkf(IsValid(NPC) == true, TEXT("InValid NPC."));
 
-	if (ACharacterBase* TargetPC = Cast<ACharacterBase>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(AIController->TargetCharacterKey)))
+	if (ACharacterBase* Target = Cast<ACharacterBase>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(AIController->TargetCharacterKey)))
 	{
-		FVector LookVector = TargetPC->GetActorLocation() - NPC->GetActorLocation();
-		LookVector.Z = 0.f;
-
+		FVector LookVector = Target->GetActorLocation() - NPC->GetActorLocation();
 		FRotator TargetRotation = FRotationMatrix::MakeFromX(LookVector).Rotator();
-		NPC->SetActorRotation(FMath::RInterpTo(NPC->GetActorRotation(), TargetRotation, GetWorld()->GetDeltaSeconds(), 2.f));
+		AIController->SetControlRotation(FMath::RInterpTo(NPC->GetActorRotation(), TargetRotation, GetWorld()->GetDeltaSeconds(), 5.f));
+
+		FRotator BodyRotation = FRotator(0.f, TargetRotation.Yaw, 0.f);
+		NPC->SetActorRotation(FMath::RInterpTo(NPC->GetActorRotation(), BodyRotation, GetWorld()->GetDeltaSeconds(), 5.f));
 
 		return Result = EBTNodeResult::Succeeded;
 	}
-
 	return Result = EBTNodeResult::Failed;
 }

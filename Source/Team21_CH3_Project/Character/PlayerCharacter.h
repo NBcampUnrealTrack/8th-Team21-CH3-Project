@@ -10,6 +10,9 @@ class UCameraComponent;
 class UInputConfig;
 class UInputMappingContext;
 class UAugmentComponent;
+class UDataTable;
+class UInGameQuitWidget;
+struct FPlayerTraitBonus;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API APlayerCharacter : public ACharacterBase
@@ -77,6 +80,9 @@ private:
 	void InputStopFullAutoFire(const FInputActionValue& InValue);
 	void InputInteraction(const FInputActionValue& InValue);
 	void InputReLoad(const FInputActionValue& InValue);
+	void InputQuitUI(const FInputActionValue& InValue);
+	void InputSlide(const FInputActionValue& InValue);
+	void EndSlide();
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess))
@@ -93,6 +99,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UCameraShakeBase> AttackRangedCameraShake;
 
+private:
+	void ApplyWeaponRecoil();
+
 #pragma endregion 
 
 #pragma region Zoom
@@ -103,11 +112,12 @@ protected:
 
 	float CurrentFOV = 70.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float TargetSpeed = 1200.f;
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	float TargetSpeed = 1000.f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	float CurrentSpeed = 600.f;
+	float CurrentSpeed = 500.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float CurrentAcceleration = 2048.f;
@@ -182,9 +192,56 @@ public:
 
 #pragma region Attribute
 
-	float baseSpeed;
+	float baseSpeed = 500.f;
 
 	float baseAttackDamage;
 
+	float baseTargetSpeed = 1000.f;
+
 #pragma endregion
+
+#pragma region Trait
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Trait")
+	TObjectPtr<UDataTable> TraitDataTable;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Trait")
+	float ReloadSpeedMul = 1.0f;
+
+public:
+	void ApplyTraitBonus(const FPlayerTraitBonus& Bonus);
+#pragma endregion
+
+#pragma region QuitUI
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UInGameQuitWidget> InGameQuitWidgetClass;
+	UPROPERTY()
+	TObjectPtr<UInGameQuitWidget> InGameQuitWidgetInstance;
+
+#pragma endregion
+
+#pragma region Slide
+
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Slide")
+	bool bIsSliding = false;
+
+protected:
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Slide")
+	float SlideDuration = 0.7f;
+
+private:
+	FTimerHandle SlideTimerHandle;
+
+	float CurrentMoveSpeed = 0.f;
+#pragma endregion
+
+#pragma region AtackTimer
+
+public:
+	UFUNCTION()
+	void ForceStopFire();
 };

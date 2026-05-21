@@ -2,6 +2,8 @@
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
+#include "Character/NonPlayerCharacter.h"
+#include "Component/StatusComponent.h"
 
 ASpawnManager::ASpawnManager()
 {
@@ -17,7 +19,6 @@ void ASpawnManager::StartWave(int32 WaveIndex)
 {
 	if (!WaveDataTable) return;
 
-	// 1. 데이터 테이블에서 해당 웨이브 행 찾기
 	FString RowNameString = FString::Printf(TEXT("Wave_%02d"), WaveIndex);
 	FName RowName = FName(*RowNameString);
 
@@ -25,13 +26,12 @@ void ASpawnManager::StartWave(int32 WaveIndex)
 
 	if (CurrentWaveData)
 	{
-		// 2. 스폰할 마릿수 초기화
+
 		RemainingNormal = CurrentWaveData->NormalCount;
 		RemainingRusher = CurrentWaveData->RusherCount;
 		RemainingShooter = CurrentWaveData->ShooterCount;
 		RemainingBoss = CurrentWaveData->BossCount;
 
-		// 3. 타이머 시작 (SpawnInterval 간격으로 반복)
 		GetWorldTimerManager().SetTimer(SpawnTimerHandle, this, &ASpawnManager::SpawnRoutine, CurrentWaveData->SpawnInterval, true);
 
 		UE_LOG(LogTemp, Warning, TEXT("Wave %d Started!"), WaveIndex);
@@ -45,7 +45,7 @@ void ASpawnManager::StopWave()
 
 void ASpawnManager::SpawnRoutine()
 {
-	// 모든 몬스터를 다 스폰했는지 확인
+
 	bool bAllSpawned = (RemainingNormal <= 0 && RemainingRusher <= 0 && RemainingShooter <= 0 && RemainingBoss <= 0);
 
 	if (bAllSpawned)
@@ -55,34 +55,61 @@ void ASpawnManager::SpawnRoutine()
 		return;
 	}
 
-	// 우선순위에 따라 한 마리씩 스폰 (보스 -> 슈터 -> 러셔 -> 노멀 순)
+	ACharacter* SpawnedEnemy = nullptr;
+	float TargetMaxHP = 100.0f;
+	bool bIsBoss = false;
+
 	if (RemainingBoss > 0)
 	{
-		SpawnEnemy(BossEnemyClass);
+		SpawnedEnemy = SpawnEnemy(BossEnemyClass);
+		TargetMaxHP = BossMaxHealth;
 		RemainingBoss--;
+		bIsBoss = true;
 	}
 	else if (RemainingShooter > 0)
 	{
-		SpawnEnemy(ShooterEnemyClass);
+		SpawnedEnemy = SpawnEnemy(ShooterEnemyClass);
+		TargetMaxHP = ShooterMaxHealth;
 		RemainingShooter--;
 	}
 	else if (RemainingRusher > 0)
 	{
-		SpawnEnemy(RusherEnemyClass);
+		SpawnedEnemy = SpawnEnemy(RusherEnemyClass);
+		TargetMaxHP = RusherMaxHealth;
 		RemainingRusher--;
 	}
 	else if (RemainingNormal > 0)
 	{
-		SpawnEnemy(NormalEnemyClass);
+		SpawnedEnemy = SpawnEnemy(NormalEnemyClass);
+		TargetMaxHP = NormalMaxHealth;
 		RemainingNormal--;
+	}
+
+
+	if (IsValid(SpawnedEnemy))
+	{
+		UStatusComponent* Status = GetStatus(SpawnedEnemy);
+		if (IsValid(Status))
+		{
+
+			Status->SetMaxHP(TargetMaxHP);
+			Status->SetCurrentHP(TargetMaxHP);
+
+			UE_LOG(LogTemp, Log, TEXT("Monster Spawned with HP: %f"), TargetMaxHP);
+		}
+
+
+		if (bIsBoss && OnBossSpawned.IsBound())
+		{
+			OnBossSpawned.Broadcast(SpawnedEnemy);
+		}
 	}
 }
 
-void ASpawnManager::SpawnEnemy(TSubclassOf<ACharacter> EnemyClass)
+ACharacter* ASpawnManager::SpawnEnemy(TSubclassOf<ACharacter> EnemyClass)
 {
-	if (!EnemyClass || SpawnPoints.Num() == 0) return;
+	if (!EnemyClass || SpawnPoints.Num() == 0) return nullptr;
 
-	// 1. 랜덤 스폰 지점 선택
 	int32 RandomIndex = FMath::RandRange(0, SpawnPoints.Num() - 1);
 	AActor* SpawnPoint = SpawnPoints[RandomIndex];
 
@@ -91,10 +118,23 @@ void ASpawnManager::SpawnEnemy(TSubclassOf<ACharacter> EnemyClass)
 		FVector Location = SpawnPoint->GetActorLocation();
 		FRotator Rotation = SpawnPoint->GetActorRotation();
 
-		// 2. 실제 스폰
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-
-		GetWorld()->SpawnActor<ACharacter>(EnemyClass, Location, Rotation, SpawnParams);
+		ACharacter* SpawnedEnemy = GetWorld()->SpawnActor<ACharacter>(EnemyClass, Location, Rotation, SpawnParams);
+		return SpawnedEnemy;
 	}
+
+	return nullptr;
+}
+
+UStatusComponent* ASpawnManager::GetStatus(ACharacter* temp)
+{
+	ANonPlayerCharacter* nonTemp = Cast<ANonPlayerCharacter>(temp);
+
+	if(IsValid(nonTemp)==false)	return nullptr;
+	
+	UStatusComponent* status = nonTemp->GetStatusComponent();
+	if (IsValid(status) == false) return nullptr;
+
+	return status;
 }

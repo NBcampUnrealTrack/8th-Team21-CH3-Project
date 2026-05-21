@@ -5,28 +5,40 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
+#include "Components/Widget.h"
+#include "Engine/Texture2D.h"
+#include "Game/TeamGameInstance.h"
 
 void UInGameUI::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	// UI가 처음 생성될 때 표시할 기본값
-	// 실제 게임 중에는 HUD 또는 캐릭터에서 다시 갱신된다.
 	UpdateHealth(100.f, 100.f);
 	UpdateAmmo(30, 30);
 
-	// Wave UI는 여기서 기본값으로 세팅하지 않는다.
-	// 이유:
-	// 레벨 리로드 후 GameMode에서 복구한 Wave / Kill / Gold 값을
-	// NativeConstruct의 기본값이 다시 덮어쓸 수 있기 때문이다.
-	//
-	// Wave / Kill / Gold는 ShooterInGameMode -> InGameHUD -> UpdateWaveInfo 흐름으로만 갱신한다.
+	RefreshWeaponUI();
 
-	// 라운드 전환 메시지는 처음에는 숨겨둔다.
 	HideRoundTransitionMessage();
-
-	// HP 위험 피드백도 처음에는 숨겨둔다.
 	HideHPDangerFeedback();
+	HideBossHPBar();
+
+	if (HitAlarmFrame)
+	{
+		HitAlarmFrame->SetVisibility(ESlateVisibility::Collapsed);
+		HitAlarmFrame->SetRenderOpacity(0.0f);
+	}
+
+	if (GameStartFadeImage)
+	{
+		GameStartFadeImage->SetVisibility(ESlateVisibility::HitTestInvisible);
+		GameStartFadeImage->SetRenderOpacity(1.0f);
+	}
+
+	if (GameStartReadyText)
+	{
+		GameStartReadyText->SetVisibility(ESlateVisibility::HitTestInvisible);
+		GameStartReadyText->SetRenderOpacity(0.0f);
+	}
 }
 
 void UInGameUI::UpdateHealth(float CurrentHealth, float MaxHealth)
@@ -49,6 +61,13 @@ void UInGameUI::UpdateHealth(float CurrentHealth, float MaxHealth)
 
 	const float SafeHealth = FMath::Clamp(CurrentHealth, 0.f, MaxHealth);
 	const float HealthPercent = SafeHealth / MaxHealth;
+
+	if (LastPlayerHealth >= 0.0f && SafeHealth < LastPlayerHealth)
+	{
+		PlayHitAlarm();
+	}
+
+	LastPlayerHealth = SafeHealth;
 
 	if (HealthBar)
 	{
@@ -80,6 +99,71 @@ void UInGameUI::UpdateAmmo(int32 CurrentAmmo, int32 MaxAmmo)
 	AmmoText->SetText(FText::FromString(AmmoString));
 }
 
+void UInGameUI::RefreshWeaponUI()
+{
+	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
+
+	const EWeaponType SelectedWeaponType = GI
+		? GI->GetSelectedWeaponType()
+		: EWeaponType::Rifle;
+
+	if (RifleWeaponUI)
+	{
+		RifleWeaponUI->SetVisibility(
+			SelectedWeaponType == EWeaponType::Rifle
+			? ESlateVisibility::HitTestInvisible
+			: ESlateVisibility::Collapsed
+		);
+	}
+
+	if (ShotgunWeaponUI)
+	{
+		ShotgunWeaponUI->SetVisibility(
+			SelectedWeaponType == EWeaponType::Shotgun
+			? ESlateVisibility::HitTestInvisible
+			: ESlateVisibility::Collapsed
+		);
+	}
+
+	if (PistolWeaponUI)
+	{
+		PistolWeaponUI->SetVisibility(
+			SelectedWeaponType == EWeaponType::Pistol
+			? ESlateVisibility::HitTestInvisible
+			: ESlateVisibility::Collapsed
+		);
+	}
+
+	switch (SelectedWeaponType)
+	{
+	case EWeaponType::Rifle:
+		ApplyCrosshairTexture(RifleCrosshairTexture);
+		break;
+
+	case EWeaponType::Shotgun:
+		ApplyCrosshairTexture(ShotgunCrosshairTexture);
+		break;
+
+	case EWeaponType::Pistol:
+		ApplyCrosshairTexture(PistolCrosshairTexture);
+		break;
+
+	default:
+		ApplyCrosshairTexture(RifleCrosshairTexture);
+		break;
+	}
+}
+
+void UInGameUI::ApplyCrosshairTexture(UTexture2D* CrosshairTexture)
+{
+	if (!CrosshairImage || !CrosshairTexture)
+	{
+		return;
+	}
+
+	CrosshairImage->SetBrushFromTexture(CrosshairTexture, true);
+}
+
 void UInGameUI::UpdateWaveInfo(
 	int32 CurrentWave,
 	int32 CurrentKillCount,
@@ -90,22 +174,29 @@ void UInGameUI::UpdateWaveInfo(
 {
 	if (WaveText)
 	{
-		WaveText->SetText(FText::FromString(
-			FString::Printf(TEXT("WAVE %d"), CurrentWave)
-		));
+		if (CurrentWave == 4)
+		{
+			WaveText->SetText(FText::FromString(TEXT("BOSS")));
+		}
+		else
+		{
+			WaveText->SetText(FText::FromString(
+				FString::Printf(TEXT("WAVE %d"), CurrentWave)
+			));
+		}
 	}
 
 	if (KillText)
 	{
 		KillText->SetText(FText::FromString(
-			FString::Printf(TEXT("KILL %d / %d"), CurrentKillCount, TargetKillCount)
+			FString::Printf(TEXT("%d / %d"), CurrentKillCount, TargetKillCount)
 		));
 	}
 
 	if (GoldText)
 	{
 		GoldText->SetText(FText::FromString(
-			FString::Printf(TEXT("GOLD %d"), CurrentGold)
+			FString::Printf(TEXT("%dG"), CurrentGold)
 		));
 	}
 
@@ -199,5 +290,115 @@ void UInGameUI::HideHPDangerFeedback()
 	if (HPDangerVignette)
 	{
 		HPDangerVignette->SetVisibility(ESlateVisibility::Collapsed);
+	}
+}
+
+void UInGameUI::PlayHitAlarm()
+{
+	if (HitAlarmFrame)
+	{
+		HitAlarmFrame->SetVisibility(ESlateVisibility::HitTestInvisible);
+	}
+
+	if (HitAlarmAnim)
+	{
+		StopAnimation(HitAlarmAnim);
+		PlayAnimation(HitAlarmAnim);
+	}
+}
+
+void UInGameUI::PlayGameStartTransition()
+{
+	if (GameStartFadeImage)
+	{
+		GameStartFadeImage->SetVisibility(ESlateVisibility::HitTestInvisible);
+	}
+
+	if (GameStartReadyText)
+	{
+		GameStartReadyText->SetVisibility(ESlateVisibility::HitTestInvisible);
+	}
+
+	if (GameStartAnim)
+	{
+		StopAnimation(GameStartAnim);
+		PlayAnimation(GameStartAnim);
+	}
+}
+
+void UInGameUI::ShowBossHPBar()
+{
+	if (BossHPPanel)
+	{
+		BossHPPanel->SetVisibility(ESlateVisibility::HitTestInvisible);
+	}
+
+	if (BossHPBar)
+	{
+		BossHPBar->SetVisibility(ESlateVisibility::HitTestInvisible);
+		BossHPBar->SetFillColorAndOpacity(FLinearColor::White);
+		BossHPBar->SetPercent(1.0f);
+	}
+
+	if (BossHPText)
+	{
+		BossHPText->SetVisibility(ESlateVisibility::HitTestInvisible);
+		BossHPText->SetText(FText::GetEmpty());
+	}
+}
+
+void UInGameUI::HideBossHPBar()
+{
+	if (BossHPPanel)
+	{
+		BossHPPanel->SetVisibility(ESlateVisibility::Collapsed);
+	}
+
+	if (BossHPBar)
+	{
+		BossHPBar->SetVisibility(ESlateVisibility::Collapsed);
+		BossHPBar->SetPercent(0.0f);
+	}
+
+	if (BossHPText)
+	{
+		BossHPText->SetVisibility(ESlateVisibility::Collapsed);
+		BossHPText->SetText(FText::GetEmpty());
+	}
+}
+
+void UInGameUI::UpdateBossHPBar(float CurrentHP, float MaxHP)
+{
+	if (MaxHP <= 0.0f)
+	{
+		HideBossHPBar();
+		return;
+	}
+
+	const float SafeCurrentHP = FMath::Clamp(CurrentHP, 0.0f, MaxHP);
+	const float HPPercent = SafeCurrentHP / MaxHP;
+
+	if (BossHPBar)
+	{
+		BossHPBar->SetVisibility(ESlateVisibility::HitTestInvisible);
+		BossHPBar->SetFillColorAndOpacity(FLinearColor::White);
+		BossHPBar->SetPercent(FMath::Clamp(HPPercent, 0.0f, 1.0f));
+	}
+
+	if (BossHPText)
+	{
+		BossHPText->SetVisibility(ESlateVisibility::HitTestInvisible);
+
+		const FString HPTextString = FString::Printf(
+			TEXT("%d"),
+			FMath::RoundToInt(SafeCurrentHP)
+		);
+
+		BossHPText->SetText(FText::FromString(HPTextString));
+	}
+
+	if (SafeCurrentHP <= 0.0f)
+	{
+		HideBossHPBar();
 	}
 }

@@ -31,6 +31,8 @@ void UOutGameSettingsWidget::UpdateSettings(){
 		if (IsValid(masterVolumeSlider) == true) masterVolumeSlider->SetValue(masterVolume);
 		if (IsValid(masterVolumeText) == true) masterVolumeText->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), masterVolume)));
 		
+		UGameplayStatics::PushSoundMixModifier(this, soundMix);
+		
 		UGameplayStatics::SetSoundMixClassOverride(
 			this,
 			soundMix,
@@ -63,6 +65,8 @@ void UOutGameSettingsWidget::HandleMasterVolumeChanged(float value){
 			TeamGameInstance->SetMasterVolume(value);
 		}
 	}
+	
+	UGameplayStatics::PushSoundMixModifier(this, soundMix);
 	
 	UGameplayStatics::SetSoundMixClassOverride(
 		this,
