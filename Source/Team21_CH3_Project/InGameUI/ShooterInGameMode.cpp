@@ -243,8 +243,6 @@ void AShooterInGameMode::ClearWave()
 
 	HideBossHPBar();
 
-	StartWaveClearPause();
-
 	RefreshHUDWaveInfo();
 
 	UE_LOG(LogTemp, Warning, TEXT("ClearWave / Wave: %d / KillCount: %d / MaxWave: %d"),
@@ -253,18 +251,22 @@ void AShooterInGameMode::ClearWave()
 		MaxWave
 	);
 
+	// 마지막 웨이브는 보스 사망 연출이 멈추지 않도록 Pause를 걸지 않는다.
 	if (CurrentWave >= MaxWave)
 	{
 		EndMatch(true);
 		return;
 	}
 
+	// 마지막 웨이브가 아닐 때만 Wave Clear Pause 적용
+	StartWaveClearPause();
+
 	bIsShopOpen = true;
 
 	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 	if (IsValid(PlayerCharacter))
 	{
-		UFunction* ForceStopFullAutoFireFunction = PlayerCharacter->FindFunction(TEXT("ForceStopFire"));
+		UFunction* ForceStopFullAutoFireFunction = PlayerCharacter->FindFunction(TEXT("ForceStopFullAutoFire"));
 
 		if (ForceStopFullAutoFireFunction)
 		{
@@ -1107,4 +1109,74 @@ void AShooterInGameMode::CmdStartNextWave()
 void AShooterInGameMode::CmdMoveOutGame()
 {
 	MoveToOutGameMap();
+}
+
+void AShooterInGameMode::CmdDamageBoss()
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	TArray<AActor*> FoundBossActors;
+	UGameplayStatics::GetAllActorsWithTag(
+		World,
+		BossActorTag,
+		FoundBossActors
+	);
+
+	if (FoundBossActors.Num() <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CmdDamageBoss Failed. Boss actor not found. Tag: %s"), *BossActorTag.ToString());
+		return;
+	}
+
+	AActor* BossActor = FoundBossActors[0];
+	if (!IsValid(BossActor))
+	{
+		return;
+	}
+
+	UStatusComponent* BossStatusComponent = nullptr;
+
+	TArray<UStatusComponent*> StatusComponents;
+	BossActor->GetComponents<UStatusComponent>(StatusComponents);
+
+	float HighestCurrentHP = -1.0f;
+
+	for (UStatusComponent* StatusComp : StatusComponents)
+	{
+		if (!IsValid(StatusComp))
+		{
+			continue;
+		}
+
+		const float CurrentHP = StatusComp->GetCurrentHP();
+
+		if (CurrentHP > HighestCurrentHP)
+		{
+			HighestCurrentHP = CurrentHP;
+			BossStatusComponent = StatusComp;
+		}
+	}
+
+	if (!IsValid(BossStatusComponent))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CmdDamageBoss Failed. Boss StatusComponent not found."));
+		return;
+	}
+
+	const float DamageAmount = 9999.0f;
+	const float CurrentHP = BossStatusComponent->GetCurrentHP();
+	const float NewHP = FMath::Max(0.0f, CurrentHP - DamageAmount);
+
+	BossStatusComponent->SetCurrentHP(NewHP);
+
+	UE_LOG(LogTemp, Warning, TEXT("CmdDamageBoss / Boss: %s / Damage: %.2f / HP: %.2f -> %.2f"),
+		*BossActor->GetName(),
+		DamageAmount,
+		CurrentHP,
+		NewHP
+	);
 }
