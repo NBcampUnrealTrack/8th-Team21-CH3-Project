@@ -4,6 +4,7 @@
 #include "TimerManager.h"
 #include "Character/NonPlayerCharacter.h"
 #include "Component/StatusComponent.h"
+#include "Gimmick/BossWaveGimmick.h"
 
 ASpawnManager::ASpawnManager()
 {
@@ -98,6 +99,14 @@ void ASpawnManager::SpawnRoutine()
 			UE_LOG(LogTemp, Log, TEXT("Monster Spawned with HP: %f"), TargetMaxHP);
 		}
 
+		if (bIsBoss)
+		{
+			ACharacterBase* BossBase = Cast<ACharacterBase>(SpawnedEnemy);
+			if (IsValid(BossBase) && IsValid(WorldGimmickObject))
+			{
+				WorldGimmickObject->SetTargetBoss(BossBase);
+			}
+		}
 
 		if (bIsBoss && OnBossSpawned.IsBound())
 		{
