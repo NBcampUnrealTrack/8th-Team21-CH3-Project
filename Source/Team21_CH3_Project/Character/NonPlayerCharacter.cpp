@@ -89,9 +89,9 @@ float ANonPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 	//if (CurrentHP < KINDA_SMALL_NUMBER)
 	if (StatusComponent->IsDead() == true)
 	{
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 		AAI_Controller* AIController = Cast<AAI_Controller>(GetController());
-		ANonPlayerCharacter* NPC = Cast<ANonPlayerCharacter>(AIController->GetPawn());
-
 		if (IsValid(AIController) == true)
 		{
 			if (IsValid(CurrentWeapon))
@@ -102,8 +102,7 @@ float ANonPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 			AIController->EndAI();
 			bool bNPCWin = false;
 			GameMode->OnCharacterDied(bNPCWin);
-			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+
 			SetLifeSpan(0.1f);
 			AShooterInGameMode* GM = Cast<AShooterInGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 			if (IsValid(GM))
