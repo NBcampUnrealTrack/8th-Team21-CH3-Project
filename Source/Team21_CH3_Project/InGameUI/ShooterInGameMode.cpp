@@ -157,7 +157,7 @@ void AShooterInGameMode::StartWave()
 		RequestSpawnWave(CurrentWave, TargetKillCount);
 	}
 
-	// Boss WaveÀÏ ¶§ Boss Actor°¡ ½ºÆùµÈ µÚ HP Bar¸¦ Ã£´Â´Ù.
+	// Boss Waveï¿½ï¿½ ï¿½ï¿½ Boss Actorï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ HP Barï¿½ï¿½ Ã£ï¿½Â´ï¿½.
 	if (CurrentWave == BossWaveIndex)
 	{
 		BossStatusComponentForUI = nullptr;
