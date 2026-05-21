@@ -6,6 +6,14 @@
 #include "Character/NonPlayerCharacter.h"
 #include "Character/PlayerCharacter.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "NavigationSystem.h"
+
+UBTService_CheckCliff::UBTService_CheckCliff()
+{
+	NodeName = TEXT("CheckCliff");
+	Interval = 0.1f;
+	RandomDeviation = 0.0f;
+}
 
 void UBTService_CheckCliff::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
@@ -15,19 +23,31 @@ void UBTService_CheckCliff::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* N
 	ANonPlayerCharacter* NPC = Cast<ANonPlayerCharacter>(AIController->GetPawn());
 	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
 
-	FVector Start = NPC->GetActorLocation() + (NPC->GetActorForwardVector() * 100.f);
-	FVector End = Start + (FVector::DownVector * 500.f);
-	FHitResult Hit; //¹Ù´ÚÀÌ ¾øÀ¸¸é ³¶¶³¾îÁö·Î ÆÇ´Ü
+	FVector NPCLocation = NPC->GetActorLocation();
+	FVector GroundLevelLocation = NPCLocation - FVector(0.f, 0.f, 80.f);
+	FVector CheckLocation = GroundLevelLocation + (NPC->GetActorForwardVector() * 100.f);
 
-	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_WorldStatic);
-
-	BB->SetValueAsBool("bIsCliff", !bHit);
-
-	if (!bHit)
+	UNavigationSystemV1* NavSystem = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+	if (!NavSystem)
 	{
-		APlayerCharacter* Player = Cast<APlayerCharacter>(BB->GetValueAsObject("TargetCharacter"));
-		if(Player)
-		BB->SetValueAsVector("JumpToTarget", Player->GetActorLocation());
+		return;
+	}
 
+	FNavLocation OutNavLocation;
+	FVector QueryExtent = FVector(50.f, 50.f, 250.f);
+
+	bool bHasNavMeshAhead = NavSystem->ProjectPointToNavigation(CheckLocation, OutNavLocation, QueryExtent);
+
+	if (bHasNavMeshAhead == false)
+	{
+		BB->SetValueAsBool(IsCliff.SelectedKeyName, true);
+		if (APlayerCharacter* Player = Cast<APlayerCharacter>(BB->GetValueAsObject("TargetCharacter")))
+		{
+			BB->SetValueAsVector("JumpToTarget", Player->GetActorLocation());
+		}
+	}
+	else
+	{
+		BB->SetValueAsBool(IsCliff.SelectedKeyName, false);
 	}
 }

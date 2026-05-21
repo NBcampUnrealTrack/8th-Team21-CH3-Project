@@ -31,7 +31,7 @@ void UBTService_JumpObstacle::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
 	checkf(IsValid(BB) == true, TEXT("Blackboard is inValid"));
 
-	APlayerCharacter* Player = Cast<APlayerCharacter>(BB->GetValueAsObject(TEXT("TargetActor")));
+	APlayerCharacter* Player = Cast<APlayerCharacter>(BB->GetValueAsObject(TEXT("TargetCharacter")));
 	if (BB->GetValueAsBool(TEXT("bShouldVault"))) return;
 	FVector ForwardVector = NPC->GetActorForwardVector();
 	FVector StartLocation = NPC->GetActorLocation();
@@ -61,7 +61,7 @@ void UBTService_JumpObstacle::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 	if (bHitLow)
 	{
 		FHitResult HighHit;
-		FVector HighStart = StartLocation + FVector(0, 0, 150.f);
+		FVector HighStart = StartLocation + FVector(0, 0, 350.f);
 		FVector HighEnd = HighStart + (ForwardVector * (TraceDistance + 50.f));
 		
 		bool bHitHigh = GetWorld()->LineTraceSingleByChannel(HighHit, HighStart, HighEnd, ECC_WorldStatic, QueryParams);

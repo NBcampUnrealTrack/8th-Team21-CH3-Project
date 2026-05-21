@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/CharacterBase.h"
+#include "Character/PlayerCharacter.h"
 #include "NonPlayerCharacter.generated.h"
 
 

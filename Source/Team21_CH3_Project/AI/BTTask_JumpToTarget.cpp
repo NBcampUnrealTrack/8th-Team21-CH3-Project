@@ -27,7 +27,7 @@ EBTNodeResult::Type UBTTask_JumpToTarget::ExecuteTask(UBehaviorTreeComponent& Ow
 
 	if (BB->GetValueAsBool(TEXT("bShouldVault")))
 	{
-		LaunchVelocity = (NPC->GetActorForwardVector() * 450.f) + FVector(0, 0, 700.f);
+		LaunchVelocity = (NPC->GetActorForwardVector() * 450.f) + FVector(0, 0, 800.f);
 	}
 	else
 	{
@@ -42,13 +42,25 @@ EBTNodeResult::Type UBTTask_JumpToTarget::ExecuteTask(UBehaviorTreeComponent& Ow
 
 void UBTTask_JumpToTarget::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-	ANonPlayerCharacter* NPC = Cast<ANonPlayerCharacter>(OwnerComp.GetAIOwner()->GetPawn());
-	if (NPC)
+	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
+	AAI_Controller* AIController = Cast<AAI_Controller>(OwnerComp.GetAIOwner());
+	ANonPlayerCharacter* NPC = Cast<ANonPlayerCharacter>(AIController->GetPawn());
+	UCharacterMovementComponent* MoveComp = NPC->GetCharacterMovement();
+
+	bool bIsLanded = (MoveComp->IsFalling() == false) || (MoveComp->IsMovingOnGround()) || (NPC->GetVelocity().IsNearlyZero(1.f));
+	if (bIsLanded)
 	{
-		if (NPC && !NPC->GetCharacterMovement()->IsFalling())
+		UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
+		if (BB)
 		{
-			OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bShouldVault"), false);
-			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+			BB->SetValueAsBool(TEXT("bShouldVault"), false);
+			BB->SetValueAsBool(TEXT("bIsCliff"), false);
+			BB->SetValueAsBool(TEXT("JumpNPC"), false);
+
+			BB->ClearValue(TEXT("JumpToTarget"));
+
 		}
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+
 	}
 }

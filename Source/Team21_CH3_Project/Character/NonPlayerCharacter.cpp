@@ -77,7 +77,7 @@ void ANonPlayerCharacter::BeginAttack()
 		bIsNowAttacking = true;
 
 		TryFire();
-		GetWorldTimerManager().SetTimer(AttackTimer, this, &ThisClass::EndAttack, 0.7f, false);
+		GetWorldTimerManager().SetTimer(AttackTimer, this, &ANonPlayerCharacter::EndAttack, 0.3f, false);
 	}
 }
 
@@ -99,6 +99,7 @@ float ANonPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 			AIController->EndAI();
 			bool bNPCWin = false;
 			GameMode->OnCharacterDied(bNPCWin);
+			Status->ApplyDamage(0);
 			SetLifeSpan(0.1f);
 			AShooterInGameMode* GM = Cast<AShooterInGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 			if (IsValid(GM))

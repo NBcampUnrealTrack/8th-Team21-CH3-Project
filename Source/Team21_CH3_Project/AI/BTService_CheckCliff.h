@@ -15,6 +15,13 @@ class TEAM21_CH3_PROJECT_API UBTService_CheckCliff : public UBTService
 	GENERATED_BODY()
 	
 public:
+	UBTService_CheckCliff();
+protected:
 
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
+
+	UPROPERTY(EditAnywhere, Category = "Blackboard")
+	FBlackboardKeySelector IsCliff;
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	float CheckDistance = 500.f;
 };
