@@ -125,9 +125,11 @@ void UUW_HPText::UpdateHPDisplay()
 			CurrentHPText->SetText(FText::AsNumber(0));
 		}
 
+		// 최대 체력 텍스트는 사용하지 않는다.
 		if (MaxHPText)
 		{
-			MaxHPText->SetText(FText::AsNumber(0));
+			MaxHPText->SetText(FText::GetEmpty());
+			MaxHPText->SetVisibility(ESlateVisibility::Collapsed);
 		}
 
 		return;
@@ -141,13 +143,17 @@ void UUW_HPText::UpdateHPDisplay()
 		HPBar->SetPercent(HPPercent);
 	}
 
+	// 현재 HP만 표시한다.
 	if (CurrentHPText)
 	{
+		CurrentHPText->SetVisibility(ESlateVisibility::HitTestInvisible);
 		CurrentHPText->SetText(FText::AsNumber(FMath::RoundToInt(SafeCurrentHP)));
 	}
 
+	// 기존 MaxHPText는 숨긴다.
 	if (MaxHPText)
 	{
-		MaxHPText->SetText(FText::AsNumber(FMath::RoundToInt(MaxHP)));
+		MaxHPText->SetText(FText::GetEmpty());
+		MaxHPText->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }

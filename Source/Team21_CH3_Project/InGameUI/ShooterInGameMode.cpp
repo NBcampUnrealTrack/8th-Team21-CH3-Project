@@ -803,10 +803,7 @@ void AShooterInGameMode::UpdateBossHPBarByTimer()
 	}
 
 	const float CurrentHP = FMath::Max(0.0f, BossStatusComponentForUI->GetCurrentHP());
-
-	const float HPPercent = BossMaxHPForUI > 0.0f
-		? CurrentHP / BossMaxHPForUI
-		: 0.0f;
+	const float MaxHP = FMath::Max(1.0f, BossMaxHPForUI);
 
 	APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
 	if (!PC)
@@ -820,7 +817,7 @@ void AShooterInGameMode::UpdateBossHPBarByTimer()
 		return;
 	}
 
-	MyHUD->UpdateBossHPBarPercent(HPPercent);
+	MyHUD->UpdateBossHPBar(CurrentHP, MaxHP);
 
 	if (CurrentHP <= 0.0f)
 	{

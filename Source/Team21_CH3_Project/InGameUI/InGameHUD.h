@@ -46,7 +46,7 @@ public:
 	void HideBossHPBar();
 
 	// 보스 HP Bar 비율 갱신
-	void UpdateBossHPBarPercent(float HPPercent);
+	void UpdateBossHPBar(float CurrentHP, float MaxHP);
 
 protected:
 	virtual void BeginPlay() override;

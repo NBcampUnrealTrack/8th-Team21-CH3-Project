@@ -60,11 +60,16 @@ public:
 	// 보스 HP Bar 표시
 	void ShowBossHPBar();
 
+	// 화면 고정형 보스 HP Text
+	// WBP_InGameUI의 TextBlock 이름이 BossHPText여야 연결된다.
+	UPROPERTY(meta = (BindWidgetOptional))
+	UTextBlock* BossHPText;
+
 	// 보스 HP Bar 숨김
 	void HideBossHPBar();
 
 	// 보스 HP Bar 비율 갱신
-	void UpdateBossHPBarPercent(float HPPercent);
+	void UpdateBossHPBar(float CurrentHP, float MaxHP);
 
 protected:
 	virtual void NativeConstruct() override;
