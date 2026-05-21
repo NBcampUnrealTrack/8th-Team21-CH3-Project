@@ -7,6 +7,7 @@
 #include "Data/EnemyWaveDataTable.h"
 #include "Component/StatusComponent.h"
 #include "OutGameUI/Widget/OutGameTransitionWidget.h"
+#include "GameFramework/Character.h"
 
 #include "Blueprint/UserWidget.h"
 #include "Engine/DataTable.h"
@@ -259,6 +260,21 @@ void AShooterInGameMode::ClearWave()
 	}
 
 	bIsShopOpen = true;
+
+	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	if (IsValid(PlayerCharacter))
+	{
+		UFunction* ForceStopFullAutoFireFunction = PlayerCharacter->FindFunction(TEXT("ForceStopFullAutoFire"));
+
+		if (ForceStopFullAutoFireFunction)
+		{
+			PlayerCharacter->ProcessEvent(ForceStopFullAutoFireFunction, nullptr);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ForceStopFullAutoFire function not found on PlayerCharacter."));
+		}
+	}
 
 	StopGameplayInput();
 
