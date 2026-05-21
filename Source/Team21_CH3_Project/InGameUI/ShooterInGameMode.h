@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "TimerManager.h"
+#include "Containers/Ticker.h"
 #include "Data/AugmentationDataTable.h"
 #include "ShooterInGameMode.generated.h"
 
@@ -91,6 +92,12 @@ protected:
 	float NextWaveStartDelay;
 
 	FTimerHandle NextWaveStartTimerHandle;
+
+	// 웨이브 클리어 후 현재 레벨을 리로드하기 전 FadeOut을 기다리는 시간
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave|Transition")
+	float WaveLevelTransitionDelay;
+
+	FTimerHandle WaveLevelTransitionTimerHandle;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Match State")
 	bool bIsMatchEnded;
@@ -188,22 +195,24 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave|Transition")
 	float GameStartTransitionDelay = 2.2f;
 
-	// Wave Clear 순간 슬로우 모션을 복구하기 위한 타이머
-	FTimerHandle WaveClearSlowMotionTimerHandle;
+	// Wave Clear 순간 일시정지 복구용 Ticker
+	FTSTicker::FDelegateHandle WaveClearPauseTickerHandle;
 
-	// Wave Clear 시 적용할 글로벌 슬로우 배율
+	// Wave Clear 시 게임을 잠깐 멈출 시간
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave|Transition")
-	float WaveClearSlowMotionDilation = 0.25f;
+	float WaveClearPauseDuration = 0.35f;
 
-	// Wave Clear 슬로우 모션 유지 시간
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave|Transition")
-	float WaveClearSlowMotionDuration = 0.35f;
+	// Wave Clear 일시정지 시작
+	void StartWaveClearPause();
 
-	// Wave Clear 슬로우 모션 시작
-	void StartWaveClearSlowMotion();
+	// Wave Clear 일시정지 복구
+	void RestoreWaveClearPause();
 
-	// Wave Clear 슬로우 모션 복구
-	void RestoreWaveClearSlowMotion();
+	// Wave Clear Pause Ticker 정리
+	void ClearWaveClearPauseTicker();
+
+	// Wave Clear Pause Ticker 콜백
+	bool HandleWaveClearPauseFinished(float DeltaTime);
 
 public:
 	UFUNCTION(Exec)

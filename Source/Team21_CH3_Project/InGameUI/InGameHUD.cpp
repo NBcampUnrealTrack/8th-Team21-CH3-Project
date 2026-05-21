@@ -45,6 +45,7 @@ void AInGameHUD::BeginPlay()
 				InGameStartReadyDelay,
 				false
 			);
+
 			// HUD 위젯 생성이 완료된 직후 GameMode에 Wave/Kill/Gold UI 갱신을 다시 요청한다.
 			AShooterInGameMode* GameMode = Cast<AShooterInGameMode>(UGameplayStatics::GetGameMode(this));
 			if (GameMode)
@@ -145,5 +146,33 @@ void AInGameHUD::PlayGameStartReadyTransition()
 	if (InGameUIInstance)
 	{
 		InGameUIInstance->PlayGameStartTransition();
+	}
+}
+
+void AInGameHUD::PlayLevelTransitionFadeOut()
+{
+	if (!InGameStartTransitionWidgetClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("InGameStartTransitionWidgetClass is not set in InGameHUD."));
+		return;
+	}
+
+	if (!InGameStartTransitionWidgetInstance)
+	{
+		InGameStartTransitionWidgetInstance = CreateWidget<UOutGameTransitionWidget>(
+			GetWorld(),
+			InGameStartTransitionWidgetClass
+		);
+
+		if (InGameStartTransitionWidgetInstance)
+		{
+			InGameStartTransitionWidgetInstance->AddToViewport(10000);
+		}
+	}
+
+	if (InGameStartTransitionWidgetInstance)
+	{
+		// 웨이브 전환 / 레벨 리로드 직전 화면을 검게 덮는다.
+		InGameStartTransitionWidgetInstance->PlayFadeOut();
 	}
 }

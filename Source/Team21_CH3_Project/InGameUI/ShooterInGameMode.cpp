@@ -38,6 +38,7 @@ AShooterInGameMode::AShooterInGameMode()
 	bIsMatchEnded = false;
 
 	NextWaveStartDelay = 3.0f;
+	WaveLevelTransitionDelay = 1.0f;
 
 	OutGameLevelName = TEXT("OutGameMap");
 	EndMatchReturnDelay = 3.0f;
@@ -214,7 +215,8 @@ void AShooterInGameMode::ClearWave()
 
 	bIsWaveInProgress = false;
 
-	StartWaveClearSlowMotion();
+	// Wave Clear 순간 화면 연출을 위해 잠깐 게임을 정지한다.
+	StartWaveClearPause();
 
 	RefreshHUDWaveInfo();
 
@@ -251,7 +253,7 @@ void AShooterInGameMode::ClearWave()
 	);
 }
 
-void AShooterInGameMode::StartWaveClearSlowMotion()
+void AShooterInGameMode::StartWaveClearPause()
 {
 	UWorld* World = GetWorld();
 	if (!World)
@@ -259,20 +261,36 @@ void AShooterInGameMode::StartWaveClearSlowMotion()
 		return;
 	}
 
-	UGameplayStatics::SetGlobalTimeDilation(World, WaveClearSlowMotionDilation);
+	ClearWaveClearPauseTicker();
 
-	GetWorldTimerManager().ClearTimer(WaveClearSlowMotionTimerHandle);
+	if (WaveClearPauseDuration <= 0.0f)
+	{
+		RestoreWaveClearPause();
+		return;
+	}
 
-	GetWorldTimerManager().SetTimer(
-		WaveClearSlowMotionTimerHandle,
-		this,
-		&AShooterInGameMode::RestoreWaveClearSlowMotion,
-		WaveClearSlowMotionDuration,
-		false
+	// Wave Clear 순간 게임을 잠깐 정지한다.
+	UGameplayStatics::SetGamePaused(World, true);
+
+	WaveClearPauseTickerHandle = FTSTicker::GetCoreTicker().AddTicker(
+		FTickerDelegate::CreateUObject(
+			this,
+			&AShooterInGameMode::HandleWaveClearPauseFinished
+		),
+		WaveClearPauseDuration
 	);
 }
 
-void AShooterInGameMode::RestoreWaveClearSlowMotion()
+bool AShooterInGameMode::HandleWaveClearPauseFinished(float DeltaTime)
+{
+	RestoreWaveClearPause();
+
+	WaveClearPauseTickerHandle.Reset();
+
+	return false;
+}
+
+void AShooterInGameMode::RestoreWaveClearPause()
 {
 	UWorld* World = GetWorld();
 	if (!World)
@@ -280,7 +298,16 @@ void AShooterInGameMode::RestoreWaveClearSlowMotion()
 		return;
 	}
 
-	UGameplayStatics::SetGlobalTimeDilation(World, 1.0f);
+	UGameplayStatics::SetGamePaused(World, false);
+}
+
+void AShooterInGameMode::ClearWaveClearPauseTicker()
+{
+	if (WaveClearPauseTickerHandle.IsValid())
+	{
+		FTSTicker::GetCoreTicker().RemoveTicker(WaveClearPauseTickerHandle);
+		WaveClearPauseTickerHandle.Reset();
+	}
 }
 
 void AShooterInGameMode::StartNextWave()
@@ -348,7 +375,24 @@ void AShooterInGameMode::ContinueToNextWaveWithLevelReload()
 		CurrentGold
 	);
 
-	ReloadCurrentLevel();
+	if (PC)
+	{
+		AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
+		if (MyHUD)
+		{
+			MyHUD->PlayLevelTransitionFadeOut();
+		}
+	}
+
+	GetWorldTimerManager().ClearTimer(WaveLevelTransitionTimerHandle);
+
+	GetWorldTimerManager().SetTimer(
+		WaveLevelTransitionTimerHandle,
+		this,
+		&AShooterInGameMode::ReloadCurrentLevel,
+		WaveLevelTransitionDelay,
+		false
+	);
 }
 
 void AShooterInGameMode::EndMatch(bool bPlayerWon)
@@ -368,12 +412,15 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 
 	GetWorldTimerManager().ClearTimer(GameStartWaveTimerHandle);
 	GetWorldTimerManager().ClearTimer(NextWaveStartTimerHandle);
+	GetWorldTimerManager().ClearTimer(WaveLevelTransitionTimerHandle);
 	GetWorldTimerManager().ClearTimer(EndMatchReturnTimerHandle);
 	GetWorldTimerManager().ClearTimer(EndMatchTransitionTimerHandle);
 	GetWorldTimerManager().ClearTimer(HUDWaveRefreshRetryTimerHandle);
-	GetWorldTimerManager().ClearTimer(WaveClearSlowMotionTimerHandle);
 
-	RestoreWaveClearSlowMotion();
+	ClearWaveClearPauseTicker();
+
+	// 게임 종료 시 일시정지가 남아 있지 않도록 복구
+	RestoreWaveClearPause();
 
 	HideAugmentCardSelectUI();
 
