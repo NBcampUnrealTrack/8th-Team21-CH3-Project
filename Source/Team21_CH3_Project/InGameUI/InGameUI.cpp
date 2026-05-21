@@ -335,6 +335,11 @@ void UInGameUI::ShowBossHPBar()
 
 	if (BossHPBar)
 	{
+		BossHPBar->SetVisibility(ESlateVisibility::HitTestInvisible);
+
+		// Fill Image 원본 색상을 그대로 사용
+		BossHPBar->SetFillColorAndOpacity(FLinearColor::White);
+
 		BossHPBar->SetPercent(1.0f);
 	}
 }
@@ -348,6 +353,7 @@ void UInGameUI::HideBossHPBar()
 
 	if (BossHPBar)
 	{
+		BossHPBar->SetVisibility(ESlateVisibility::Collapsed);
 		BossHPBar->SetPercent(0.0f);
 	}
 }
@@ -360,6 +366,12 @@ void UInGameUI::UpdateBossHPBarPercent(float HPPercent)
 	}
 
 	const float SafePercent = FMath::Clamp(HPPercent, 0.0f, 1.0f);
+
+	BossHPBar->SetVisibility(ESlateVisibility::HitTestInvisible);
+
+	// Fill Image 원본 색상을 그대로 사용
+	BossHPBar->SetFillColorAndOpacity(FLinearColor::White);
+
 	BossHPBar->SetPercent(SafePercent);
 
 	if (SafePercent <= 0.0f)
