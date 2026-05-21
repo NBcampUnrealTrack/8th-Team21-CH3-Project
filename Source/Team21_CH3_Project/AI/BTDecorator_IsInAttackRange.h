@@ -22,4 +22,6 @@ protected:
 	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
 	FBlackboardKeySelector AttackRangeKey;
+	UPROPERTY(EditAnywhere, Category = "Blackboard")
+	FBlackboardKeySelector TargetCharacterKey;
 };

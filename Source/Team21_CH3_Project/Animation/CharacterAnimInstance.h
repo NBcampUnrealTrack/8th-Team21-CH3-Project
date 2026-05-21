@@ -67,4 +67,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	int32 WeaponTypeIndex = 0;
 
+	UPROPERTY(BlueprintReadOnly)
+	uint8 bIsSliding : 1;
 };

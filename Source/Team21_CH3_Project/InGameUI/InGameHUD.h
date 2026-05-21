@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
+#include "TimerManager.h"
 #include "InGameHUD.generated.h"
 
 class UInGameUI;
@@ -34,6 +35,18 @@ public:
 	// HP 위험 피드백 제거
 	// 플레이어 사망, Result UI 표시, 라운드 전환 UI 표시 시 호출한다.
 	void HideHPDangerFeedback();
+
+	// 웨이브 전환 / 레벨 리로드 직전 화면을 검게 덮는 FadeOut 재생
+	void PlayLevelTransitionFadeOut();
+
+	// 보스 HP Bar 표시
+	void ShowBossHPBar();
+
+	// 보스 HP Bar 숨김
+	void HideBossHPBar();
+
+	// 보스 HP Bar 비율 갱신
+	void UpdateBossHPBar(float CurrentHP, float MaxHP);
 
 protected:
 	virtual void BeginPlay() override;

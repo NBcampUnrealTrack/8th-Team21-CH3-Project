@@ -24,19 +24,44 @@ bool UBTDecorator_IsInAttackRange::CalculateRawConditionValue(UBehaviorTreeCompo
 	checkf(IsValid(NPC) == true, TEXT("Invalid NPC."));
 	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
 
-	APlayerCharacter* TargetPlayerCharacter = Cast<APlayerCharacter>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(AAI_Controller::TargetCharacterKey));
+	APlayerCharacter* TargetPlayerCharacter = Cast<APlayerCharacter>(BB->GetValueAsObject(TargetCharacterKey.SelectedKeyName));
+	if (!TargetPlayerCharacter) return false;
+	FVector NPCLocation = NPC->GetActorLocation();
+	FVector TargetLocation = TargetPlayerCharacter->GetActorLocation();
+
+	float HorizontalDistance = FVector::Dist2D(NPCLocation, TargetLocation);
+	float HeightDifference = FMath::Abs(TargetLocation.Z - NPCLocation.Z);
+	float VerticalAttackRange;
 	if (NPC->bAttackRange == true)
 	{
-		BB->SetValueAsFloat(AttackRangeKey.SelectedKeyName, 800.f);
+		VerticalAttackRange = 800.f;
+		BB->SetValueAsFloat(AttackRangeKey.SelectedKeyName, 900.f);
 	}
 	else
 	{
+		VerticalAttackRange = 50.f;
 		BB->SetValueAsFloat(AttackRangeKey.SelectedKeyName, 45.f);
 	}
 	float AttackRange = BB->GetValueAsFloat(AttackRangeKey.SelectedKeyName);
 	if (IsValid(TargetPlayerCharacter) == true && TargetPlayerCharacter->IsPlayerControlled() == true)
 	{
-		return NPC->GetDistanceTo(TargetPlayerCharacter) <= AttackRange + 50.f;
+		if (HorizontalDistance <= AttackRange + 50.f && HeightDifference <= VerticalAttackRange)
+		{
+			FHitResult SightHitResult;
+			FCollisionQueryParams SightParams;
+			SightParams.AddIgnoredActor(NPC);
+
+			FVector TraceStart = NPCLocation + FVector(0.f, 0.f, 60.f);
+			FVector TraceEnd = TargetPlayerCharacter->GetActorLocation();
+
+			bool bHitWall = GetWorld()->LineTraceSingleByChannel(SightHitResult, TraceStart, TraceEnd, ECC_Visibility, SightParams);
+
+			if (bHitWall && SightHitResult.GetActor() != TargetPlayerCharacter)
+			{
+				return false;
+			}
+			return true;
+		}
 	}
 	return false;
 }

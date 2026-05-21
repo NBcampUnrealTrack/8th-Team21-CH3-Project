@@ -19,6 +19,7 @@ void UCharacterAnimInstance::NativeInitializeAnimation()
 	}
 	bIsUnarmed = true;
 	bIsMovingBackward = false;
+	bIsSliding = false;
 }
 
 void UCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -46,6 +47,12 @@ void UCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		}
 
 		
+		APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(OwnerCharacter);
+		if (IsValid(PlayerCharacter))
+		{
+			bIsSliding = PlayerCharacter->bIsSliding;
+		}
+
 		if (APlayerController* OwnerPlayerController = Cast<APlayerController>(OwnerCharacter->GetController()))
 		{
 			NormalizedCurrentPitch = UKismetMathLibrary::NormalizeAxis(OwnerPlayerController->GetControlRotation().Pitch);

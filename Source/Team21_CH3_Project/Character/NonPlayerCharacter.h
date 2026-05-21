@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/CharacterBase.h"
+#include "Character/PlayerCharacter.h"
 #include "NonPlayerCharacter.generated.h"
 
 
@@ -55,6 +56,10 @@ public:
 	float MaxHP = 100.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
 	float Damage =5.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
+	float MonsterAttackRadius;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
+	float MonsterAttackRange;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Boss")
 	bool bInvulnerable;
 

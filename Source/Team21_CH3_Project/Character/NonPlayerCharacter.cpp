@@ -4,6 +4,7 @@
 #include "Character/NonPlayerCharacter.h"
 #include "Controller/AI_Controller.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Component/StatusComponent.h"
 #include "Animation/CharacterAnimInstance.h"
 #include "Item/Weapon.h"
@@ -44,6 +45,8 @@ void ANonPlayerCharacter::BeginPlay()
 		{
 			GetWeapon(RifleClass);
 		}
+		AttackMeleeRange = MonsterAttackRange;
+		AttackMeleeRadius = MonsterAttackRadius;
 	}
 }
 
@@ -77,7 +80,7 @@ void ANonPlayerCharacter::BeginAttack()
 		bIsNowAttacking = true;
 
 		TryFire();
-		GetWorldTimerManager().SetTimer(AttackTimer, this, &ThisClass::EndAttack, 0.7f, false);
+		GetWorldTimerManager().SetTimer(AttackTimer, this, &ANonPlayerCharacter::EndAttack, 0.3f, false);
 	}
 }
 
@@ -99,7 +102,8 @@ float ANonPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 			AIController->EndAI();
 			bool bNPCWin = false;
 			GameMode->OnCharacterDied(bNPCWin);
-			SetLifeSpan(0.1f);
+
+			Destroyed();
 			AShooterInGameMode* GM = Cast<AShooterInGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 			if (IsValid(GM))
 			{

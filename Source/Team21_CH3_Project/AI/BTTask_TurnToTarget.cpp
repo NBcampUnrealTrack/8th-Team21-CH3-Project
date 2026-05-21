@@ -24,9 +24,11 @@ EBTNodeResult::Type UBTTask_TurnToTarget::ExecuteTask(UBehaviorTreeComponent& Ow
 	if (ACharacterBase* Target = Cast<ACharacterBase>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(AIController->TargetCharacterKey)))
 	{
 		FVector LookVector = Target->GetActorLocation() - NPC->GetActorLocation();
-		LookVector.Z = 0.f;
 		FRotator TargetRotation = FRotationMatrix::MakeFromX(LookVector).Rotator();
-		NPC->SetActorRotation(FMath::RInterpTo(NPC->GetActorRotation(), TargetRotation, GetWorld()->GetDeltaSeconds(), 0.5f));
+		AIController->SetControlRotation(FMath::RInterpTo(NPC->GetActorRotation(), TargetRotation, GetWorld()->GetDeltaSeconds(), 5.f));
+
+		FRotator BodyRotation = FRotator(0.f, TargetRotation.Yaw, 0.f);
+		NPC->SetActorRotation(FMath::RInterpTo(NPC->GetActorRotation(), BodyRotation, GetWorld()->GetDeltaSeconds(), 5.f));
 
 		return Result = EBTNodeResult::Succeeded;
 	}
