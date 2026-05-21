@@ -31,6 +31,7 @@ void ABossWaveGimmick::BeginPlay()
 	Super::BeginPlay();
 
 	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MeshComp->SetVisibility(false);
 	GlowEffectComp->SetVisibility(false);
 	
 }
@@ -62,6 +63,7 @@ void ABossWaveGimmick::ActivateGimmickObject()
 	ObjectCurrentHP = ObjectMaxHP;
 
 	MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	MeshComp->SetVisibility(true);
 	GlowEffectComp->SetVisibility(true);
 
 	UE_LOG(LogTemp, Warning, TEXT("BossWaveGimmick Object Activated!"));
