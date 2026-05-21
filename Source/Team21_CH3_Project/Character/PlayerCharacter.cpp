@@ -630,10 +630,7 @@ void APlayerCharacter::InputStartFullAutoFire(const FInputActionValue& InValue)
 
 void APlayerCharacter::InputStopFullAutoFire(const FInputActionValue& InValue)
 {
-	if (true == bIsFullAutoFire)
-	{
-		GetWorldTimerManager().ClearTimer(FullAutoTimerHandle);
-	}
+	GetWorldTimerManager().ClearTimer(FullAutoTimerHandle);
 }
 
 void APlayerCharacter::InputInteraction(const FInputActionValue& InValue)
@@ -852,4 +849,10 @@ void APlayerCharacter::ApplyTraitBonus(const FPlayerTraitBonus& Bonus)
 
 	// 재장전 속도 (%)
 	ReloadSpeedMul += Bonus.reloadSpeedBonus;
+}
+
+void APlayerCharacter::ForceStopFire()
+{
+	bIsFullAutoFire = false;  
+	GetWorldTimerManager().ClearTimer(FullAutoTimerHandle);
 }

@@ -238,4 +238,9 @@ private:
 
 	float CurrentMoveSpeed = 0.f;
 #pragma endregion
+
+#pragma region AtackTimer
+
+public:
+	void ForceStopFire();
 };
