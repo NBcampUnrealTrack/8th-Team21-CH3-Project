@@ -14,4 +14,8 @@ class TEAM21_CH3_PROJECT_API ABossNPC : public ANonPlayerCharacter
 {
 	GENERATED_BODY()
 	
+public:
+	//ABossNPC();
+
+protected:
 };

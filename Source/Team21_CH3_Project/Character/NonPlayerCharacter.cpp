@@ -45,6 +45,8 @@ void ANonPlayerCharacter::BeginPlay()
 		{
 			GetWeapon(RifleClass);
 		}
+		AttackMeleeRange = MonsterAttackRange;
+		AttackMeleeRadius = MonsterAttackRadius;
 	}
 }
 
@@ -89,8 +91,6 @@ float ANonPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 	//if (CurrentHP < KINDA_SMALL_NUMBER)
 	if (StatusComponent->IsDead() == true)
 	{
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 		AAI_Controller* AIController = Cast<AAI_Controller>(GetController());
 		if (IsValid(AIController) == true)
 		{
@@ -103,7 +103,7 @@ float ANonPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 			bool bNPCWin = false;
 			GameMode->OnCharacterDied(bNPCWin);
 
-			SetLifeSpan(0.1f);
+			Destroyed();
 			AShooterInGameMode* GM = Cast<AShooterInGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 			if (IsValid(GM))
 			{
