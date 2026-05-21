@@ -163,11 +163,11 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 	if (bIsSliding)
 	{
 		FVector InputDirection = GetLastMovementInputVector().GetSafeNormal2D();
-
+	
 		// 키 입력이 있을 때만 방향 전환
 		if (InputDirection.IsNearlyZero() == false)
 		{
-			GetCharacterMovement()->Velocity = InputDirection * SlideSpeed;
+			GetCharacterMovement()->Velocity = InputDirection * CurrentMoveSpeed;
 		}
 	}
 
@@ -328,6 +328,11 @@ void APlayerCharacter::InputAttackRanged(const FInputActionValue& InValue)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("AttackMontage가 nullptr"));
 		return; //코드 실행 X
+	}
+
+	if (bIsSliding == true)
+	{
+		return;
 	}
 	
 	//UE_LOG(LogTemp, Warning, TEXT("사격 조건 통과"));
@@ -533,6 +538,14 @@ void APlayerCharacter::TryFire()
 					HittedCharacter->TakeDamage(WeaponDamage * AttackDamageMul, DamageEvent, GetController(), this);
 				}
 			}
+
+			else if (AActor* HittedActor = HitResult.GetActor())
+			{
+				FDamageEvent DamageEvent;
+				HittedActor->TakeDamage(
+					CurrentWeapon->GetAttackDamage() * AttackDamageMul,
+					DamageEvent, GetController(), this);
+			}
 		}
 
 		ApplyWeaponRecoil();
@@ -724,24 +737,18 @@ void APlayerCharacter::InputSlide(const FInputActionValue& InValue)
 	{
 		return;
 	}
-
-	SlideDuration = 0.7f;
-	SlideSpeed = 1000.f;
 	bIsSliding = true;
 	
-	FVector SlideDirection = GetCharacterMovement()->Velocity.GetSafeNormal2D();
-	GetCharacterMovement()->Velocity = SlideDirection * SlideSpeed;
-		//벡터값(f,f,f) * float = 각 항에 분배되어 곱셈
-	//Crouch(); //앉기, 언리얼 내장 함수
 
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (IsValid(AnimInstance))
-	{
-		if (IsValid(SlideMontage))
-		{
-			AnimInstance->Montage_Play(SlideMontage);
-		}
-	}
+	CurrentMoveSpeed = GetCharacterMovement()->Velocity.Size2D();
+	FVector SlideDirection = GetCharacterMovement()->Velocity.GetSafeNormal2D();
+	
+	GetCharacterMovement()->Velocity = SlideDirection * CurrentMoveSpeed;
+		//벡터값(f,f,f) * float = 각 항에 분배되어 곱셈
+	GetCharacterMovement()->MaxWalkSpeed = CurrentMoveSpeed;
+
+	Crouch(); //앉기, 언리얼 내장 함수
+
 
 	GetWorldTimerManager().SetTimer(SlideTimerHandle, this, &APlayerCharacter::EndSlide, SlideDuration, false);
 }
@@ -750,7 +757,7 @@ void APlayerCharacter::EndSlide()
 {
 	bIsSliding = false;
 
-	//UnCrouch();
+	UnCrouch();
 
 	GetCharacterMovement()->MaxWalkSpeed = CurrentSpeed;
 }
