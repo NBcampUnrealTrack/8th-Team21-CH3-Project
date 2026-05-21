@@ -264,7 +264,7 @@ void AShooterInGameMode::ClearWave()
 	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 	if (IsValid(PlayerCharacter))
 	{
-		UFunction* ForceStopFullAutoFireFunction = PlayerCharacter->FindFunction(TEXT("ForceStopFullAutoFire"));
+		UFunction* ForceStopFullAutoFireFunction = PlayerCharacter->FindFunction(TEXT("ForceStopFire"));
 
 		if (ForceStopFullAutoFireFunction)
 		{
