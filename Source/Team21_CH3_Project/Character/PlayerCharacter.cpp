@@ -128,6 +128,12 @@ void APlayerCharacter::BeginPlay()
 		StatusComponent->SetCurrentHP(StatusComponent->GetMaxHP());
 	}
 
+	if (IsValid(GameInstance) && IsValid(StatusComponent) && GameInstance->GetCurrentHp() > 0.f)
+	{
+		float SavedHP = FMath::Min(GameInstance->GetCurrentHp(), StatusComponent->GetMaxHP());
+		StatusComponent->SetCurrentHP(SavedHP);
+	}
+
 	if (IsValid(PlayerController))
 	{
 		if (IsValid(InGameQuitWidgetClass))
