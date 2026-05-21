@@ -27,7 +27,7 @@ EBTNodeResult::Type UBTTask_JumpToTarget::ExecuteTask(UBehaviorTreeComponent& Ow
 
 	if (BB->GetValueAsBool(TEXT("bShouldVault")))
 	{
-		LaunchVelocity = (NPC->GetActorForwardVector() * 450.f) + FVector(0, 0, 800.f);
+		LaunchVelocity = (NPC->GetActorForwardVector() * 450.f) + FVector(0, 0, 900.f);
 	}
 	else
 	{
