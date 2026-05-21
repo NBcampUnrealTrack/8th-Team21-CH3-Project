@@ -229,17 +229,13 @@ public:
 	bool bIsSliding = false;
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Slide")
-	UAnimMontage* SlideMontage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Slide")
 	float SlideDuration = 0.7f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Slide")
-	float SlideSpeed = 1000.f;
-
 private:
 	FTimerHandle SlideTimerHandle;
 
+	float CurrentMoveSpeed = 0.f;
 #pragma endregion
 };
