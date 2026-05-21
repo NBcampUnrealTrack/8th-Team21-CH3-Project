@@ -4,6 +4,7 @@
 #include "Character/NonPlayerCharacter.h"
 #include "Controller/AI_Controller.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Component/StatusComponent.h"
 #include "Animation/CharacterAnimInstance.h"
 #include "Item/Weapon.h"
@@ -89,6 +90,8 @@ float ANonPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 	if (StatusComponent->IsDead() == true)
 	{
 		AAI_Controller* AIController = Cast<AAI_Controller>(GetController());
+		ANonPlayerCharacter* NPC = Cast<ANonPlayerCharacter>(AIController->GetPawn());
+
 		if (IsValid(AIController) == true)
 		{
 			if (IsValid(CurrentWeapon))
@@ -99,7 +102,8 @@ float ANonPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 			AIController->EndAI();
 			bool bNPCWin = false;
 			GameMode->OnCharacterDied(bNPCWin);
-			Status->ApplyDamage(0);
+			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 			SetLifeSpan(0.1f);
 			AShooterInGameMode* GM = Cast<AShooterInGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 			if (IsValid(GM))
