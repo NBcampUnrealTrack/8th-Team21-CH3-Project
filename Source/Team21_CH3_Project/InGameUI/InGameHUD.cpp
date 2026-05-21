@@ -176,3 +176,27 @@ void AInGameHUD::PlayLevelTransitionFadeOut()
 		InGameStartTransitionWidgetInstance->PlayFadeOut();
 	}
 }
+
+void AInGameHUD::ShowBossHPBar()
+{
+	if (InGameUIInstance)
+	{
+		InGameUIInstance->ShowBossHPBar();
+	}
+}
+
+void AInGameHUD::HideBossHPBar()
+{
+	if (InGameUIInstance)
+	{
+		InGameUIInstance->HideBossHPBar();
+	}
+}
+
+void AInGameHUD::UpdateBossHPBarPercent(float HPPercent)
+{
+	if (InGameUIInstance)
+	{
+		InGameUIInstance->UpdateBossHPBarPercent(HPPercent);
+	}
+}

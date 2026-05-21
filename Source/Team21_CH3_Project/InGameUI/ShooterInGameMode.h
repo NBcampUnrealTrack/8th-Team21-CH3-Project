@@ -93,7 +93,6 @@ protected:
 
 	FTimerHandle NextWaveStartTimerHandle;
 
-	// 웨이브 클리어 후 현재 레벨을 리로드하기 전 FadeOut을 기다리는 시간
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave|Transition")
 	float WaveLevelTransitionDelay;
 
@@ -110,7 +109,6 @@ protected:
 
 	FTimerHandle EndMatchReturnTimerHandle;
 
-	// 게임 종료 후 검은 화면 전환을 재생하고 실제 맵 이동까지 기다릴 시간
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match State")
 	float EndMatchTransitionDelay;
 
@@ -170,6 +168,26 @@ protected:
 	void ShowAugmentCardSelectUI();
 	void HideAugmentCardSelectUI();
 
+	// Boss HP Bar
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Boss")
+	int32 BossWaveIndex = 4;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Boss")
+	FName BossActorTag = TEXT("Boss");
+
+	FTimerHandle BossHPBarFindTimerHandle;
+
+	FTimerHandle BossHPBarUpdateTimerHandle;
+
+	UPROPERTY()
+	TObjectPtr<UStatusComponent> BossStatusComponentForUI;
+
+	float BossMaxHPForUI = 1.0f;
+
+	void TryShowBossHPBar();
+	void HideBossHPBar();
+	void UpdateBossHPBarByTimer();
+
 	void SavePlayerHPToGameInstance();
 	void RestorePlayerHPFromGameInstance();
 	UStatusComponent* GetPlayerStatusComponent() const;
@@ -187,31 +205,19 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
 	void TriggerResultUI(bool bPlayerWon);
 
-	// 게임 시작 Transition이 끝난 뒤 Wave를 시작하기 위한 타이머
 	FTimerHandle GameStartWaveTimerHandle;
 
-	// 게임 시작 Transition 재생 시간.
-	// WBP_InGameUI의 GameStartAnim 길이와 맞춰야 한다.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave|Transition")
 	float GameStartTransitionDelay = 2.2f;
 
-	// Wave Clear 순간 일시정지 복구용 Ticker
 	FTSTicker::FDelegateHandle WaveClearPauseTickerHandle;
 
-	// Wave Clear 시 게임을 잠깐 멈출 시간
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave|Transition")
 	float WaveClearPauseDuration = 0.35f;
 
-	// Wave Clear 일시정지 시작
 	void StartWaveClearPause();
-
-	// Wave Clear 일시정지 복구
 	void RestoreWaveClearPause();
-
-	// Wave Clear Pause Ticker 정리
 	void ClearWaveClearPauseTicker();
-
-	// Wave Clear Pause Ticker 콜백
 	bool HandleWaveClearPauseFinished(float DeltaTime);
 
 public:

@@ -7,6 +7,7 @@
 #include "Data/EnemyWaveDataTable.h"
 #include "Component/StatusComponent.h"
 #include "OutGameUI/Widget/OutGameTransitionWidget.h"
+#include "GameFramework/Character.h"
 
 #include "Blueprint/UserWidget.h"
 #include "Engine/DataTable.h"
@@ -53,6 +54,9 @@ AShooterInGameMode::AShooterInGameMode()
 	bPendingClearWaveAfterAugment = false;
 
 	OutGameTransitionWidgetInstance = nullptr;
+
+	BossStatusComponentForUI = nullptr;
+	BossMaxHPForUI = 1.0f;
 }
 
 void AShooterInGameMode::BeginPlay()
@@ -152,6 +156,28 @@ void AShooterInGameMode::StartWave()
 		UE_LOG(LogTemp, Warning, TEXT("SpawnManager not found. Fallback to RequestSpawnWave."));
 		RequestSpawnWave(CurrentWave, TargetKillCount);
 	}
+
+	// Boss Wave일 때 Boss Actor가 스폰된 뒤 HP Bar를 찾는다.
+	if (CurrentWave == BossWaveIndex)
+	{
+		BossStatusComponentForUI = nullptr;
+		BossMaxHPForUI = 1.0f;
+
+		GetWorldTimerManager().ClearTimer(BossHPBarFindTimerHandle);
+		GetWorldTimerManager().ClearTimer(BossHPBarUpdateTimerHandle);
+
+		GetWorldTimerManager().SetTimer(
+			BossHPBarFindTimerHandle,
+			this,
+			&AShooterInGameMode::TryShowBossHPBar,
+			0.2f,
+			true
+		);
+	}
+	else
+	{
+		HideBossHPBar();
+	}
 }
 
 void AShooterInGameMode::HandleEnemyDied()
@@ -215,7 +241,8 @@ void AShooterInGameMode::ClearWave()
 
 	bIsWaveInProgress = false;
 
-	// Wave Clear 순간 화면 연출을 위해 잠깐 게임을 정지한다.
+	HideBossHPBar();
+
 	StartWaveClearPause();
 
 	RefreshHUDWaveInfo();
@@ -233,6 +260,21 @@ void AShooterInGameMode::ClearWave()
 	}
 
 	bIsShopOpen = true;
+
+	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	if (IsValid(PlayerCharacter))
+	{
+		UFunction* ForceStopFullAutoFireFunction = PlayerCharacter->FindFunction(TEXT("ForceStopFire"));
+
+		if (ForceStopFullAutoFireFunction)
+		{
+			PlayerCharacter->ProcessEvent(ForceStopFullAutoFireFunction, nullptr);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ForceStopFullAutoFire function not found on PlayerCharacter."));
+		}
+	}
 
 	StopGameplayInput();
 
@@ -269,7 +311,6 @@ void AShooterInGameMode::StartWaveClearPause()
 		return;
 	}
 
-	// Wave Clear 순간 게임을 잠깐 정지한다.
 	UGameplayStatics::SetGamePaused(World, true);
 
 	WaveClearPauseTickerHandle = FTSTicker::GetCoreTicker().AddTicker(
@@ -352,6 +393,8 @@ void AShooterInGameMode::ContinueToNextWaveWithLevelReload()
 	bIsWaveInProgress = false;
 	bIsShopOpen = false;
 
+	HideBossHPBar();
+
 	SavePlayerHPToGameInstance();
 
 	APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
@@ -413,15 +456,17 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 	GetWorldTimerManager().ClearTimer(GameStartWaveTimerHandle);
 	GetWorldTimerManager().ClearTimer(NextWaveStartTimerHandle);
 	GetWorldTimerManager().ClearTimer(WaveLevelTransitionTimerHandle);
+	GetWorldTimerManager().ClearTimer(BossHPBarFindTimerHandle);
+	GetWorldTimerManager().ClearTimer(BossHPBarUpdateTimerHandle);
 	GetWorldTimerManager().ClearTimer(EndMatchReturnTimerHandle);
 	GetWorldTimerManager().ClearTimer(EndMatchTransitionTimerHandle);
 	GetWorldTimerManager().ClearTimer(HUDWaveRefreshRetryTimerHandle);
 
 	ClearWaveClearPauseTicker();
 
-	// 게임 종료 시 일시정지가 남아 있지 않도록 복구
 	RestoreWaveClearPause();
 
+	HideBossHPBar();
 	HideAugmentCardSelectUI();
 
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
@@ -650,6 +695,162 @@ void AShooterInGameMode::HandleHUDWaveInfoRefreshRetry()
 	);
 }
 
+void AShooterInGameMode::TryShowBossHPBar()
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	TArray<AActor*> FoundBossActors;
+	UGameplayStatics::GetAllActorsWithTag(
+		World,
+		BossActorTag,
+		FoundBossActors
+	);
+
+	if (FoundBossActors.Num() <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Boss actor not found yet. Tag: %s"), *BossActorTag.ToString());
+		return;
+	}
+
+	AActor* BossActor = FoundBossActors[0];
+	if (!IsValid(BossActor))
+	{
+		return;
+	}
+
+	UStatusComponent* BossStatusComponent = nullptr;
+
+	TArray<UStatusComponent*> StatusComponents;
+	BossActor->GetComponents<UStatusComponent>(StatusComponents);
+
+	float HighestCurrentHP = -1.0f;
+
+	for (UStatusComponent* StatusComp : StatusComponents)
+	{
+		if (!IsValid(StatusComp))
+		{
+			continue;
+		}
+
+		const float CurrentHP = StatusComp->GetCurrentHP();
+
+		UE_LOG(LogTemp, Warning, TEXT("Boss Status Candidate / Name: %s / Class: %s / CurrentHP: %.2f"),
+			*StatusComp->GetName(),
+			*StatusComp->GetClass()->GetName(),
+			CurrentHP
+		);
+
+		if (CurrentHP > HighestCurrentHP)
+		{
+			HighestCurrentHP = CurrentHP;
+			BossStatusComponent = StatusComp;
+		}
+	}
+
+	if (!IsValid(BossStatusComponent))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Boss StatusComponent not found."));
+		return;
+	}
+
+	BossStatusComponentForUI = BossStatusComponent;
+	BossMaxHPForUI = FMath::Max(1.0f, BossStatusComponent->GetCurrentHP());
+
+	APlayerController* PC = World->GetFirstPlayerController();
+	if (!PC)
+	{
+		return;
+	}
+
+	AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
+	if (!MyHUD)
+	{
+		return;
+	}
+
+	MyHUD->ShowBossHPBar();
+
+	GetWorldTimerManager().ClearTimer(BossHPBarFindTimerHandle);
+	GetWorldTimerManager().ClearTimer(BossHPBarUpdateTimerHandle);
+
+	GetWorldTimerManager().SetTimer(
+		BossHPBarUpdateTimerHandle,
+		this,
+		&AShooterInGameMode::UpdateBossHPBarByTimer,
+		0.05f,
+		true
+	);
+
+	UpdateBossHPBarByTimer();
+
+	UE_LOG(LogTemp, Warning, TEXT("Boss HP Bar Shown. Boss: %s / BoundComponent: %s / MaxHPForUI: %.2f"),
+		*BossActor->GetName(),
+		*BossStatusComponent->GetName(),
+		BossMaxHPForUI
+	);
+}
+
+void AShooterInGameMode::UpdateBossHPBarByTimer()
+{
+	if (!IsValid(BossStatusComponentForUI))
+	{
+		HideBossHPBar();
+		return;
+	}
+
+	const float CurrentHP = FMath::Max(0.0f, BossStatusComponentForUI->GetCurrentHP());
+
+	const float HPPercent = BossMaxHPForUI > 0.0f
+		? CurrentHP / BossMaxHPForUI
+		: 0.0f;
+
+	APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
+	if (!PC)
+	{
+		return;
+	}
+
+	AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
+	if (!MyHUD)
+	{
+		return;
+	}
+
+	MyHUD->UpdateBossHPBarPercent(HPPercent);
+
+	if (CurrentHP <= 0.0f)
+	{
+		HideBossHPBar();
+	}
+}
+
+void AShooterInGameMode::HideBossHPBar()
+{
+	GetWorldTimerManager().ClearTimer(BossHPBarFindTimerHandle);
+	GetWorldTimerManager().ClearTimer(BossHPBarUpdateTimerHandle);
+
+	BossStatusComponentForUI = nullptr;
+	BossMaxHPForUI = 1.0f;
+
+	APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
+	if (!PC)
+	{
+		return;
+	}
+
+	AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
+	if (!MyHUD)
+	{
+		return;
+	}
+
+	MyHUD->HideBossHPBar();
+}
+
 void AShooterInGameMode::ShowAugmentCardSelectUI()
 {
 	if (bIsMatchEnded || bIsAugmentSelectOpen) return;
@@ -857,7 +1058,6 @@ void AShooterInGameMode::HandleEndMatchReturnToOutGame()
 		return;
 	}
 
-	// 맵 이동 전 화면을 검게 덮는 전환 재생
 	OutGameTransitionWidgetInstance->PlayFadeOut();
 
 	GetWorldTimerManager().ClearTimer(EndMatchTransitionTimerHandle);

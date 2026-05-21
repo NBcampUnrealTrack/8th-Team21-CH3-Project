@@ -13,26 +13,14 @@ void UInGameUI::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	// UI가 처음 생성될 때 표시할 기본값
-	// 실제 게임 중에는 HUD 또는 캐릭터에서 다시 갱신된다.
 	UpdateHealth(100.f, 100.f);
 	UpdateAmmo(30, 30);
 
-	// 선택한 무기에 맞는 우측 하단 무기 UI와 Crosshair 표시
 	RefreshWeaponUI();
 
-	// Wave UI는 여기서 기본값으로 세팅하지 않는다.
-	// 이유:
-	// 레벨 리로드 후 GameMode에서 복구한 Wave / Kill / Gold 값을
-	// NativeConstruct의 기본값이 다시 덮어쓸 수 있기 때문이다.
-	//
-	// Wave / Kill / Gold는 ShooterInGameMode -> InGameHUD -> UpdateWaveInfo 흐름으로만 갱신한다.
-
-	// 라운드 전환 메시지는 처음에는 숨겨둔다.
 	HideRoundTransitionMessage();
-
-	// HP 위험 피드백도 처음에는 숨겨둔다.
 	HideHPDangerFeedback();
+	HideBossHPBar();
 
 	if (HitAlarmFrame)
 	{
@@ -211,7 +199,7 @@ void UInGameUI::UpdateWaveInfo(
 			FString::Printf(TEXT("%dG"), CurrentGold)
 		));
 	}
-		
+
 	if (GoldPerKillText)
 	{
 		GoldPerKillText->SetText(FText::FromString(
@@ -335,5 +323,59 @@ void UInGameUI::PlayGameStartTransition()
 	{
 		StopAnimation(GameStartAnim);
 		PlayAnimation(GameStartAnim);
+	}
+}
+
+void UInGameUI::ShowBossHPBar()
+{
+	if (BossHPPanel)
+	{
+		BossHPPanel->SetVisibility(ESlateVisibility::HitTestInvisible);
+	}
+
+	if (BossHPBar)
+	{
+		BossHPBar->SetVisibility(ESlateVisibility::HitTestInvisible);
+
+		// Fill Image 원본 색상을 그대로 사용
+		BossHPBar->SetFillColorAndOpacity(FLinearColor::White);
+
+		BossHPBar->SetPercent(1.0f);
+	}
+}
+
+void UInGameUI::HideBossHPBar()
+{
+	if (BossHPPanel)
+	{
+		BossHPPanel->SetVisibility(ESlateVisibility::Collapsed);
+	}
+
+	if (BossHPBar)
+	{
+		BossHPBar->SetVisibility(ESlateVisibility::Collapsed);
+		BossHPBar->SetPercent(0.0f);
+	}
+}
+
+void UInGameUI::UpdateBossHPBarPercent(float HPPercent)
+{
+	if (!BossHPBar)
+	{
+		return;
+	}
+
+	const float SafePercent = FMath::Clamp(HPPercent, 0.0f, 1.0f);
+
+	BossHPBar->SetVisibility(ESlateVisibility::HitTestInvisible);
+
+	// Fill Image 원본 색상을 그대로 사용
+	BossHPBar->SetFillColorAndOpacity(FLinearColor::White);
+
+	BossHPBar->SetPercent(SafePercent);
+
+	if (SafePercent <= 0.0f)
+	{
+		HideBossHPBar();
 	}
 }

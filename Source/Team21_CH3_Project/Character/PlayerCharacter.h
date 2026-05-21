@@ -242,5 +242,6 @@ private:
 #pragma region AtackTimer
 
 public:
+	UFUNCTION()
 	void ForceStopFire();
 };

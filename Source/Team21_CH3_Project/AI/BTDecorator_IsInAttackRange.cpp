@@ -35,7 +35,7 @@ bool UBTDecorator_IsInAttackRange::CalculateRawConditionValue(UBehaviorTreeCompo
 	if (NPC->bAttackRange == true)
 	{
 		VerticalAttackRange = 800.f;
-		BB->SetValueAsFloat(AttackRangeKey.SelectedKeyName, 3000.f);
+		BB->SetValueAsFloat(AttackRangeKey.SelectedKeyName, 900.f);
 	}
 	else
 	{
