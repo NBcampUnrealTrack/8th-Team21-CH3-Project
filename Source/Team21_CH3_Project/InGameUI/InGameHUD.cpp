@@ -7,6 +7,7 @@
 
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "OutGameUI/Widget/OutGameTransitionWidget.h"
 
 void AInGameHUD::BeginPlay()
 {
@@ -20,9 +21,30 @@ void AInGameHUD::BeginPlay()
 		{
 			InGameUIInstance->AddToViewport();
 
-			// 게임 시작 시 페이드 인 / READY UI Transition 재생
-			InGameUIInstance->PlayGameStartTransition();
+			if (InGameStartTransitionWidgetClass)
+			{
+				InGameStartTransitionWidgetInstance = CreateWidget<UOutGameTransitionWidget>(
+					GetWorld(),
+					InGameStartTransitionWidgetClass
+				);
 
+				if (InGameStartTransitionWidgetInstance)
+				{
+					InGameStartTransitionWidgetInstance->AddToViewport(10000);
+					InGameStartTransitionWidgetInstance->PlayFadeIn();
+				}
+			}
+
+			// OutGame -> InGame 진입 FadeIn이 끝난 뒤 READY / SET / START 연출을 재생한다.
+			GetWorldTimerManager().ClearTimer(InGameStartReadyTimerHandle);
+
+			GetWorldTimerManager().SetTimer(
+				InGameStartReadyTimerHandle,
+				this,
+				&AInGameHUD::PlayGameStartReadyTransition,
+				InGameStartReadyDelay,
+				false
+			);
 			// HUD 위젯 생성이 완료된 직후 GameMode에 Wave/Kill/Gold UI 갱신을 다시 요청한다.
 			AShooterInGameMode* GameMode = Cast<AShooterInGameMode>(UGameplayStatics::GetGameMode(this));
 			if (GameMode)
@@ -115,5 +137,13 @@ void AInGameHUD::HideHPDangerFeedback()
 	if (InGameUIInstance)
 	{
 		InGameUIInstance->HideHPDangerFeedback();
+	}
+}
+
+void AInGameHUD::PlayGameStartReadyTransition()
+{
+	if (InGameUIInstance)
+	{
+		InGameUIInstance->PlayGameStartTransition();
 	}
 }

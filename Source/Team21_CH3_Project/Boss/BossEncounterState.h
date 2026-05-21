@@ -11,6 +11,14 @@ class ASpawnManager;
 class UStatusComponent;
 class ABossMeteorStrikeActor;
 
+UENUM(BlueprintType)
+enum class EPhaseState : uint8{
+	NonePhase,
+	FirstPhase,
+	SecondPhase,
+	End
+};
+
 UCLASS()
 class TEAM21_CH3_PROJECT_API ABossEncounterState : public AActor{
 	GENERATED_BODY()
@@ -27,7 +35,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Boss" , meta = (AllowPrivateAccess))
 	float bossMaxHP;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Boss", meta = (AllowPrivateAccess))
-	float phaseTriggerRatio;
+	float firstPhaseTriggerRatio;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Boss", meta = (AllowPrivateAccess))
+	float secondPhaseTriggerRatio;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Boss", meta = (AllowPrivateAccess))
 	int32 requiredCoreCount;
 	
@@ -38,16 +48,15 @@ private:
 	UFUNCTION()
 	void HandlePhaseObjectBreak();
 	void PlayAnnounceAnimation();
-	void PhaseGimmickStart();
+	void PhaseGimmickEnd();
 	
 		
 	UFUNCTION()
 	UStatusComponent* GetStatus();
 	
-	bool bIsPlayPhase;
-	
 	int32 objectBreakCount;
 	int32 phaseStartObjectCount;
+	EPhaseState currentState;
 	
 #pragma region MeteorStrike
 	

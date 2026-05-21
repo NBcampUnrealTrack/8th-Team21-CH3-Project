@@ -12,17 +12,19 @@ ABossEncounterState::ABossEncounterState()
 {	
 	PrimaryActorTick.bCanEverTick = false;
 	
-	phaseTriggerRatio = 0.7f;
+	firstPhaseTriggerRatio = 0.7f;
+	secondPhaseTriggerRatio = 0.1f;
 	bossMaxHP = 1000.0f;
 	cachedBoss = nullptr;
 	requiredCoreCount = 3;
-	bIsPlayPhase = false;
 	
 	meteorCountPerWave = 3;
 	meteorInterval = 5.0f;
 	meteorSpawnRadius = 800.0f;
 	objectBreakCount = 0;
 	phaseStartObjectCount = 3;
+	
+	currentState = EPhaseState::NonePhase;
 }
 
 void ABossEncounterState::BeginPlay()
@@ -61,22 +63,31 @@ void ABossEncounterState::HandleBossCurrentHPChanged(float CurrentHP){
 	
 	const float maxHP = GetStatus()->GetMaxHP();
 	const float ratio = maxHP > 0.0f ? CurrentHP / maxHP : 0.0f;
-	
-	if (ratio <= phaseTriggerRatio && bIsPlayPhase == false)
+	UE_LOG(LogTemp, Warning, TEXT("CurrentHP: %.3f / MaxHP: %.3f / Ratio: %.6f"), CurrentHP, maxHP, ratio);
+
+	if (ratio <= firstPhaseTriggerRatio && currentState == EPhaseState::NonePhase)
 	{
-		bIsPlayPhase = true;
-		// Boss GimmickStart
-		// Boss GodMode
-		
-		// HealObject->OnObjectBreaked.RemoveDynamic(this, &ThisClass::HandlePhaseObjectBreak);
-		// HealObject->OnObjectBreaked.AddDynamic(this, &ThisClass::HandlePhaseObjectBreak);
+		UE_LOG(LogTemp, Warning, TEXT("Meteor Start"))
+		currentState = EPhaseState::FirstPhase;
 		
 		PlayAnnounceAnimation();
 		StartMeteorPattern();
 	}
 	
+	if (ratio <= secondPhaseTriggerRatio && currentState == EPhaseState::FirstPhase)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SecondPhase Start"))
+		currentState = EPhaseState::SecondPhase;
+		
+		// PlayAnnounceAnimation(); - Second Phase Start Message
+		// enable God Mode() 
+		// HealObject->OnObjectBreaked.RemoveDynamic(this, &ThisClass::HandlePhaseObjectBreak);
+		// HealObject->OnObjectBreaked.AddDynamic(this, &ThisClass::HandlePhaseObjectBreak);
+	}
+	
 	if (ratio <= KINDA_SMALL_NUMBER)
 	{
+		currentState = EPhaseState::End;
 		StopMeteorPattern();
 		return;
 	}
@@ -87,11 +98,11 @@ void ABossEncounterState::HandlePhaseObjectBreak(){
 	
 	if (objectBreakCount >= phaseStartObjectCount)
 	{
-		PhaseGimmickStart();
+		PhaseGimmickEnd();
 	}
 }
 
-void ABossEncounterState::PhaseGimmickStart(){
+void ABossEncounterState::PhaseGimmickEnd(){
 	// disabled God Mode
 	// 	PlayAnnounceAnimation(); -disabled God Mod Message
 }

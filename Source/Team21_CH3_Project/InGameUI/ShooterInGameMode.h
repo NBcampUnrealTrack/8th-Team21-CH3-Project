@@ -12,6 +12,7 @@ class UAugmentCardSelectWidget;
 class UDataTable;
 class UStatusComponent;
 class ASpawnManager;
+class UOutGameTransitionWidget;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyKilledSignature, AActor*, KilledEnemy);
 
@@ -102,6 +103,12 @@ protected:
 
 	FTimerHandle EndMatchReturnTimerHandle;
 
+	// 게임 종료 후 검은 화면 전환을 재생하고 실제 맵 이동까지 기다릴 시간
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match State")
+	float EndMatchTransitionDelay;
+
+	FTimerHandle EndMatchTransitionTimerHandle;
+
 	FTimerHandle HUDWaveRefreshRetryTimerHandle;
 
 	int32 HUDWaveRefreshRetryCount;
@@ -124,6 +131,12 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Augment")
 	bool bPendingClearWaveAfterAugment;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI|Transition")
+	TSubclassOf<UOutGameTransitionWidget> OutGameTransitionWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UOutGameTransitionWidget> OutGameTransitionWidgetInstance;
 
 protected:
 	int32 CalculateTargetKillCountForWave(int32 InWave) const;
@@ -153,8 +166,6 @@ protected:
 	void SavePlayerHPToGameInstance();
 	void RestorePlayerHPFromGameInstance();
 	UStatusComponent* GetPlayerStatusComponent() const;
-
-	
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Wave")

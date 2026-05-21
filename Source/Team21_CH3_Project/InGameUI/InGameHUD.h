@@ -8,6 +8,7 @@
 
 class UInGameUI;
 class URoundTransitionWidget;
+class UOutGameTransitionWidget;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API AInGameHUD : public AHUD
@@ -49,4 +50,17 @@ protected:
 
 	UPROPERTY()
 	URoundTransitionWidget* RoundTransitionWidgetInstance;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI|Transition", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UOutGameTransitionWidget> InGameStartTransitionWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UOutGameTransitionWidget> InGameStartTransitionWidgetInstance;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI|Transition", meta = (AllowPrivateAccess = "true"))
+	float InGameStartReadyDelay = 1.0f;
+
+	FTimerHandle InGameStartReadyTimerHandle;
+
+	void PlayGameStartReadyTransition();
 };
