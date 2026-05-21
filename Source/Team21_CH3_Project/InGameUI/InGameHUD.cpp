@@ -193,10 +193,10 @@ void AInGameHUD::HideBossHPBar()
 	}
 }
 
-void AInGameHUD::UpdateBossHPBarPercent(float HPPercent)
+void AInGameHUD::UpdateBossHPBar(float CurrentHP, float MaxHP)
 {
 	if (InGameUIInstance)
 	{
-		InGameUIInstance->UpdateBossHPBarPercent(HPPercent);
+		InGameUIInstance->UpdateBossHPBar(CurrentHP, MaxHP);
 	}
 }

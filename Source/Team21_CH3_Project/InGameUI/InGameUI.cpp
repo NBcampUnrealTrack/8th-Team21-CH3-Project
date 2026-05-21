@@ -336,11 +336,14 @@ void UInGameUI::ShowBossHPBar()
 	if (BossHPBar)
 	{
 		BossHPBar->SetVisibility(ESlateVisibility::HitTestInvisible);
-
-		// Fill Image 원본 색상을 그대로 사용
 		BossHPBar->SetFillColorAndOpacity(FLinearColor::White);
-
 		BossHPBar->SetPercent(1.0f);
+	}
+
+	if (BossHPText)
+	{
+		BossHPText->SetVisibility(ESlateVisibility::HitTestInvisible);
+		BossHPText->SetText(FText::GetEmpty());
 	}
 }
 
@@ -356,25 +359,45 @@ void UInGameUI::HideBossHPBar()
 		BossHPBar->SetVisibility(ESlateVisibility::Collapsed);
 		BossHPBar->SetPercent(0.0f);
 	}
+
+	if (BossHPText)
+	{
+		BossHPText->SetVisibility(ESlateVisibility::Collapsed);
+		BossHPText->SetText(FText::GetEmpty());
+	}
 }
 
-void UInGameUI::UpdateBossHPBarPercent(float HPPercent)
+void UInGameUI::UpdateBossHPBar(float CurrentHP, float MaxHP)
 {
-	if (!BossHPBar)
+	if (MaxHP <= 0.0f)
 	{
+		HideBossHPBar();
 		return;
 	}
 
-	const float SafePercent = FMath::Clamp(HPPercent, 0.0f, 1.0f);
+	const float SafeCurrentHP = FMath::Clamp(CurrentHP, 0.0f, MaxHP);
+	const float HPPercent = SafeCurrentHP / MaxHP;
 
-	BossHPBar->SetVisibility(ESlateVisibility::HitTestInvisible);
+	if (BossHPBar)
+	{
+		BossHPBar->SetVisibility(ESlateVisibility::HitTestInvisible);
+		BossHPBar->SetFillColorAndOpacity(FLinearColor::White);
+		BossHPBar->SetPercent(FMath::Clamp(HPPercent, 0.0f, 1.0f));
+	}
 
-	// Fill Image 원본 색상을 그대로 사용
-	BossHPBar->SetFillColorAndOpacity(FLinearColor::White);
+	if (BossHPText)
+	{
+		BossHPText->SetVisibility(ESlateVisibility::HitTestInvisible);
 
-	BossHPBar->SetPercent(SafePercent);
+		const FString HPTextString = FString::Printf(
+			TEXT("%d"),
+			FMath::RoundToInt(SafeCurrentHP)
+		);
 
-	if (SafePercent <= 0.0f)
+		BossHPText->SetText(FText::FromString(HPTextString));
+	}
+
+	if (SafeCurrentHP <= 0.0f)
 	{
 		HideBossHPBar();
 	}
