@@ -39,6 +39,15 @@ public:
 	// 웨이브 전환 / 레벨 리로드 직전 화면을 검게 덮는 FadeOut 재생
 	void PlayLevelTransitionFadeOut();
 
+	// 보스 HP Bar 표시
+	void ShowBossHPBar();
+
+	// 보스 HP Bar 숨김
+	void HideBossHPBar();
+
+	// 보스 HP Bar 비율 갱신
+	void UpdateBossHPBarPercent(float HPPercent);
+
 protected:
 	virtual void BeginPlay() override;
 
