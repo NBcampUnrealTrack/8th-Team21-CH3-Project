@@ -45,8 +45,6 @@ void ANonPlayerCharacter::BeginPlay()
 		{
 			GetWeapon(RifleClass);
 		}
-		AttackMeleeRange = MonsterAttackRange;
-		AttackMeleeRadius = MonsterAttackRadius;
 	}
 }
 

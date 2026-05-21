@@ -124,6 +124,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	float HUDWaveRefreshRetryInterval;
 
+	UFUNCTION(Exec)
+	void CmdDamageBoss();
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Augment")
 	TSubclassOf<UAugmentCardSelectWidget> AugmentCardSelectWidgetClass;
