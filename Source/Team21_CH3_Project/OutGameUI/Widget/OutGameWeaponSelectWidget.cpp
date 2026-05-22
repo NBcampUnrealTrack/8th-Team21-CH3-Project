@@ -32,10 +32,10 @@ void UOutGameWeaponSelectWidget::EnterWeaponSelect(){
 
 void UOutGameWeaponSelectWidget::UpdateWeaponStatBars(const FOutGameWeaponPreviewData& weaponData)
 {
-	if (IsValid(damageBar) == true) damageBar->SetPercent(weaponData.weaponDamage / 100.0f);
-	if (IsValid(ammoBar) == true) ammoBar->SetPercent(weaponData.ammoCapacity / 100.0f);
-	// if (IsValid(fireRateBar) == true) fireRateBar->SetPercent(weaponData.fireRate / 1000.0f);
-	if (IsValid(weaponRangeBar) == true) weaponRangeBar->SetPercent(weaponData.maxAttackRange / 3000.0f);
+	if (IsValid(damageBar) == true) damageBar->SetPercent(weaponData.weaponDamage / 50.0f);
+	if (IsValid(ammoBar) == true) ammoBar->SetPercent(weaponData.ammoCapacity / 30.0f);
+	if (IsValid(fireRateBar) == true) fireRateBar->SetPercent(weaponData.firePerMinute / 1000.0f);
+	if (IsValid(weaponRangeBar) == true) weaponRangeBar->SetPercent(weaponData.maxAttackRange / 25000.0f);
 
 }
 
@@ -177,7 +177,7 @@ void UOutGameWeaponSelectWidget::SetWeaponInfo(){
 	weaponNameText->SetText(currentWeaponData->displayName);
 	weaponDamageText->SetText(FText::FromString(FString::Printf(TEXT("%0.f"), currentWeaponData->weaponDamage)));
 	ammoCapacityText->SetText(FText::FromString(FString::Printf(TEXT("%d"), currentWeaponData->ammoCapacity)));
-	fireRateText->SetText(FText::FromString(FString::Printf(TEXT("%0.f"), currentWeaponData->firePerMinute)));
+	fireRateText->SetText(FText::FromString(FString::Printf(TEXT("%0.fRPM"), currentWeaponData->firePerMinute)));
 	weaponRangeText->SetText(FText::FromString(FString::Printf(TEXT("%0.f"), currentWeaponData->maxAttackRange)));
 	UpdateWeaponStatBars(*currentWeaponData);
 }

@@ -34,6 +34,8 @@ void UOutGameMissionSelectWidget::NativeOnInitialized(){
 	normalUnlockKillCount = 30;
 	hardUnlockKillCount = 60;
 	
+	bIsOpening = false;
+	
 	if (IsValid(normalUnlockKillCountText) == true) normalUnlockKillCountText->SetText(
 	FText::FromString(FString::Printf(TEXT("%d"), normalUnlockKillCount)));
 	if (IsValid(hardUnlockKillCountText) == true) hardUnlockKillCountText->SetText(
@@ -64,10 +66,16 @@ void UOutGameMissionSelectWidget::LevelClicked(){
 }
 
 void UOutGameMissionSelectWidget::PlayFadeInAnimation(){
+	if (bIsOpening) return;
+	bIsOpening = true;
+	
 	if (IsValid(fadeInAnim) == true) PlayAnimation(fadeInAnim);
 }
 
 void UOutGameMissionSelectWidget::PlayFadeOutAnimation(){
+	if (bIsOpening) return;
+	bIsOpening = true;
+	
 	if (IsValid(fadeOutAnim) == true) PlayAnimation(fadeOutAnim);
 	
 }
@@ -121,10 +129,11 @@ void UOutGameMissionSelectWidget::HandleHardClicked(){
 }
 
 void UOutGameMissionSelectWidget::HandleFadeInFinished(){
-	
+	bIsOpening = false;
 }
 
 void UOutGameMissionSelectWidget::HandleFadeOutFinished(){
+	bIsOpening = false;
 	if (AOutGamePlayerController* pc = GetOwningPlayer<AOutGamePlayerController>())
 	{
 		if (UOutGameRootWidget* rootWidgetInstance = pc->GetRootWidget())
