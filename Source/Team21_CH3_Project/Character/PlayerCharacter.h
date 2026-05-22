@@ -13,6 +13,7 @@ class UAugmentComponent;
 class UDataTable;
 class UInGameQuitWidget;
 struct FPlayerTraitBonus;
+class UParticleSystem;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API APlayerCharacter : public ACharacterBase
@@ -42,6 +43,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess))
 	TObjectPtr<UCameraComponent> CameraComp;
+
+	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+	TObjectPtr<UParticleSystem> MuzzleFlashEffect;
 
 #pragma endregion
 
@@ -244,4 +248,6 @@ private:
 public:
 	UFUNCTION()
 	void ForceStopFire();
+
+#pragma endregion
 };
