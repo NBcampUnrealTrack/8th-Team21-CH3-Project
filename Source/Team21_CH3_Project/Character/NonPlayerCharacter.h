@@ -9,7 +9,7 @@
 
 
 DECLARE_DELEGATE_TwoParams(FOnAttackMontageEnded, UAnimMontage*, bool /*bInterrupted*/)
-DECLARE_DELEGATE_OneParam(FChargeCoolTime)
+DECLARE_DELEGATE(FChargeCoolTime)
 
 class UStatusComponent;
 /**
