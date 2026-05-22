@@ -35,8 +35,6 @@ protected:
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-	UFUNCTION()
-	void HandleBossCurrentHPChanged(float CurrentHP);
 
 
 protected:
@@ -63,5 +61,6 @@ private:
 	UFUNCTION()
 	UStatusComponent* GetStatus();
 
-	bool bIsHPBindingSuccess = false;
+	bool bHasBeenActivated = false;
+
 };
