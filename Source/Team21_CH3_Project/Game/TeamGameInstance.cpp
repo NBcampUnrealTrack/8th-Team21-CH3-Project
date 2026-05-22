@@ -29,6 +29,7 @@ void UTeamGameInstance::ResetToDefaultValues()
 	goldGainMultiplier = 1.0f;
 	bIsWin = false;
 	bHasMatchResult = false;
+	bHasShownKeyGuide = false;
 	traitLevels.Empty();
 	SavedCurrentWave = 1;
 	SavedCurrentGold = 0;
@@ -139,6 +140,7 @@ void UTeamGameInstance::LoadGameData(){
 	masterVolume = CurrentSaveGame->masterVolume;
 	playerGold = CurrentSaveGame->playerGold;
 	traitLevels = CurrentSaveGame->traitLevels;
+	bHasShownKeyGuide = CurrentSaveGame->bHasShownKeyGuide;
 }
 
 void UTeamGameInstance::SaveGameData(){
@@ -153,6 +155,7 @@ void UTeamGameInstance::SaveGameData(){
 	CurrentSaveGame->masterVolume = masterVolume;
 	CurrentSaveGame->playerGold = playerGold;
 	CurrentSaveGame->traitLevels = traitLevels;
+	CurrentSaveGame->bHasShownKeyGuide = bHasShownKeyGuide;
 
 	UGameplayStatics::SaveGameToSlot(CurrentSaveGame, SaveSlotName, SaveUserIndex);
 }
@@ -233,3 +236,15 @@ void UTeamGameInstance::ClearSavedAugments()
 	SavedAugments.Empty();
 }
 #pragma endregion
+
+#pragma region ToolTip
+
+bool UTeamGameInstance::HasShownKeyGuide() const{
+	return bHasShownKeyGuide;
+}
+
+void UTeamGameInstance::SetHasShownKeyGuide(bool bInShown){
+	bHasShownKeyGuide = bInShown;
+}
+
+#pragma endregion 

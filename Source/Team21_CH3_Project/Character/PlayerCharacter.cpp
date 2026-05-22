@@ -25,6 +25,7 @@
 #include "Data/PlayerTraitBonus.h"   
 #include "Trait/SubSystem/TraitSubsystem.h"
 #include "InGameUI/InGameQuitWidget.h"
+#include "Particles/ParticleSystem.h"
 
 
 
@@ -395,6 +396,26 @@ void APlayerCharacter::InputAttackMelee(const FInputActionValue& InValue)
 
 void APlayerCharacter::TryFire()
 {
+
+	//UE_LOG(LogTemp, Warning, TEXT("AttackMontage: %s"),
+	//	IsValid(GetCurrentWeaponAttackAnimMontage()) ?
+	//	*GetCurrentWeaponAttackAnimMontage()->GetName() : TEXT("nullptr"));
+	//
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (bIsReloading)
+	{
+		if (IsValid(AnimInstance) && IsValid(CurrentWeapon))
+		{
+			UAnimMontage* ReloadMontage = CurrentWeapon->GetReloadMontage();
+			if (IsValid(ReloadMontage))
+			{
+				AnimInstance->Montage_Stop(0.1f, ReloadMontage);
+			}
+		}
+		bIsReloading = false;
+	}
+
+
 	if (IsValid(CurrentWeapon) == false)
 	{
 		return;
@@ -556,7 +577,7 @@ void APlayerCharacter::TryFire()
 
 		ApplyWeaponRecoil();
 
-		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		//UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		if (IsValid(AnimInstance) == true)
 		{
 			if (AnimInstance->Montage_IsPlaying(GetCurrentWeaponAttackAnimMontage()) == false)
@@ -571,6 +592,18 @@ void APlayerCharacter::TryFire()
 		{
 			PlayerController->ClientStartCameraShake(AttackRangedCameraShake,4.f);
 		}
+	}
+	if (IsValid(MuzzleFlashEffect))
+	{
+		FVector MuzzleLocation = CurrentWeapon->GetPickupComponent()->GetSocketLocation(TEXT("MuzzleFlash"));
+		FRotator MuzzleRotation = CurrentWeapon->GetPickupComponent()->GetSocketRotation(TEXT("MuzzleFlash"));
+
+		UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			MuzzleFlashEffect,
+			MuzzleLocation,
+			MuzzleRotation
+		);
 	}
 }
 
@@ -806,6 +839,10 @@ void APlayerCharacter::ApplyAugment_ItemCapacity(int32 InAdd)
 
 void APlayerCharacter::OnReloadMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
+	//UE_LOG(LogTemp, Warning, TEXT("OnReloadMontageEnded / Montage: %s / bInterrupted: %s"),
+	//	*Montage->GetName(),
+	//	bInterrupted ? TEXT("true") : TEXT("false"));
+
 	bIsReloading = false;
 
 	if (bInterrupted == false && IsValid(CurrentWeapon))
