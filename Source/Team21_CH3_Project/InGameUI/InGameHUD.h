@@ -54,6 +54,12 @@ public:
 	// Å° ¾È³» UI ¼û±è
 	void HideKeyGuideUI();
 
+	// º¸½º ½ºÅ³ ÄðÅ¸ÀÓ UI Ç¥½Ã
+	void PlayBossSkillCoolTimeUI();
+
+	// º¸½º ½ºÅ³ ÄðÅ¸ÀÓ UI ¼û±è
+	void HideBossSkillCoolTimeUI();
+
 protected:
 	virtual void BeginPlay() override;
 

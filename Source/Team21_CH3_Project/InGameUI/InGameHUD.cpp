@@ -216,3 +216,19 @@ void AInGameHUD::HideKeyGuideUI()
 		InGameUIInstance->HideKeyGuideUI();
 	}
 }
+
+void AInGameHUD::PlayBossSkillCoolTimeUI()
+{
+	if (InGameUIInstance)
+	{
+		InGameUIInstance->PlayBossSkillCoolTimeUI();
+	}
+}
+
+void AInGameHUD::HideBossSkillCoolTimeUI()
+{
+	if (InGameUIInstance)
+	{
+		InGameUIInstance->HideBossSkillCoolTimeUI();
+	}
+}

@@ -22,6 +22,7 @@ void UInGameUI::NativeConstruct()
 	HideHPDangerFeedback();
 	HideBossHPBar();
 	HideKeyGuideUI();
+	HideBossSkillCoolTimeUI();
 
 	if (HitAlarmFrame)
 	{
@@ -464,5 +465,62 @@ void UInGameUI::HideKeyGuideUI()
 	{
 		KeyGuidePanel->SetRenderOpacity(0.0f);
 		KeyGuidePanel->SetVisibility(ESlateVisibility::Collapsed);
+	}
+}
+
+void UInGameUI::PlayBossSkillCoolTimeUI()
+{
+	if (!BossSkillCoolTimePanel)
+	{
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	World->GetTimerManager().ClearTimer(BossSkillCoolTimeHideTimerHandle);
+
+	if (BossSkillCoolTimeAnim)
+	{
+		StopAnimation(BossSkillCoolTimeAnim);
+	}
+
+	BossSkillCoolTimePanel->SetRenderOpacity(1.0f);
+	BossSkillCoolTimePanel->SetVisibility(ESlateVisibility::HitTestInvisible);
+
+	if (BossSkillCoolTimeAnim)
+	{
+		PlayAnimation(BossSkillCoolTimeAnim);
+	}
+
+	World->GetTimerManager().SetTimer(
+		BossSkillCoolTimeHideTimerHandle,
+		this,
+		&UInGameUI::HideBossSkillCoolTimeUI,
+		BossSkillCoolTimeDuration,
+		false
+	);
+}
+
+void UInGameUI::HideBossSkillCoolTimeUI()
+{
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		World->GetTimerManager().ClearTimer(BossSkillCoolTimeHideTimerHandle);
+	}
+
+	if (BossSkillCoolTimeAnim)
+	{
+		StopAnimation(BossSkillCoolTimeAnim);
+	}
+
+	if (BossSkillCoolTimePanel)
+	{
+		BossSkillCoolTimePanel->SetRenderOpacity(0.0f);
+		BossSkillCoolTimePanel->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }
