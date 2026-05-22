@@ -3,18 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BehaviorTree/BTDecorator.h"
-#include "BTDecorator_BossCanCharge.generated.h"
+#include "BehaviorTree/BTService.h"
+#include "BTService_BossCanCharge.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class TEAM21_CH3_PROJECT_API UBTDecorator_BossCanCharge : public UBTDecorator
+class TEAM21_CH3_PROJECT_API UBTService_BossCanCharge : public UBTService
 {
 	GENERATED_BODY()
 public:
-	UBTDecorator_BossCanCharge();
+	UBTService_BossCanCharge();
+
 protected:
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)override;
 
