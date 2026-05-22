@@ -48,6 +48,12 @@ public:
 	// 보스 HP Bar 비율 갱신
 	void UpdateBossHPBar(float CurrentHP, float MaxHP);
 
+	// 키 안내 UI 표시
+	void PlayKeyGuideUI();
+
+	// 키 안내 UI 숨김
+	void HideKeyGuideUI();
+
 protected:
 	virtual void BeginPlay() override;
 

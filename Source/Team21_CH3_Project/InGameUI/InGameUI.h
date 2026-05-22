@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Animation/WidgetAnimation.h"
+#include "Components/Widget.h"
 #include "InGameUI.generated.h"
 
 class UProgressBar;
@@ -12,6 +14,7 @@ class UImage;
 class UWidget;
 class UTexture2D;
 class UWidgetAnimation;
+
 
 // 인게임 화면에 표시되는 메인 HUD UI
 // 체력, 탄약, Wave, Kill, Gold 정보, 라운드 전환 메시지, HP 위험 피드백을 관리한다.
@@ -70,6 +73,9 @@ public:
 
 	// 보스 HP Bar 비율 갱신
 	void UpdateBossHPBar(float CurrentHP, float MaxHP);
+
+	void PlayKeyGuideUI();
+	void HideKeyGuideUI();
 
 protected:
 	virtual void NativeConstruct() override;
@@ -160,9 +166,24 @@ protected:
 	UPROPERTY(meta = (BindWidgetOptional))
 	UProgressBar* BossHPBar;
 
+	// 키 안내 UI 전체 패널
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UWidget> KeyGuidePanel;
+
+	// 키 안내 UI FadeOut 애니메이션
+	UPROPERTY(Transient, meta = (BindWidgetAnimOptional))
+	TObjectPtr<UWidgetAnimation> KeyGuideFadeOutAnim;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Key Guide")
+	float KeyGuideVisibleDuration = 5.0f;
+
 private:
 	void UpdateHPDangerFeedback(float CurrentHealth, float MaxHealth);
 	void ApplyCrosshairTexture(UTexture2D* CrosshairTexture);
 
 	float LastPlayerHealth = -1.0f;
+
+	FTimerHandle KeyGuideFadeOutTimerHandle;
+
+	void StartKeyGuideFadeOut();
 };

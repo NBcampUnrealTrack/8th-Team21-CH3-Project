@@ -145,6 +145,23 @@ void AShooterInGameMode::StartWave()
 	RefreshHUDWaveInfo();
 	RequestHUDWaveInfoRefreshRetry();
 
+	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
+	if (GI && CurrentWave == 1 && !GI->HasShownKeyGuide())
+	{
+		APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
+		if (PC)
+		{
+			AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
+			if (MyHUD)
+			{
+				MyHUD->PlayKeyGuideUI();
+
+				// 한 번 표시한 뒤 SaveGame에 표시 완료 상태 저장
+				GI->SetHasShownKeyGuide(true);
+			}
+		}
+	}
+
 	UE_LOG(LogTemp, Warning, TEXT("StartWave / Wave: %d / TargetKillCount: %d / GoldPerKill: %d"),
 		CurrentWave,
 		TargetKillCount,
