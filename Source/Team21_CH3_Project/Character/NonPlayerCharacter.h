@@ -9,9 +9,9 @@
 
 
 DECLARE_DELEGATE_TwoParams(FOnAttackMontageEnded, UAnimMontage*, bool /*bInterrupted*/)
+DECLARE_DELEGATE_OneParam(FChargeCoolTime)
 
 class UStatusComponent;
-
 /**
  * 
  */
@@ -45,6 +45,10 @@ protected:
 
 	void POW(bool bVulnerable);
 	virtual void EndAttack(UAnimMontage* InMontage, bool bInterruped);
+	void ChangebIsCharge();
+
+	UFUNCTION()
+	void OnBossCapsuleOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 public:
 	bool bIsNowAttacking;
 	FTimerHandle AttackTimer;
@@ -58,7 +62,11 @@ public:
 	float Damage =5.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Boss")
 	bool bInvulnerable;
-
+	UPROPERTY(BlueprintReadWrite, Category = "Combat")
+	bool bIsCharging = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	float ChargeDamage = 80.f;
+	FChargeCoolTime CoolTime;
 protected:
 	FOnAttackMontageEnded OnAttackMontageEndedDelegate;
 	float LastUpdatedMaxHP = 0.f;
