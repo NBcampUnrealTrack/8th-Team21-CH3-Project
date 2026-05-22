@@ -47,6 +47,8 @@ public:
 
 	void EndMatch(bool bPlayerWon);
 
+	void HandleBossSkillCoolTimeStarted();
+
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnEnemyKilledSignature OnEnemyKilledDelegate;

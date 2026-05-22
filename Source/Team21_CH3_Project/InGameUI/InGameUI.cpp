@@ -21,6 +21,8 @@ void UInGameUI::NativeConstruct()
 	HideRoundTransitionMessage();
 	HideHPDangerFeedback();
 	HideBossHPBar();
+	HideKeyGuideUI();
+	HideBossSkillCoolTimeUI();
 
 	if (HitAlarmFrame)
 	{
@@ -400,5 +402,125 @@ void UInGameUI::UpdateBossHPBar(float CurrentHP, float MaxHP)
 	if (SafeCurrentHP <= 0.0f)
 	{
 		HideBossHPBar();
+	}
+}
+
+void UInGameUI::PlayKeyGuideUI()
+{
+	if (!KeyGuidePanel)
+	{
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	World->GetTimerManager().ClearTimer(KeyGuideFadeOutTimerHandle);
+
+	if (KeyGuideFadeOutAnim)
+	{
+		StopAnimation(KeyGuideFadeOutAnim);
+	}
+
+	// 처음에 바로 보이지 않게 0으로 시작
+	KeyGuidePanel->SetRenderOpacity(0.0f);
+	KeyGuidePanel->SetVisibility(ESlateVisibility::HitTestInvisible);
+
+	// 네가 만든 Fade In → 유지 → Fade Out 애니메이션을 바로 재생
+	if (KeyGuideFadeOutAnim)
+	{
+		PlayAnimation(KeyGuideFadeOutAnim);
+	}
+}
+
+void UInGameUI::StartKeyGuideFadeOut()
+{
+	if (!KeyGuidePanel)
+	{
+		return;
+	}
+
+	if (KeyGuideFadeOutAnim)
+	{
+		StopAnimation(KeyGuideFadeOutAnim);
+		PlayAnimation(KeyGuideFadeOutAnim);
+		return;
+	}
+
+	HideKeyGuideUI();
+}
+
+void UInGameUI::HideKeyGuideUI()
+{
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		World->GetTimerManager().ClearTimer(KeyGuideFadeOutTimerHandle);
+	}
+
+	if (KeyGuidePanel)
+	{
+		KeyGuidePanel->SetRenderOpacity(0.0f);
+		KeyGuidePanel->SetVisibility(ESlateVisibility::Collapsed);
+	}
+}
+
+void UInGameUI::PlayBossSkillCoolTimeUI()
+{
+	if (!BossSkillCoolTimePanel)
+	{
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	World->GetTimerManager().ClearTimer(BossSkillCoolTimeHideTimerHandle);
+
+	if (BossSkillCoolTimeAnim)
+	{
+		StopAnimation(BossSkillCoolTimeAnim);
+	}
+
+	BossSkillCoolTimePanel->SetRenderOpacity(1.0f);
+	BossSkillCoolTimePanel->SetVisibility(ESlateVisibility::HitTestInvisible);
+
+	if (BossSkillCoolTimeAnim)
+	{
+		PlayAnimation(BossSkillCoolTimeAnim);
+	}
+
+	World->GetTimerManager().SetTimer(
+		BossSkillCoolTimeHideTimerHandle,
+		this,
+		&UInGameUI::HideBossSkillCoolTimeUI,
+		BossSkillCoolTimeDuration,
+		false
+	);
+}
+
+void UInGameUI::HideBossSkillCoolTimeUI()
+{
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		World->GetTimerManager().ClearTimer(BossSkillCoolTimeHideTimerHandle);
+	}
+
+	if (BossSkillCoolTimeAnim)
+	{
+		StopAnimation(BossSkillCoolTimeAnim);
+	}
+
+	if (BossSkillCoolTimePanel)
+	{
+		BossSkillCoolTimePanel->SetRenderOpacity(0.0f);
+		BossSkillCoolTimePanel->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }

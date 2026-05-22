@@ -8,6 +8,7 @@
 #include "Component/StatusComponent.h"
 #include "OutGameUI/Widget/OutGameTransitionWidget.h"
 #include "GameFramework/Character.h"
+#include "Character/NonPlayerCharacter.h"
 
 #include "Blueprint/UserWidget.h"
 #include "Engine/DataTable.h"
@@ -145,6 +146,23 @@ void AShooterInGameMode::StartWave()
 	RefreshHUDWaveInfo();
 	RequestHUDWaveInfoRefreshRetry();
 
+	UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
+	if (GI && CurrentWave == 1 && !GI->HasShownKeyGuide())
+	{
+		APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
+		if (PC)
+		{
+			AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
+			if (MyHUD)
+			{
+				MyHUD->PlayKeyGuideUI();
+
+				// ÇÑ ¹ø Ç¥½ÃÇÑ µÚ SaveGame¿¡ Ç¥½Ã ¿Ï·á »óÅÂ ÀúÀå
+				GI->SetHasShownKeyGuide(true);
+			}
+		}
+	}
+
 	UE_LOG(LogTemp, Warning, TEXT("StartWave / Wave: %d / TargetKillCount: %d / GoldPerKill: %d"),
 		CurrentWave,
 		TargetKillCount,
@@ -157,7 +175,7 @@ void AShooterInGameMode::StartWave()
 		RequestSpawnWave(CurrentWave, TargetKillCount);
 	}
 
-	// Boss Waveï¿½ï¿½ ï¿½ï¿½ Boss Actorï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ HP Barï¿½ï¿½ Ã£ï¿½Â´ï¿½.
+	// Boss WaveÀÏ ¶§ Boss Actor°¡ ½ºÆùµÈ µÚ HP Bar¸¦ Ã£´Â´Ù.
 	if (CurrentWave == BossWaveIndex)
 	{
 		BossStatusComponentForUI = nullptr;
@@ -481,6 +499,7 @@ void AShooterInGameMode::EndMatch(bool bPlayerWon)
 		{
 			MyHUD->HideRoundTransitionUI();
 			MyHUD->HideHPDangerFeedback();
+			MyHUD->HideBossSkillCoolTimeUI();
 		}
 	}
 
@@ -724,6 +743,16 @@ void AShooterInGameMode::TryShowBossHPBar()
 		return;
 	}
 
+	ANonPlayerCharacter* BossNPC = Cast<ANonPlayerCharacter>(BossActor);
+	if (BossNPC)
+	{
+		BossNPC->CoolTime.Unbind();
+		BossNPC->CoolTime.BindUObject(
+			this,
+			&AShooterInGameMode::HandleBossSkillCoolTimeStarted
+		);
+	}
+
 	UStatusComponent* BossStatusComponent = nullptr;
 
 	TArray<UStatusComponent*> StatusComponents;
@@ -848,6 +877,24 @@ void AShooterInGameMode::HideBossHPBar()
 	}
 
 	MyHUD->HideBossHPBar();
+	MyHUD->HideBossSkillCoolTimeUI();
+}
+
+void AShooterInGameMode::HandleBossSkillCoolTimeStarted()
+{
+	APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
+	if (!PC)
+	{
+		return;
+	}
+
+	AInGameHUD* MyHUD = Cast<AInGameHUD>(PC->GetHUD());
+	if (!MyHUD)
+	{
+		return;
+	}
+
+	MyHUD->PlayBossSkillCoolTimeUI();
 }
 
 void AShooterInGameMode::ShowAugmentCardSelectUI()

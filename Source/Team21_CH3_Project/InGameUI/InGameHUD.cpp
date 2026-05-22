@@ -200,3 +200,35 @@ void AInGameHUD::UpdateBossHPBar(float CurrentHP, float MaxHP)
 		InGameUIInstance->UpdateBossHPBar(CurrentHP, MaxHP);
 	}
 }
+
+void AInGameHUD::PlayKeyGuideUI()
+{
+	if (InGameUIInstance)
+	{
+		InGameUIInstance->PlayKeyGuideUI();
+	}
+}
+
+void AInGameHUD::HideKeyGuideUI()
+{
+	if (InGameUIInstance)
+	{
+		InGameUIInstance->HideKeyGuideUI();
+	}
+}
+
+void AInGameHUD::PlayBossSkillCoolTimeUI()
+{
+	if (InGameUIInstance)
+	{
+		InGameUIInstance->PlayBossSkillCoolTimeUI();
+	}
+}
+
+void AInGameHUD::HideBossSkillCoolTimeUI()
+{
+	if (InGameUIInstance)
+	{
+		InGameUIInstance->HideBossSkillCoolTimeUI();
+	}
+}
