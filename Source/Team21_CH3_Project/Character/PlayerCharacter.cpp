@@ -25,6 +25,7 @@
 #include "Data/PlayerTraitBonus.h"   
 #include "Trait/SubSystem/TraitSubsystem.h"
 #include "InGameUI/InGameQuitWidget.h"
+#include "Particles/ParticleSystem.h"
 
 
 
@@ -571,6 +572,18 @@ void APlayerCharacter::TryFire()
 		{
 			PlayerController->ClientStartCameraShake(AttackRangedCameraShake,4.f);
 		}
+	}
+	if (IsValid(MuzzleFlashEffect))
+	{
+		FVector MuzzleLocation = CurrentWeapon->GetPickupComponent()->GetSocketLocation(TEXT("MuzzleFlash"));
+		FRotator MuzzleRotation = CurrentWeapon->GetPickupComponent()->GetSocketRotation(TEXT("MuzzleFlash"));
+
+		UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			MuzzleFlashEffect,
+			MuzzleLocation,
+			MuzzleRotation
+		);
 	}
 }
 
