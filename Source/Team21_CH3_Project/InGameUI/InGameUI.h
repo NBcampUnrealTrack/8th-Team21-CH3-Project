@@ -77,6 +77,9 @@ public:
 	void PlayKeyGuideUI();
 	void HideKeyGuideUI();
 
+	void PlayBossSkillCoolTimeUI();
+	void HideBossSkillCoolTimeUI();
+
 protected:
 	virtual void NativeConstruct() override;
 
@@ -177,6 +180,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Key Guide")
 	float KeyGuideVisibleDuration = 5.0f;
 
+	// 보스 스킬 쿨타임 아이콘 패널
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UWidget> BossSkillCoolTimePanel;
+
+	// 보스 스킬 쿨타임 10초 애니메이션
+	UPROPERTY(Transient, meta = (BindWidgetAnimOptional))
+	TObjectPtr<UWidgetAnimation> BossSkillCoolTimeAnim;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Boss Skill")
+	float BossSkillCoolTimeDuration = 10.0f;
+
 private:
 	void UpdateHPDangerFeedback(float CurrentHealth, float MaxHealth);
 	void ApplyCrosshairTexture(UTexture2D* CrosshairTexture);
@@ -184,6 +198,7 @@ private:
 	float LastPlayerHealth = -1.0f;
 
 	FTimerHandle KeyGuideFadeOutTimerHandle;
-
 	void StartKeyGuideFadeOut();
+
+	FTimerHandle BossSkillCoolTimeHideTimerHandle;
 };
