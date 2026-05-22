@@ -8,6 +8,7 @@
 
 class UButton;
 class UTextBlock;
+class UWidgetAnimation;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API UOutGameMissionSelectWidget : public UOutGameWidgetBase{
@@ -15,6 +16,11 @@ class TEAM21_CH3_PROJECT_API UOutGameMissionSelectWidget : public UOutGameWidget
 	
 public:
 	virtual void NativeOnInitialized() override;
+	
+	UFUNCTION()
+	void PlayFadeInAnimation();
+	UFUNCTION()
+	void PlayFadeOutAnimation();
 	
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -29,6 +35,10 @@ protected:
 	TObjectPtr<UTextBlock> hardUnlockKillCountText;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> playerTotalKillText;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	TObjectPtr<UWidgetAnimation> fadeInAnim;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	TObjectPtr<UWidgetAnimation> fadeOutAnim;
 	
 	void LevelClicked();
 	
@@ -39,7 +49,10 @@ protected:
 	UFUNCTION()
 	void HandleHardClicked();
 	UFUNCTION()
-	void HandleBackClicked();
+	void HandleFadeInFinished();
+	UFUNCTION()
+	void HandleFadeOutFinished();
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UnlockKillCount")
 	int32 normalUnlockKillCount;

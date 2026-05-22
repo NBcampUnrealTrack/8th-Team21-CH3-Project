@@ -1,6 +1,7 @@
 // OutGameRootWidget.cpp
 #include "OutGameUI/Widget/OutGameRootWidget.h"
 #include "OutGameMainMenuWidget.h"
+#include "OutGameMissionSelectWidget.h"
 #include "OutGameSettingsWidget.h"
 #include "OutGameTraitWidget.h"
 #include "OutGameUI/Controller/OutGamePlayerController.h"
@@ -66,6 +67,13 @@ void UOutGameRootWidget::ShowWidget(EOutGameWidgetType widgetType)
 		if (UOutGameSettingsWidget* settingsWidget = Cast<UOutGameSettingsWidget>(ScreenSwitcher->GetActiveWidget()))
 		{
 			settingsWidget->UpdateSettings();
+		}
+	}
+	if (widgetType == EOutGameWidgetType::MissionSelect)
+	{
+		if (UOutGameMissionSelectWidget* missionSelectWidget = Cast<UOutGameMissionSelectWidget>(ScreenSwitcher->GetActiveWidget()))
+		{
+			missionSelectWidget->PlayFadeInAnimation();
 		}
 	}
 	
@@ -212,6 +220,14 @@ void UOutGameRootWidget::HandleBackRequested(){
 		return;
 	}
 	
+	if (currentWidgetType == EOutGameWidgetType::MissionSelect)
+	{
+		if (UOutGameMissionSelectWidget* missionSelectWidget = Cast<UOutGameMissionSelectWidget>(ScreenSwitcher->GetActiveWidget()))
+		{
+			missionSelectWidget->PlayFadeOutAnimation();
+		}
+		return;
+	}
 	ShowWidget(EOutGameWidgetType::MainMenu);
 	SetHeaderVisible(true);
 		

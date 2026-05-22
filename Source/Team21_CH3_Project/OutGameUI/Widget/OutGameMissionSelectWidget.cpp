@@ -5,6 +5,7 @@
 #include "Components/TextBlock.h"
 #include "OutGameUI/Controller/OutGamePlayerController.h"
 #include "OutGameWeaponSelectWidget.h"
+#include "Animation/WidgetAnimation.h"
 
 void UOutGameMissionSelectWidget::NativeOnInitialized(){
 	Super::NativeOnInitialized();
@@ -12,6 +13,21 @@ void UOutGameMissionSelectWidget::NativeOnInitialized(){
 	if (IsValid(EasyButton) == true) EasyButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleEasyClicked);
 	if (IsValid(NormalButton) == true) NormalButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleNormalClicked);
 	if (IsValid(HardButton) == true) HardButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleHardClicked);
+	
+	if (IsValid(fadeInAnim) == true)
+	{
+		FWidgetAnimationDynamicEvent fadeInFinishedEvent;
+		fadeInFinishedEvent.BindDynamic(this, &ThisClass::HandleFadeInFinished);
+		BindToAnimationFinished(fadeInAnim, fadeInFinishedEvent);
+	}
+	
+	if (IsValid(fadeOutAnim) == true)
+	{
+		FWidgetAnimationDynamicEvent fadeOutFinishedEvent;
+		fadeOutFinishedEvent.BindDynamic(this, &ThisClass::HandleFadeOutFinished);
+		BindToAnimationFinished(fadeOutAnim, fadeOutFinishedEvent);
+	}
+	
 	
 	selectedMapLevel = EMapLevel::Easy;
 	
@@ -45,6 +61,15 @@ void UOutGameMissionSelectWidget::LevelClicked(){
 			});
 		}
 	}
+}
+
+void UOutGameMissionSelectWidget::PlayFadeInAnimation(){
+	if (IsValid(fadeInAnim) == true) PlayAnimation(fadeInAnim);
+}
+
+void UOutGameMissionSelectWidget::PlayFadeOutAnimation(){
+	if (IsValid(fadeOutAnim) == true) PlayAnimation(fadeOutAnim);
+	
 }
 
 void UOutGameMissionSelectWidget::HandleEasyClicked(){
@@ -93,6 +118,20 @@ void UOutGameMissionSelectWidget::HandleHardClicked(){
 			}
 		}
 	}
-
 }
+
+void UOutGameMissionSelectWidget::HandleFadeInFinished(){
+	
+}
+
+void UOutGameMissionSelectWidget::HandleFadeOutFinished(){
+	if (AOutGamePlayerController* pc = GetOwningPlayer<AOutGamePlayerController>())
+	{
+		if (UOutGameRootWidget* rootWidgetInstance = pc->GetRootWidget())
+		{
+			rootWidgetInstance->ShowWidget(EOutGameWidgetType::MainMenu);
+		}
+	}
+}
+
 
