@@ -9,6 +9,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnObjectBreakedSignature);
 
 class ACharacterBase;
+class UStatusComponent;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API ABossWaveGimmick : public AActor
@@ -34,6 +35,9 @@ protected:
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
+	UFUNCTION()
+	void HandleBossCurrentHPChanged(float CurrentHP);
+
 
 protected:
 
@@ -55,4 +59,9 @@ protected:
 private:
 	UPROPERTY()
 	ACharacterBase* TargetBoss;
+
+	UFUNCTION()
+	UStatusComponent* GetStatus();
+
+	bool bIsHPBindingSuccess = false;
 };
