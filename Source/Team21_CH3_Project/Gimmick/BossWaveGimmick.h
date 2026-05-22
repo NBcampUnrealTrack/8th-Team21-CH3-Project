@@ -8,6 +8,9 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnObjectBreakedSignature);
 
+class ACharacterBase;
+class UStatusComponent;
+
 UCLASS()
 class TEAM21_CH3_PROJECT_API ABossWaveGimmick : public AActor
 {
@@ -22,11 +25,18 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Gimmick | Event")
 	FOnObjectBreakedSignature OnObjectBreaked;
 
+	void SetTargetBoss(ACharacterBase* NewBoss);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	virtual void Tick(float DeltaSeconds) override;
+
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	UFUNCTION()
+	void HandleBossCurrentHPChanged(float CurrentHP);
 
 
 protected:
@@ -45,4 +55,13 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Gimmick | State")
 	float ObjectCurrentHP;
+
+private:
+	UPROPERTY()
+	ACharacterBase* TargetBoss;
+
+	UFUNCTION()
+	UStatusComponent* GetStatus();
+
+	bool bIsHPBindingSuccess = false;
 };

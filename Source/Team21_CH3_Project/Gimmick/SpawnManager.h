@@ -10,6 +10,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBossSpawnedSignature, ACharacter*, SpawnedBoss);
 
 class UStatusComponent;
+class ABossWaveGimmick;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API ASpawnManager : public AActor
@@ -30,6 +31,9 @@ public:
     /** 웨이브 중지 및 타이머 초기화 */
     UFUNCTION(BlueprintCallable, Category = "Wave")
     void StopWave();
+
+    UPROPERTY(EditAnywhere, Category = "Gimmick")
+    ABossWaveGimmick* WorldGimmickObject;
 
 protected:
     /** 일정한 간격마다 몬스터를 스폰하는 핵심 함수 */
