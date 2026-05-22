@@ -60,4 +60,5 @@ protected:
 	int32 hardUnlockKillCount;
 	
 	EMapLevel selectedMapLevel;
+	bool bIsOpening;
 };
