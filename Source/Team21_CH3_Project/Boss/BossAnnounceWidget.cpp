@@ -7,8 +7,7 @@
 void UBossAnnounceWidget::NativeOnInitialized(){
 	Super::NativeOnInitialized();
 	
-	if (IsValid(announceText) == true) announceText->SetText(
-		FText::FromString(FString::Printf(TEXT("보스가 메테오를 소환합니다!"))));
+
 	
 	if (IsValid(announceAnim) == true)
 	{
@@ -18,7 +17,9 @@ void UBossAnnounceWidget::NativeOnInitialized(){
 	}
 }
 
-void UBossAnnounceWidget::PlayAnnounceAnimation(){
+void UBossAnnounceWidget::PlayAnnounceAnimation(const FText& InMessage){
+	if (IsValid(announceText) == true) announceText->SetText(InMessage);
+	
 	if (IsValid(announceSound))
 	{
 		UGameplayStatics::PlaySound2D(this, announceSound);
@@ -31,5 +32,5 @@ void UBossAnnounceWidget::PlayAnnounceAnimation(){
 }
 
 void UBossAnnounceWidget::HandleAnnounceFinished(){
-	
+	SetVisibility(ESlateVisibility::Collapsed);
 }

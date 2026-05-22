@@ -10,6 +10,7 @@ class ACharacter;
 class ASpawnManager;
 class UStatusComponent;
 class ABossMeteorStrikeActor;
+class ABossWaveGimmick;
 
 UENUM(BlueprintType)
 enum class EPhaseState : uint8{
@@ -38,6 +39,8 @@ private:
 	float secondPhaseTriggerRatio;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Boss", meta = (AllowPrivateAccess))
 	int32 requiredCoreCount;
+	UPROPERTY(EditAnywhere, Category = "Boss|Gimmick")
+	TArray<TObjectPtr<ABossWaveGimmick>> bossWaveGimmicks;
 	
 	UFUNCTION()
 	void HandleBossSpawned(ACharacter* SpawnedBoss);
@@ -45,7 +48,7 @@ private:
 	void HandleBossCurrentHPChanged(float CurrentHP);
 	UFUNCTION()
 	void HandlePhaseObjectBreak();
-	void PlayAnnounceAnimation();
+	void CreateAnnounceAnimation();
 	void PhaseGimmickEnd();
 	
 		

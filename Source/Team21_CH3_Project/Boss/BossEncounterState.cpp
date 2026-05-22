@@ -2,6 +2,7 @@
 #include "Boss/BossEncounterState.h"
 #include "Boss/BossMeteorStrikeActor.h"
 #include "Boss/BossAnnounceWidget.h"
+#include "Gimmick/BossWaveGimmick.h"
 #include "Character/NonPlayerCharacter.h"
 #include "Component/StatusComponent.h"
 #include "Gimmick/SpawnManager.h"
@@ -29,6 +30,8 @@ ABossEncounterState::ABossEncounterState()
 void ABossEncounterState::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	CreateAnnounceAnimation();
 	
 	TArray<AActor*> FoundSpawnManagers;
 	UGameplayStatics::GetAllActorsOfClass(this, ASpawnManager::StaticClass(), FoundSpawnManagers);
@@ -63,10 +66,15 @@ void ABossEncounterState::HandleBossCurrentHPChanged(float CurrentHP){
 
 	if (ratio <= firstPhaseTriggerRatio && currentState == EPhaseState::NonePhase)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Meteor Start"))
 		currentState = EPhaseState::FirstPhase;
+		UE_LOG(LogTemp, Warning, TEXT("Meteor Start"));
 		
-		PlayAnnounceAnimation();
+		if (IsValid(announceWidgetInstance) == true)
+		{
+			announceWidgetInstance->SetVisibility(ESlateVisibility::Visible);
+			announceWidgetInstance->PlayAnnounceAnimation(FText::FromString(TEXT("보스가 메테오를 소환합니다.")));
+		}
+
 		StartMeteorPattern();
 	}
 	
@@ -75,10 +83,19 @@ void ABossEncounterState::HandleBossCurrentHPChanged(float CurrentHP){
 		UE_LOG(LogTemp, Warning, TEXT("SecondPhase Start"))
 		currentState = EPhaseState::SecondPhase;
 		
+		announceWidgetInstance->SetVisibility(ESlateVisibility::Visible);
+		announceWidgetInstance->PlayAnnounceAnimation(FText::FromString
+			(TEXT("보스가 무적 상태입니다.\n회복 장치를 모두 파괴하세요.")));
+		ANonPlayerCharacter* Boss = Cast<ANonPlayerCharacter>(cachedBoss);
+		//Boss->POW(true); 		// enable God Mode() 
 		// PlayAnnounceAnimation(); - Second Phase Start Message
-		// enable God Mode() 
-		// HealObject->OnObjectBreaked.RemoveDynamic(this, &ThisClass::HandlePhaseObjectBreak);
-		// HealObject->OnObjectBreaked.AddDynamic(this, &ThisClass::HandlePhaseObjectBreak);
+
+		for (auto& gimmick : bossWaveGimmicks)
+		{
+			gimmick->ActivateGimmickObject();
+			gimmick->OnObjectBreaked.RemoveDynamic(this, &ThisClass::HandlePhaseObjectBreak);
+			gimmick->OnObjectBreaked.AddDynamic(this, &ThisClass::HandlePhaseObjectBreak);
+		}
 	}
 	
 	if (ratio <= KINDA_SMALL_NUMBER)
@@ -92,18 +109,21 @@ void ABossEncounterState::HandleBossCurrentHPChanged(float CurrentHP){
 void ABossEncounterState::HandlePhaseObjectBreak(){
 	++objectBreakCount;
 	
-	if (objectBreakCount >= phaseStartObjectCount)
-	{
-		PhaseGimmickEnd();
-	}
+	if (objectBreakCount >= phaseStartObjectCount) PhaseGimmickEnd();
+	
 }
 
 void ABossEncounterState::PhaseGimmickEnd(){
-	// disabled God Mode
-	// 	PlayAnnounceAnimation(); -disabled God Mod Message
+
+	ANonPlayerCharacter* Boss = Cast<ANonPlayerCharacter>(cachedBoss);
+	// Boss->POW(false); 	// disabled God Mode
+	
+	announceWidgetInstance->SetVisibility(ESlateVisibility::Visible);
+	announceWidgetInstance->PlayAnnounceAnimation(FText::FromString
+	(TEXT("회복 장치가 모두 파괴되었습니다.\n보스의 무적 상태가 해제됩니다.")));
 }
 
-void ABossEncounterState::PlayAnnounceAnimation(){
+void ABossEncounterState::CreateAnnounceAnimation(){
 	if (IsValid(announceWidgetClass) == true)
 	{
 		APlayerController* PC = GetWorld()->GetFirstPlayerController();
@@ -111,7 +131,7 @@ void ABossEncounterState::PlayAnnounceAnimation(){
 		if (IsValid(announceWidgetInstance) == true )
 		{
 			announceWidgetInstance->AddToViewport();
-			announceWidgetInstance->PlayAnnounceAnimation();
+			announceWidgetInstance->SetVisibility(ESlateVisibility::Collapsed);
 		}
 	}
 }

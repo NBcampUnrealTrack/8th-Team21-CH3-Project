@@ -15,7 +15,7 @@ class TEAM21_CH3_PROJECT_API UBossAnnounceWidget : public UUserWidget{
 public:
 	virtual void NativeOnInitialized() override;
 	
-	void PlayAnnounceAnimation();
+	void PlayAnnounceAnimation(const FText& InMessage);
 	
 private:
 	UPROPERTY(meta = (BindWidget))
