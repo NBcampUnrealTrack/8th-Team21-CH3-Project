@@ -48,8 +48,6 @@ private:
 	TObjectPtr<UButton> nextWeaponButton;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> applyButton;
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> backButton;
 	
 	UFUNCTION()
 	void UpdateNextWeaponData(bool bIsNext);

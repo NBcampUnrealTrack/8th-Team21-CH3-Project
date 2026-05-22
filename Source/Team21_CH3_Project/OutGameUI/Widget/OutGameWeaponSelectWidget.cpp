@@ -16,8 +16,6 @@ void UOutGameWeaponSelectWidget::NativeOnInitialized(){
 		previousWeaponButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandlePreviousClicked);
 	if (IsValid(applyButton) == true)
 		applyButton->OnClicked.AddUniqueDynamic(this, &ThisClass::UOutGameWeaponSelectWidget::HandleApplyClicked);
-	if (IsValid(backButton) == true)
-		backButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleBackClicked);
 
 	bIsWeaponCameraMoving = false;
 	previewManagerTag = TEXT("WeaponSelect_PreviewManager");

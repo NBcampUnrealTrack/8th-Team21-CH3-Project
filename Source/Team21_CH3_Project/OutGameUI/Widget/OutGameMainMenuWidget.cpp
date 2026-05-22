@@ -15,8 +15,6 @@ void UOutGameMainMenuWidget::NativeOnInitialized(){
 		ContinueButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleContinueClicked);
 	if (IsValid(PlayButton) == true)
 		PlayButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandlePlayClicked);
-	if (IsValid(QuitButton) == true)
-		QuitButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleQuitClicked);
 
 }
 
@@ -67,12 +65,5 @@ void UOutGameMainMenuWidget::HandlePlayClicked(){
 			rootWidgetInstance->ShowWidget(EOutGameWidgetType::MissionSelect);
 			// rootWidgetInstance->ShowTransition([this, pc, rootWidgetInstance]() {};
 		}
-	}
-}
-
-void UOutGameMainMenuWidget::HandleQuitClicked(){
-	if (AOutGamePlayerController* pc = GetOwningPlayer<AOutGamePlayerController>())
-	{
-		UKismetSystemLibrary::QuitGame(this, pc, EQuitPreference::Quit, false);
 	}
 }

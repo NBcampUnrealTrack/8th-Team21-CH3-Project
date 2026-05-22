@@ -24,8 +24,6 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> HardButton;
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> BackButton; 
-	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> normalUnlockKillCountText;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> hardUnlockKillCountText;

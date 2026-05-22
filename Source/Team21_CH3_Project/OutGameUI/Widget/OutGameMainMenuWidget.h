@@ -29,8 +29,6 @@ protected:
 	TObjectPtr<UButton> ContinueButton;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> PlayButton;
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> QuitButton;
 	
 	UFUNCTION()
 	void HandleNewGameClicked();
@@ -38,6 +36,4 @@ protected:
 	void HandleContinueClicked();
 	UFUNCTION()
 	void HandlePlayClicked();
-	UFUNCTION()
-	void HandleQuitClicked();
 };

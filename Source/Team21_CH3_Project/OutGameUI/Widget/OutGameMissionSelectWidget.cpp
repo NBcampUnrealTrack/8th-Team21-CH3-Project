@@ -12,7 +12,6 @@ void UOutGameMissionSelectWidget::NativeOnInitialized(){
 	if (IsValid(EasyButton) == true) EasyButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleEasyClicked);
 	if (IsValid(NormalButton) == true) NormalButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleNormalClicked);
 	if (IsValid(HardButton) == true) HardButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleHardClicked);
-	if (IsValid(BackButton) == true) BackButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleBackClicked);
 	
 	selectedMapLevel = EMapLevel::Easy;
 	
@@ -95,16 +94,5 @@ void UOutGameMissionSelectWidget::HandleHardClicked(){
 		}
 	}
 
-}
-
-void UOutGameMissionSelectWidget::HandleBackClicked(){
-	if (AOutGamePlayerController* pc = GetOwningPlayer<AOutGamePlayerController>())
-	{
-		if (UOutGameRootWidget* rootWidgetInstance = pc->GetRootWidget())
-		{
-			rootWidgetInstance->ShowWidget(EOutGameWidgetType::MainMenu);
-			// rootWidgetInstance->ShowTransition([this, pc, rootWidgetInstance](){}
-		}
-	}
 }
 
