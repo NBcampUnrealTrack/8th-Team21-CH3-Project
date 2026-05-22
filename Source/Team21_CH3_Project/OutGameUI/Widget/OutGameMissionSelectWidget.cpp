@@ -41,11 +41,7 @@ void UOutGameMissionSelectWidget::NativeOnInitialized(){
 	if (IsValid(hardUnlockKillCountText) == true) hardUnlockKillCountText->SetText(
 		FText::FromString(FString::Printf(TEXT("%d"), hardUnlockKillCount)));
 	
-	if (UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetWorld()->GetGameInstance()))
-	{
-		if (IsValid(playerTotalKillText) == true) playerTotalKillText->SetText(
-			FText::FromString(FString::Printf(TEXT("%d"), GI->GetPlayerTotalKillCount())));
-	}
+
 	
 }
 
@@ -58,7 +54,7 @@ void UOutGameMissionSelectWidget::LevelClicked(){
 			{
 				rootWidgetInstance->SetSelectedLevel(selectedMapLevel);
 				rootWidgetInstance->SetHeaderVisible(false);
-				pc->SetViewTargetByTag("RifleSelectCamera", 0.0f);
+				pc->SetViewTargetByTag("FirstSelectCamera", 0.0f);
 				rootWidgetInstance->ShowWidget(EOutGameWidgetType::WeaponSelect);
 			});
 		}
@@ -68,6 +64,12 @@ void UOutGameMissionSelectWidget::LevelClicked(){
 void UOutGameMissionSelectWidget::PlayFadeInAnimation(){
 	if (bIsOpening) return;
 	bIsOpening = true;
+	
+	if (UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetWorld()->GetGameInstance()))
+	{
+		if (IsValid(playerTotalKillText) == true) playerTotalKillText->SetText(
+			FText::FromString(FString::Printf(TEXT("%d"), GI->GetPlayerTotalKillCount())));
+	}
 	
 	if (IsValid(fadeInAnim) == true) PlayAnimation(fadeInAnim);
 }

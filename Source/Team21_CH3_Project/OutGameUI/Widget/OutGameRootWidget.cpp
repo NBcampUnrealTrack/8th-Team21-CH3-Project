@@ -299,6 +299,17 @@ void UOutGameRootWidget::ShowMissionSelectConfirm(){
 		);
 }
 
+void UOutGameRootWidget::ShowWeaponSelectConfirm(){
+	pendingConfirmAction = EConfirmAction::WeaponSelect;
+	
+	if (IsValid(confirmDialogWidget) == false) return;
+	confirmDialogWidget->EnableOkButton();
+	confirmDialogWidget->ShowConfirmDialog(
+		FText::FromString(TEXT("Weapon Select")),
+		FText::FromString(TEXT("해금하기위한 킬 수가 부족합니다!"))
+		);
+}
+
 void UOutGameRootWidget::HandleConfirmAccepted(){
 	switch (pendingConfirmAction)
 	{

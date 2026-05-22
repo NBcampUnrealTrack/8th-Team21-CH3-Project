@@ -14,6 +14,8 @@ struct TEAM21_CH3_PROJECT_API FOutGameWeaponPreviewData
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FText displayName;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 RequiredTotalKillCount = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<AActor> weaponClass;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<AActor> previewSpawnPoint;

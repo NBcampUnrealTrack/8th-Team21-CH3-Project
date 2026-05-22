@@ -27,6 +27,7 @@ protected:
 	bool ShowNextPreviewWeapon();
 	bool ShowPreviousPreviewWeapon();
 
+	bool IsWeaponUnlocked(const FOutGameWeaponPreviewData& weaponData) const;
 	const FOutGameWeaponPreviewData* GetCurrentWeaponData() const;
 	AOutGameWeaponPreviewManager* GetWeaponPreviewManagerInstance() const;
 };

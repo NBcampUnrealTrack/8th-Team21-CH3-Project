@@ -14,6 +14,8 @@ public:
 	AOutGameWeaponPreviewManager();
 	
 	const FOutGameWeaponPreviewData* GetCurrentWeaponData();
+	int32 GetCurrentWeaponIndex() const;
+	const FOutGameWeaponPreviewData* GetWeaponDataByIndex(int32 weaponIndex) const;
 	
 	UFUNCTION()
 	bool ShowWeaponByIndex(int32 weaponIndex);

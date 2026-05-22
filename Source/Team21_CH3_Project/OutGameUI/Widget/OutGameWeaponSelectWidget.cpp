@@ -154,14 +154,14 @@ void UOutGameWeaponSelectWidget::UpdateNextWeaponData(bool bIsNext){
 	{
 		switch (currentWeaponData->weaponType)
 		{
-		case EWeaponType::Rifle:
-			PC->SetViewTargetByTag("RifleSelectCamera", 0.5f);
+		case EWeaponType::Pistol:
+			PC->SetViewTargetByTag("FirstSelectCamera", 0.5f);
 			break;
 		case EWeaponType::Shotgun:
-			PC->SetViewTargetByTag("ShotgunSelectCamera", 0.5f);
+			PC->SetViewTargetByTag("SecondSelectCamera", 0.5f);
 			break;
-		case EWeaponType::Pistol:
-			PC->SetViewTargetByTag("PistolSelectCamera", 0.5f);
+		case EWeaponType::Rifle:
+			PC->SetViewTargetByTag("ThirdSelectCamera", 0.5f);
 			break;
 		default:
 			break;

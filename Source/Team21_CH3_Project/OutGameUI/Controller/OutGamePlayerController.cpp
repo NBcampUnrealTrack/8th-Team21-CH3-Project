@@ -75,3 +75,42 @@ void AOutGamePlayerController::HandleNavigateRight(){
 void AOutGamePlayerController::HandleEscPressed(){
 	if (IsValid(RootWidgetInstance) == true) RootWidgetInstance->HandleBackRequested();
 }
+
+void AOutGamePlayerController::CheatAddKills(int32 Amount)
+{
+#if !UE_BUILD_SHIPPING
+	if (UTeamGameInstance* GI = GetGameInstance<UTeamGameInstance>())
+	{
+		GI->AddPlayerKillCount(Amount);
+
+		if (IsValid(RootWidgetInstance))
+		{
+			RootWidgetInstance->UpdateGoldUI();
+		}
+
+		UE_LOG(LogTemp, Warning, TEXT("CheatAddKills: %d / TotalKills: %d"),
+			Amount,
+			GI->GetPlayerTotalKillCount());
+	}
+#endif
+}
+
+void AOutGamePlayerController::CheatAddGold(int32 Amount)
+{
+#if !UE_BUILD_SHIPPING
+	if (UTeamGameInstance* GI = GetGameInstance<UTeamGameInstance>())
+	{
+		GI->AddPlayerGold(Amount);
+		GI->SaveGameData();
+
+		if (IsValid(RootWidgetInstance))
+		{
+			RootWidgetInstance->UpdateGoldUI();
+		}
+
+		UE_LOG(LogTemp, Warning, TEXT("CheatAddGold: %d / Gold: %d"),
+			Amount,
+			GI->GetPlayerGold());
+	}
+#endif
+}

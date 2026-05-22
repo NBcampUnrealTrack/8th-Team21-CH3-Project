@@ -36,7 +36,8 @@ enum class EConfirmAction : uint8{
 	None = 0 UMETA(DisplayName = "None"),
 	QuitGame = 1 UMETA(DisplayName = "QuitGame"),
 	NewGame = 2 UMETA(DisplayName = "NewGame"),
-	MissionSelect = 3 UMETA(DisplayName = "MissionSelect")
+	MissionSelect = 3 UMETA(DisplayName = "MissionSelect"),
+	WeaponSelect = 4 UMETA(DisplayName = "WeaponSelect")
 };
 
 UCLASS()
@@ -111,6 +112,7 @@ public:
 	void ShowQuitConfirm();
 	void ShowNewGameConfirm();	
 	void ShowMissionSelectConfirm();
+	void ShowWeaponSelectConfirm();
 	
 private:
 	UPROPERTY(meta = (BindWidget))

@@ -1,6 +1,10 @@
 // OutGameWeaponPreviewWidgetBase.cpp
 #include "OutGameUI/Widget/OutGameWeaponPreviewWidgetBase.h"
+
+#include "OutGameRootWidget.h"
+#include "Game/TeamGameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "OutGameUI/Controller/OutGamePlayerController.h"
 #include "OutGameUI/Preview/OutGameWeaponPreviewManager.h"
 
 bool UOutGameWeaponPreviewWidgetBase::EnterWeaponPreview(){
@@ -27,8 +31,22 @@ bool UOutGameWeaponPreviewWidgetBase::ShowNextPreviewWeapon(){
 	AOutGameWeaponPreviewManager* previewManager = GetWeaponPreviewManagerInstance();
 	if (IsValid(previewManager) == false) return false;
 
-	if (previewManager->ShowNextWeapon() == false) return false;
+	const int32 nextWeaponIndex = previewManager->GetCurrentWeaponIndex() + 1;
+	const FOutGameWeaponPreviewData* nextWeaponData = previewManager->GetWeaponDataByIndex(nextWeaponIndex);
+	
+	if (nextWeaponData == nullptr) return false;
 
+	if (IsWeaponUnlocked(*nextWeaponData) == false)
+	{
+		if (AOutGamePlayerController* PC = Cast<AOutGamePlayerController>(GetOwningPlayer()))
+		{
+			PC->GetRootWidget()->ShowWeaponSelectConfirm();
+		}
+		return false;
+	}
+	
+	if (previewManager->ShowWeaponByIndex(nextWeaponIndex) == false) return false;
+	
 	currentWeaponData = previewManager->GetCurrentWeaponData();
 	return currentWeaponData != nullptr;
 }
@@ -53,6 +71,13 @@ void UOutGameWeaponPreviewWidgetBase::ClearWeaponPreview(){
 
 const FOutGameWeaponPreviewData* UOutGameWeaponPreviewWidgetBase::GetCurrentWeaponData() const{
 	return currentWeaponData;
+}
+
+bool UOutGameWeaponPreviewWidgetBase::IsWeaponUnlocked(const FOutGameWeaponPreviewData& weaponData) const{
+	const UTeamGameInstance* GI = Cast<UTeamGameInstance>(GetGameInstance());
+	if (IsValid(GI) == false) return false;
+
+	return GI->GetPlayerTotalKillCount() >= weaponData.RequiredTotalKillCount;
 }
 
 AOutGameWeaponPreviewManager* UOutGameWeaponPreviewWidgetBase::GetWeaponPreviewManagerInstance() const{

@@ -35,4 +35,9 @@ private:
 	void HandleNavigateRight();
 	UFUNCTION()
 	void HandleEscPressed();
+	
+	UFUNCTION(Exec)
+	void CheatAddKills(int32 Amount);
+	UFUNCTION(Exec)
+	void CheatAddGold(int32 Amount);
 };

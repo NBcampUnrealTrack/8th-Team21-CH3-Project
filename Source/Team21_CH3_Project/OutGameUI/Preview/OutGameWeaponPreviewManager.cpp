@@ -19,6 +19,19 @@ const FOutGameWeaponPreviewData* AOutGameWeaponPreviewManager::GetCurrentWeaponD
 	return &weaponPreviews[currentWeaponIndex];
 }
 
+int32 AOutGameWeaponPreviewManager::GetCurrentWeaponIndex() const{
+	return currentWeaponIndex;
+}
+
+const FOutGameWeaponPreviewData* AOutGameWeaponPreviewManager::GetWeaponDataByIndex(int32 weaponIndex) const{
+	if (weaponPreviews.IsValidIndex(weaponIndex) == false)
+	{
+		return nullptr;
+	}
+
+	return &weaponPreviews[weaponIndex];
+}
+
 bool AOutGameWeaponPreviewManager::ShowWeaponByIndex(int32 weaponIndex){
 	if (weaponPreviews.IsValidIndex(weaponIndex) == false)
 	{

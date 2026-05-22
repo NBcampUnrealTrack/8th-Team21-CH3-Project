@@ -77,8 +77,11 @@ void ABossEncounterState::HandleBossCurrentHPChanged(float CurrentHP){
 
 		StartMeteorPattern();
 	}
+	const FName currentMapName(*UGameplayStatics::GetCurrentLevelName(this, true));
 	
-	if (ratio <= secondPhaseTriggerRatio && currentState == EPhaseState::FirstPhase)
+	bool bIsNormal = currentMapName == TEXT("NormalMap") ? true : false;
+	
+	if (ratio <= secondPhaseTriggerRatio && currentState == EPhaseState::FirstPhase && bIsNormal == true)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("SecondPhase Start"))
 		currentState = EPhaseState::SecondPhase;
