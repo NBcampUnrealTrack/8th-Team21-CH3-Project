@@ -7,6 +7,7 @@
 
 class UButton;
 class UTextBlock;
+class UProgressBar;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API UOutGameWeaponSelectWidget : public UOutGameWeaponPreviewWidgetBase{
@@ -48,9 +49,19 @@ private:
 	TObjectPtr<UButton> nextWeaponButton;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> applyButton;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UProgressBar> damageBar;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UProgressBar> ammoBar;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UProgressBar> fireRateBar;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UProgressBar> weaponRangeBar;
 	
 	UFUNCTION()
 	void UpdateNextWeaponData(bool bIsNext);
+	UFUNCTION()
+	void UpdateWeaponStatBars(const FOutGameWeaponPreviewData& weaponData);
 	UFUNCTION()
 	void SetWeaponInfo();
 	
