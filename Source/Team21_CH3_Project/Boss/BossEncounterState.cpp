@@ -14,7 +14,6 @@ ABossEncounterState::ABossEncounterState()
 	
 	firstPhaseTriggerRatio = 0.7f;
 	secondPhaseTriggerRatio = 0.1f;
-	bossMaxHP = 1000.0f;
 	cachedBoss = nullptr;
 	requiredCoreCount = 3;
 	
@@ -51,9 +50,6 @@ void ABossEncounterState::HandleBossSpawned(ACharacter* SpawnedBoss)
 {
 	cachedBoss = SpawnedBoss;
 	if (IsValid(cachedBoss) == false) return;
-	
-	GetStatus()->SetMaxHP(bossMaxHP);
-	GetStatus()->SetCurrentHP(bossMaxHP);
 
 	GetStatus()->OnCurrentHPChanged.AddUObject(this, &ThisClass::HandleBossCurrentHPChanged);
 }

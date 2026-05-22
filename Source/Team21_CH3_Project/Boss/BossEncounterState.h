@@ -32,8 +32,6 @@ public:
 private:
 	UPROPERTY(EditAnywhere, Category = "Boss", meta = (AllowPrivateAccess))
 	TObjectPtr<ACharacter> cachedBoss;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= "Boss" , meta = (AllowPrivateAccess))
-	float bossMaxHP;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Boss", meta = (AllowPrivateAccess))
 	float firstPhaseTriggerRatio;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Boss", meta = (AllowPrivateAccess))

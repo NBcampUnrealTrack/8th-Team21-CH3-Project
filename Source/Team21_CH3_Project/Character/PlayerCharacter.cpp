@@ -767,8 +767,8 @@ void APlayerCharacter::EndSlide()
 
 void APlayerCharacter::ApplyWeaponRecoil()
 {
-	const float PitchRecoil = -1.2f; // 위로 튀게. 부호는 프로젝트 입력 방향에 따라 테스트 필요
-	const float YawRecoil = FMath::RandRange(-0.4f, 0.4f);
+	const float PitchRecoil = -0.4f; // 위로 튀게. 부호는 프로젝트 입력 방향에 따라 테스트 필요
+	const float YawRecoil = FMath::RandRange(-0.2f, 0.2f);
 
 	AddControllerPitchInput(PitchRecoil);
 	AddControllerYawInput(YawRecoil);

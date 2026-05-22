@@ -24,9 +24,27 @@ void AWeapon::SetCurrentBullsets(int32 InCurrentBullsets)
 
 void AWeapon::EquipToCharacter(ACharacterBase* InCharacter)
 {
+	FName SocketName;
+
+	switch (WeaponType)
+	{
+	case EWeaponType::Rifle:
+		SocketName = FName(TEXT("hand_rSocket"));
+		break;
+	case EWeaponType::Shotgun:
+		SocketName = FName(TEXT("hand_rSocket_0"));
+		break;
+	case EWeaponType::Pistol:
+		SocketName = FName(TEXT("hand_rSocket_1"));
+		break;
+	default:
+		SocketName = FName(TEXT("hand_rSocket"));
+		break;
+	}
+
 	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
 	//SnapToTarget -> 아이템의 위치,회전,크기를 목표지점과 일치시킴(Snap) /true-> 두 액터를 하나로 붙임
-	AttachToComponent(InCharacter->GetMesh(), AttachmentRules, FName(TEXT("hand_rSocket")));
+	AttachToComponent(InCharacter->GetMesh(), AttachmentRules, SocketName);
 	//아이템 주운 캐릭터의 메시를 타켓으로, 언리얼에서 만들어놓은 소켓에 붙임
 	SetActorEnableCollision(false);
 	PickupComponent->SetSimulatePhysics(false);
