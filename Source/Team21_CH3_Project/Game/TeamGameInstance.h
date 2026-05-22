@@ -157,4 +157,16 @@ public:
 	void ClearSavedAugments();
 
 #pragma endregion
+	
+#pragma region ToolTip
+	
+public:
+	bool HasShownKeyGuide() const;
+	void SetHasShownKeyGuide(bool bInShown);
+	
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Guide", meta = (AllowPrivateAccess))
+	bool bHasShownKeyGuide;
+	
+#pragma endregion 
 };

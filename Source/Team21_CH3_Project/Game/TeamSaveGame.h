@@ -23,4 +23,6 @@ public:
 	int32 playerGold = 0;
 	UPROPERTY()
 	TMap<FName, int32> traitLevels;
+	UPROPERTY()
+	bool bHasShownKeyGuide = false;
 };
