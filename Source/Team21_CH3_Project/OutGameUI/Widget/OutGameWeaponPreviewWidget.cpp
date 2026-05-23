@@ -68,13 +68,16 @@ bool UOutGameWeaponPreviewWidget::InMouseInsidePreviewArea(const FPointerEvent& 
 }
 
 void UOutGameWeaponPreviewWidget::HandleFirstClicked(){
+	PlayUISound(EOutGameUISoundType::Click);
 	if (ShowPreviewWeaponByIndex(0) == false) return;
 }
 
 void UOutGameWeaponPreviewWidget::HandleSecondClicked(){
+	PlayUISound(EOutGameUISoundType::Click);
 	if (ShowPreviewWeaponByIndex(1) == false) return;
 }
 
 void UOutGameWeaponPreviewWidget::HandleThirdClicked(){
+	PlayUISound(EOutGameUISoundType::Click);
 	if (ShowPreviewWeaponByIndex(2) == false) return;
 }

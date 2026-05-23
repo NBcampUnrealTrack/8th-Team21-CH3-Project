@@ -123,6 +123,8 @@ void UOutGameWeaponSelectWidget::NavigateWeapon(int32 direction){
 	if (bIsWeaponCameraMoving == true)
 		return;
 
+	PlayUISound(EOutGameUISoundType::Click);
+	
 	if (direction > 0)
 		HandleNextClicked();
 	else

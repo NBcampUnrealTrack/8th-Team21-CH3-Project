@@ -2,6 +2,7 @@
 #include "InGameUI/AugmentCardSelectWidget.h"
 #include "InGameUI/AugmentCardWidget.h"
 #include "Animation/WidgetAnimation.h"
+#include "Kismet/GameplayStatics.h"
 
 void UAugmentCardSelectWidget::NativeConstruct()
 {
@@ -29,6 +30,16 @@ void UAugmentCardSelectWidget::NativeConstruct()
 	FWidgetAnimationDynamicEvent fadeInFinishedEvent;
 	fadeInFinishedEvent.BindDynamic(this, &ThisClass::HandleFadeInFinished);
 	if (IsValid(fadeInAnim) == true) BindToAnimationFinished(fadeInAnim, fadeInFinishedEvent);
+	
+	if (IsValid(cardFadeInAnimSound) == false)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("cardFadeInAnimSound Is Valid"));
+	}
+	else
+	{
+		UGameplayStatics::PlaySound2D(this, cardFadeInAnimSound);
+	}
+	
 	if (IsValid(fadeInAnim) == true) PlayAnimation(fadeInAnim);
 	
 	
@@ -68,6 +79,7 @@ void UAugmentCardSelectWidget::HandleFirstCardSelected(FAugmentResult SelectedCa
 }
 
 void UAugmentCardSelectWidget::HandleSecondCardSelected(FAugmentResult SelectedCardData){
+	
 	StartCardSelected(SelectedCardData, secondCardSelectedAnim);
 }
 
@@ -76,6 +88,15 @@ void UAugmentCardSelectWidget::HandleThirdCardSelected(FAugmentResult SelectedCa
 }
 
 void UAugmentCardSelectWidget::StartCardSelected(FAugmentResult selectedCardData, UWidgetAnimation* selectedAnim){
+	if (IsValid(cardFadeOutAnimSound) == false)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("cardFadeOutAnimSound Is Valid"));
+	}
+	else
+	{
+		UGameplayStatics::PlaySound2D(this, cardFadeOutAnimSound);
+	}
+	
 	if (bIsSelecting) return;
 	
 	bIsSelecting = true;

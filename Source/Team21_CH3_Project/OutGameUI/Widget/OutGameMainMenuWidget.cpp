@@ -35,6 +35,7 @@ bool UOutGameMainMenuWidget::IsLobby() const{
 }
 
 void UOutGameMainMenuWidget::HandleNewGameClicked(){
+
 	if (AOutGamePlayerController* pc = GetOwningPlayer<AOutGamePlayerController>())
 	{
 		if (UOutGameRootWidget* rootWidgetInstance = pc->GetRootWidget())
@@ -45,6 +46,7 @@ void UOutGameMainMenuWidget::HandleNewGameClicked(){
 }
 
 void UOutGameMainMenuWidget::HandleContinueClicked(){
+	PlayUISound(EOutGameUISoundType::Click);
 	if (AOutGamePlayerController* pc = GetOwningPlayer<AOutGamePlayerController>())
 	{
 		if (UOutGameRootWidget* rootWidgetInstance = pc->GetRootWidget())
@@ -58,6 +60,7 @@ void UOutGameMainMenuWidget::HandleContinueClicked(){
 }
 
 void UOutGameMainMenuWidget::HandlePlayClicked(){
+	PlayUISound(EOutGameUISoundType::Confirm);
 	if (AOutGamePlayerController* pc = GetOwningPlayer<AOutGamePlayerController>())
 	{
 		if (UOutGameRootWidget* rootWidgetInstance = pc->GetRootWidget())

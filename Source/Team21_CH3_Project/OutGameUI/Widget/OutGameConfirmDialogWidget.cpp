@@ -67,11 +67,13 @@ void UOutGameConfirmDialogWidget::HandleConfirmClicked(){
 }
 
 void UOutGameConfirmDialogWidget::HandleCancelClicked(){
+	PlayUISound(EOutGameUISoundType::HideAnim);
 	HideConfirmDialog();
 	OnCanceled.Broadcast();
 }
 
 void UOutGameConfirmDialogWidget::HandleOkClicked(){
+	PlayUISound(EOutGameUISoundType::HideAnim);
 	HideConfirmDialog();
 	OnCanceled.Broadcast();
 }

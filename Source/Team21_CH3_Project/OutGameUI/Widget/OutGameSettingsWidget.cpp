@@ -82,6 +82,8 @@ void UOutGameSettingsWidget::HandleMasterVolumeChanged(float value){
 }
 
 void UOutGameSettingsWidget::HandleGraphicsQualityChanged(FString selectedItem, ESelectInfo::Type selectionType){
+	// TODO:Sound
+	
 	if (selectedItem == TEXT("Low")) pendingGraphicsQuality = 0;
 	else if (selectedItem == TEXT("Medium")) pendingGraphicsQuality = 1;
 	else if (selectedItem == TEXT("High")) pendingGraphicsQuality = 2;
@@ -90,6 +92,8 @@ void UOutGameSettingsWidget::HandleGraphicsQualityChanged(FString selectedItem, 
 }
 
 void UOutGameSettingsWidget::HandleApplyClicked(){
+	PlayUISound(EOutGameUISoundType::Click);
+	
 	if (UGameUserSettings* gameUserSettings = GEngine->GetGameUserSettings())
 	{
 		gameUserSettings->SetOverallScalabilityLevel(pendingGraphicsQuality); // 0 Low, 1 Medium, 2 High, 3Epic, 4Cinematic

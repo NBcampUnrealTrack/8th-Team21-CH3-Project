@@ -240,6 +240,8 @@ void UOutGameTraitWidget::RefreshAllTraitCards(){
 }
 
 void UOutGameTraitWidget::HandleTraitCardClicked(FName inTraitId){
+	PlayUISound(EOutGameUISoundType::Click);
+	
 	selectedTraitId = inTraitId;
 	RefreshChangeBonusDetail(inTraitId);
 	RefreshSelectedTraitDetail(inTraitId);
@@ -263,12 +265,14 @@ void UOutGameTraitWidget::HandleTraitLevelUpClicked(){
 		
 		if (subsystem->TryUpgradeTrait(selectedTraitId, *traitData))
 		{
+			PlayUISound(EOutGameUISoundType::Success);
 			RefreshSelectedTraitDetail(selectedTraitId);
 			RefreshAllTraitCards();
 			UpdateGoldUI();
 		}
 		else
 		{
+			PlayUISound(EOutGameUISoundType::Fail);
 			PlayFailedFeedbackAnimation();
 		}
 	}

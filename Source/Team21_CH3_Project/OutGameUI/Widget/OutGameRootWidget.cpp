@@ -205,7 +205,11 @@ void UOutGameRootWidget::HandleBackRequested(){
 		
 		if (IsValid(confirmDialogWidget) == false) return;
 		
-		if (confirmDialogWidget->IsOpend()) confirmDialogWidget->HideConfirmDialog();
+		if (confirmDialogWidget->IsOpend())
+		{
+			PlayUISound(EOutGameUISoundType::Back);
+			confirmDialogWidget->HideConfirmDialog();
+		}
 		else ShowQuitConfirm();
 		
 		return;
@@ -215,6 +219,7 @@ void UOutGameRootWidget::HandleBackRequested(){
 	{
 		if (UOutGameWeaponSelectWidget* weaponSelectWidget = Cast<UOutGameWeaponSelectWidget>(ScreenSwitcher->GetActiveWidget()))
 		{
+			PlayUISound(EOutGameUISoundType::Back);
 			weaponSelectWidget->RequestBack();
 		}
 		return;
@@ -228,6 +233,7 @@ void UOutGameRootWidget::HandleBackRequested(){
 		}
 		return;
 	}
+	
 	ShowWidget(EOutGameWidgetType::MainMenu);
 	SetHeaderVisible(true);
 		
@@ -269,6 +275,8 @@ AAOutGameCinematicManager* UOutGameRootWidget::GetCinematicManager() const{
 void UOutGameRootWidget::ShowQuitConfirm(){
 	pendingConfirmAction = EConfirmAction::QuitGame;
 	
+	PlayUISound(EOutGameUISoundType::Confirm);
+	
 	if (IsValid(confirmDialogWidget) == false) return;
 	
 	confirmDialogWidget->ShowConfirmDialog(
@@ -279,6 +287,8 @@ void UOutGameRootWidget::ShowQuitConfirm(){
 
 void UOutGameRootWidget::ShowNewGameConfirm(){
 	pendingConfirmAction = EConfirmAction::NewGame;
+	
+	PlayUISound(EOutGameUISoundType::Confirm);
 	
 	if (IsValid(confirmDialogWidget) == false) return;
 	
@@ -291,6 +301,8 @@ void UOutGameRootWidget::ShowNewGameConfirm(){
 void UOutGameRootWidget::ShowMissionSelectConfirm(){
 	pendingConfirmAction = EConfirmAction::MissionSelect;
 	
+	PlayUISound(EOutGameUISoundType::Error);
+	
 	if (IsValid(confirmDialogWidget) == false) return;
 	confirmDialogWidget->EnableOkButton();
 	confirmDialogWidget->ShowConfirmDialog(
@@ -301,6 +313,8 @@ void UOutGameRootWidget::ShowMissionSelectConfirm(){
 
 void UOutGameRootWidget::ShowWeaponSelectConfirm(){
 	pendingConfirmAction = EConfirmAction::WeaponSelect;
+	
+	PlayUISound(EOutGameUISoundType::Error);
 	
 	if (IsValid(confirmDialogWidget) == false) return;
 	confirmDialogWidget->EnableOkButton();

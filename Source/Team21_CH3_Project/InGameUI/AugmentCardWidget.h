@@ -10,6 +10,7 @@
 class UTextBlock;
 class UButton;
 class UImage;
+class USoundBase;
 /*
 USTRUCT(BlueprintType)
 struct FAugmentCardData
