@@ -59,6 +59,10 @@ private:
 	TObjectPtr<UWidgetAnimation> thirdCardSelectedAnim;
 	UPROPERTY()
 	FAugmentResult pendingSelectedCardData;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Augment", meta = (AllowPrivateAccess))
+	TObjectPtr<USoundBase> cardFadeInAnimSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Augment", meta = (AllowPrivateAccess))
+	TObjectPtr<USoundBase> cardFadeOutAnimSound;
 
 	bool bIsSelecting = false;
 };

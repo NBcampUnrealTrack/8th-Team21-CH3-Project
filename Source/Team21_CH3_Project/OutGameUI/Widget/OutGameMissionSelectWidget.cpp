@@ -28,7 +28,6 @@ void UOutGameMissionSelectWidget::NativeOnInitialized(){
 		BindToAnimationFinished(fadeOutAnim, fadeOutFinishedEvent);
 	}
 	
-	
 	selectedMapLevel = EMapLevel::Easy;
 	
 	normalUnlockKillCount = 30;
@@ -40,12 +39,11 @@ void UOutGameMissionSelectWidget::NativeOnInitialized(){
 	FText::FromString(FString::Printf(TEXT("%d"), normalUnlockKillCount)));
 	if (IsValid(hardUnlockKillCountText) == true) hardUnlockKillCountText->SetText(
 		FText::FromString(FString::Printf(TEXT("%d"), hardUnlockKillCount)));
-	
-
-	
 }
 
 void UOutGameMissionSelectWidget::LevelClicked(){
+
+	
 	if (AOutGamePlayerController* pc = GetOwningPlayer<AOutGamePlayerController>())
 	{
 		if (UOutGameRootWidget* rootWidgetInstance = pc->GetRootWidget())
@@ -77,7 +75,7 @@ void UOutGameMissionSelectWidget::PlayFadeInAnimation(){
 void UOutGameMissionSelectWidget::PlayFadeOutAnimation(){
 	if (bIsOpening) return;
 	bIsOpening = true;
-	
+	PlayUISound(EOutGameUISoundType::Back);
 	if (IsValid(fadeOutAnim) == true) PlayAnimation(fadeOutAnim);
 	
 }

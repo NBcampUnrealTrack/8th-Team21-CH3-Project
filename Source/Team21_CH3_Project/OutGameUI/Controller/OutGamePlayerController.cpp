@@ -4,12 +4,16 @@
 #include "OutGameUI/Widget/OutGameRootWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Game/TeamGameInstance.h"
+#include "Components/AudioComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 void AOutGamePlayerController::BeginPlay(){
 	Super::BeginPlay();
 	
 	if (!IsLocalController()) return;
+	
+	PlayOutGameBGM();
 	
 	SetViewTargetByTag("LobbyCamera", 0.0f);
 	
@@ -74,6 +78,42 @@ void AOutGamePlayerController::HandleNavigateRight(){
 
 void AOutGamePlayerController::HandleEscPressed(){
 	if (IsValid(RootWidgetInstance) == true) RootWidgetInstance->HandleBackRequested();
+}
+
+UOutGameUISoundData* AOutGamePlayerController::GetOutGameUISoundData() const
+{
+	return OutGameUISoundData;
+}
+
+void AOutGamePlayerController::PlayOutGameBGM()
+{
+	if (!IsValid(OutGameBGM)) return;
+	if (IsValid(OutGameBGMComponent) && OutGameBGMComponent->IsPlaying()) return;
+
+	OutGameBGMComponent = UGameplayStatics::SpawnSound2D(
+		this,
+		OutGameBGM,
+		1.0f,
+		1.0f,
+		0.0f,
+		nullptr,
+		false,
+		false
+	);
+
+	if (IsValid(OutGameBGMComponent))
+	{
+		OutGameBGMComponent->FadeIn(1.0f, 1.0f);
+	}
+}
+
+void AOutGamePlayerController::StopOutGameBGM()
+{
+	if (IsValid(OutGameBGMComponent))
+	{
+		OutGameBGMComponent->FadeOut(1.0f, 0.0f);
+		OutGameBGMComponent = nullptr;
+	}
 }
 
 void AOutGamePlayerController::CheatAddKills(int32 Amount)

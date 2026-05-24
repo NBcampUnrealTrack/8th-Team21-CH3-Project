@@ -31,11 +31,15 @@ void UOutGameTransitionWidget::NativeOnInitialized(){
 void UOutGameTransitionWidget::PlayFadeOut(){
 	SetVisibility(ESlateVisibility::Visible);
 	
+	PlayUISound(EOutGameUISoundType::OpenTransition);
+	
 	if (IsValid(FadeOutAnim) == true) PlayAnimation(FadeOutAnim);
 }
 
 void UOutGameTransitionWidget::PlayFadeIn(){
 	SetVisibility(ESlateVisibility::Visible);
+	
+	PlayUISound(EOutGameUISoundType::HideTransition);
 	
 	if (IsValid(FadeInAnim) == true) PlayAnimation(FadeInAnim);
 }

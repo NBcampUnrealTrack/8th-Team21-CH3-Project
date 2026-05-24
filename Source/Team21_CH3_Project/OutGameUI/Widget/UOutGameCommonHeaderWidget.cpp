@@ -55,6 +55,7 @@ void UUOutGameCommonHeaderWidget::SetSelectedVisible(UImage* image, bool bSelect
 }
 
 void UUOutGameCommonHeaderWidget::HandlePlayClicked(){
+	PlayUISound(EOutGameUISoundType::Click);
 	if (AOutGamePlayerController* PC = GetOwningPlayer<AOutGamePlayerController>())
 	{
 		if (UOutGameRootWidget* RootWidgetInstance = PC->GetRootWidget())
@@ -66,6 +67,7 @@ void UUOutGameCommonHeaderWidget::HandlePlayClicked(){
 }
 
 void UUOutGameCommonHeaderWidget::HandleWeaponsClicked(){
+	PlayUISound(EOutGameUISoundType::Click);
 	if (AOutGamePlayerController* PC = GetOwningPlayer<AOutGamePlayerController>())
 	{
 		if (UOutGameRootWidget* RootWidgetInstance = PC->GetRootWidget())
@@ -77,6 +79,7 @@ void UUOutGameCommonHeaderWidget::HandleWeaponsClicked(){
 }
 
 void UUOutGameCommonHeaderWidget::HandleStoreButton(){
+	PlayUISound(EOutGameUISoundType::Click);
 	if (AOutGamePlayerController* PC = GetOwningPlayer<AOutGamePlayerController>())
 	{
 		if (UOutGameRootWidget* RootWidgetInstance = PC->GetRootWidget())
@@ -88,6 +91,7 @@ void UUOutGameCommonHeaderWidget::HandleStoreButton(){
 }
 
 void UUOutGameCommonHeaderWidget::HandleSettingsClicked(){
+	PlayUISound(EOutGameUISoundType::Click);
 	if (AOutGamePlayerController* PC = GetOwningPlayer<AOutGamePlayerController>())
 	{
 		if (UOutGameRootWidget* RootWidgetInstance = PC->GetRootWidget())
@@ -99,6 +103,7 @@ void UUOutGameCommonHeaderWidget::HandleSettingsClicked(){
 }
 
 void UUOutGameCommonHeaderWidget::HandleTraitClicked(){
+	PlayUISound(EOutGameUISoundType::Click);
 	if (AOutGamePlayerController* PC = GetOwningPlayer<AOutGamePlayerController>())
 	{
 		if (UOutGameRootWidget* RootWidgetInstance = PC->GetRootWidget())
