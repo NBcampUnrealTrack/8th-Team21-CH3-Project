@@ -210,6 +210,17 @@ void APlayerCharacter::HandleOutOfCurrentHP()
 {
 	RefreshPlayerHealthUI();
 
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->Velocity = FVector::ZeroVector;
+		GetCharacterMovement()->StopMovementImmediately();
+	}
+
+	if (GetMesh())
+	{
+		GetMesh()->SetPhysicsLinearVelocity(FVector::ZeroVector);
+	}
+
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (IsValid(PlayerController))
 	{
