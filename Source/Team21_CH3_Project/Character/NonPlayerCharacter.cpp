@@ -283,7 +283,9 @@ void ANonPlayerCharacter::OnBossCapsuleOverlap(UPrimitiveComponent* OverlappedCo
 		{
 			UGameplayStatics::ApplyDamage(OtherActor, ChargeDamage, GetController(), this, UDamageType::StaticClass());
 			HitTargets.Add(Player);
-			if (Player->GetCharacterMovement())
+
+			UStatusComponent* StatusComp = Player->FindComponentByClass<UStatusComponent>();
+			if (Player->GetCharacterMovement() && IsValid(StatusComp) && !StatusComp->IsDead())
 			{
 				Player->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 
