@@ -67,6 +67,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	float ChargeDamage = 80.f;
 	FChargeCoolTime CoolTime;
+	UPROPERTY()
+	TArray<AActor*> HitTargets;
 protected:
 	FOnAttackMontageEnded OnAttackMontageEndedDelegate;
 	float LastUpdatedMaxHP = 0.f;
@@ -76,4 +78,5 @@ protected:
 	TSubclassOf<AWeapon>WeaponType;
 	UPROPERTY(VisibleAnywhere)
 	UStatusComponent* Status;
+
 };

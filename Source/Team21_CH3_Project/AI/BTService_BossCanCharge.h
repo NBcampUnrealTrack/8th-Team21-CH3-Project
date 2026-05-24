@@ -25,6 +25,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
 	FBlackboardKeySelector bCanChargeKey;
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
+	FBlackboardKeySelector ChargeCoolTimeKey;
+	UPROPERTY(EditAnywhere, Category = "Blackboard")
 	float MaxChargeDistance = 1500.f;
 
 };

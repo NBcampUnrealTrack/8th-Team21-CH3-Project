@@ -10,6 +10,8 @@
 #include "Character/PlayerCharacter.h"
 #include "TimerManager.h"
 #include "Navigation/PathFollowingComponent.h"
+#include "Components/CapsuleComponent.h"
+
 
 UBTTask_BossCharge::UBTTask_BossCharge()
 {
@@ -23,7 +25,7 @@ EBTNodeResult::Type UBTTask_BossCharge::ExecuteTask(UBehaviorTreeComponent& Owne
 	if (!AIController) return EBTNodeResult::Failed;
 	ANonPlayerCharacter* NPC = Cast<ANonPlayerCharacter>(AIController->GetPawn());
 	if (!NPC) return EBTNodeResult::Failed;
-
+	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
 	if (UPathFollowingComponent* PathFollowingComp = AIController->GetPathFollowingComponent())
 	{
 		PathFollowingComp->AbortMove(*this, FPathFollowingResultFlags::MovementStop);
@@ -41,6 +43,9 @@ EBTNodeResult::Type UBTTask_BossCharge::ExecuteTask(UBehaviorTreeComponent& Owne
 
 
 	NPC->bIsCharging = true;
+	NPC->HitTargets.Empty();
+
+	NPC->GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 
 	FVector ChargeDirection = NPC->GetActorForwardVector();
 	FVector LaunchVelocity = ChargeDirection * ChargeSpeed;
@@ -60,7 +65,7 @@ EBTNodeResult::Type UBTTask_BossCharge::ExecuteTask(UBehaviorTreeComponent& Owne
 						NPC->CoolTime.Execute();
 					}
 					
-					
+					NPC->GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 					NPC->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_NavWalking);
 					NPC->GetCharacterMovement()->BrakingDecelerationWalking = 2048.f;
 					NPC->GetCharacterMovement()->GroundFriction = 8.f;
@@ -76,5 +81,6 @@ EBTNodeResult::Type UBTTask_BossCharge::ExecuteTask(UBehaviorTreeComponent& Owne
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Orange, TEXT("BossCharge"));
 	}
+
 	return EBTNodeResult::InProgress;
 }

@@ -21,6 +21,8 @@ protected:
 public:
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
 	FBlackboardKeySelector TargetCharacterKey;
+	UPROPERTY(EditAnywhere, Category = "Blackboard")
+	FBlackboardKeySelector ChargeCoolTimeKey;
 	UPROPERTY(EditAnywhere, Category = "ChargeSettings")
 	float ChargeSpeed = 4000.f;
 	UPROPERTY(EditAnywhere, Category = "ChargeSettings")

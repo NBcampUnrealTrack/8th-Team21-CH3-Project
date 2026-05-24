@@ -87,6 +87,11 @@ float ANonPlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 {
 	float FinalDamageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
+	if (bInvulnerable == true)
+	{
+		FinalDamageAmount = 0;
+	}
+
 	//if (CurrentHP < KINDA_SMALL_NUMBER)
 	if (StatusComponent->IsDead() == true)
 	{
@@ -273,18 +278,23 @@ void ANonPlayerCharacter::OnBossCapsuleOverlap(UPrimitiveComponent* OverlappedCo
 {
 	if (OtherActor && OtherActor != this && bIsCharging)
 	{
-		if (OtherActor->ActorHasTag("Player") || OtherActor->IsA(APlayerCharacter::StaticClass()))
+		APlayerCharacter* Player = Cast<APlayerCharacter>(OtherActor);
+		if (Player && !HitTargets.Contains(Player))
 		{
 			UGameplayStatics::ApplyDamage(OtherActor, ChargeDamage, GetController(), this, UDamageType::StaticClass());
-
-			APlayerCharacter* Player = Cast<APlayerCharacter>(OtherActor);
-			if (Player)
+			HitTargets.Add(Player);
+			if (Player->GetCharacterMovement())
 			{
-				FVector KnockbackDir = Player->GetActorLocation() - GetActorLocation();
-				KnockbackDir.Z = 0.f;
+				Player->GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+
+				FVector KnockbackDir = GetActorForwardVector();
+				KnockbackDir.Z = 0.2f;
 				KnockbackDir.Normalize();
 
-				Player->LaunchCharacter(KnockbackDir * 1500.f, true, false);
+				float KnockbackForce = 2000.f;
+				FVector LaunchVelocity = KnockbackDir * KnockbackForce;
+
+				Player->LaunchCharacter(LaunchVelocity, true, true);
 			}
 			bIsCharging = false;
 		}
