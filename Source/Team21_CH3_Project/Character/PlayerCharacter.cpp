@@ -217,8 +217,7 @@ void APlayerCharacter::HandleOutOfCurrentHP()
 	if (GetCharacterMovement())
 	{
 		// 로그 2 - 사망 시점 속도 확인
-		UE_LOG(LogTemp, Warning, TEXT("사망 시 Velocity: %s"),
-			*GetCharacterMovement()->Velocity.ToString());
+		//UE_LOG(LogTemp, Warning, TEXT("사망 시 Velocity: %s"),*GetCharacterMovement()->Velocity.ToString());
 
 		GetCharacterMovement()->Velocity = FVector::ZeroVector;
 		GetCharacterMovement()->StopMovementImmediately();

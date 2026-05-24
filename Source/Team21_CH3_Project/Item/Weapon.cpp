@@ -75,7 +75,7 @@ void AWeapon::Reload()
 {
 	CurrentBullets = MaxBullets;
 	OnAmmoChanged.Broadcast(CurrentBullets, MaxBullets);
-	UE_LOG(LogTemp, Warning, TEXT("[리로딩 완료] %d / %d"), CurrentBullets, MaxBullets);
+	//UE_LOG(LogTemp, Warning, TEXT("[리로딩 완료] %d / %d"), CurrentBullets, MaxBullets);
 
 	ACharacter* OwnerChar = Cast<ACharacter>(GetOwner());
 	if (OwnerChar)
@@ -99,7 +99,7 @@ bool AWeapon::UseBullets()
 
 	CurrentBullets--;
 	OnAmmoChanged.Broadcast(CurrentBullets, MaxBullets);
-	UE_LOG(LogTemp, Warning, TEXT("Bullets: %d / %d"), CurrentBullets, MaxBullets);
+	//UE_LOG(LogTemp, Warning, TEXT("Bullets: %d / %d"), CurrentBullets, MaxBullets);
 
 	return true;
 }
