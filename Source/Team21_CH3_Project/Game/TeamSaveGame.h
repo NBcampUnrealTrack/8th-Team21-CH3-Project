@@ -18,6 +18,12 @@ public:
 	UPROPERTY()
 	float masterVolume = 100.0f;
 	UPROPERTY()
+	float bgmVolume = 100.0f;
+	UPROPERTY()
+	float sfxVolume = 100.0f;
+	UPROPERTY()
+	float uiVolume = 100.0f;
+	UPROPERTY()
 	int32 playerTotalKillCount = 0;
 	UPROPERTY()
 	int32 playerGold = 0;

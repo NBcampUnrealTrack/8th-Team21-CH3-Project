@@ -8,8 +8,6 @@
 class UButton;
 class USlider;
 class UComboBoxString;
-class USoundMix;
-class USoundClass;
 class UTextBlock;
 
 UCLASS()
@@ -48,13 +46,27 @@ private:
 	TObjectPtr<USlider> masterVolumeSlider;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> masterVolumeText;
-	UPROPERTY(EditDefaultsOnly, Category = "Sound")
-	TObjectPtr<USoundClass> masterSoundClass;
-	UPROPERTY(EditDefaultsOnly, Category = "Sound")
-	TObjectPtr<USoundMix> soundMix;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<USlider> bgmVolumeSlider;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> bgmVolumeText;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<USlider> sfxVolumeSlider;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> sfxVolumeText;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<USlider> uiVolumeSlider;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> uiVolumeText;
 
 	UFUNCTION()
 	void HandleMasterVolumeChanged(float value);
+	UFUNCTION()
+	void HandleBGMVolumeChanged(float value);
+	UFUNCTION()
+	void HandleSFXVolumeChanged(float value);
+	UFUNCTION()
+	void HandleUIVolumeChanged(float value);
 
 #pragma endregion
 };

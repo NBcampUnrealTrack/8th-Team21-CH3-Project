@@ -15,6 +15,8 @@ enum class EWeaponType : uint8{
 };
 
 class UTeamSaveGame;
+class USoundClass;
+class USoundMix;
 
 UCLASS(BlueprintType)
 class TEAM21_CH3_PROJECT_API UTeamGameInstance : public UGameInstance{
@@ -88,11 +90,6 @@ public:
 	void SetMouseSensitivity(float value);
 
 	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Settings")
-	float GetMasterVolume() const;
-	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Settings")
-	void SetMasterVolume(float value);
-	
-	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Settings")
 	int32 GetPlayerGold() const;
 	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Settings")
 	void AddPlayerGold(int32 gold);
@@ -114,13 +111,62 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Settings", meta = (AllowPrivateAccess = "true"))
 	float mouseSensitivity;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Settings", meta = (AllowPrivateAccess = "true"))
-	float masterVolume;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Settings", meta = (AllowPrivateAccess = "true"))
 	float goldGainMultiplier = 1.0f;
 	
 	UPROPERTY()
 	TObjectPtr<UTeamSaveGame> CurrentSaveGame;
 	
+#pragma endregion
+
+#pragma region Sound
+
+public:
+	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Sound")
+	float GetMasterVolume() const;
+	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Sound")
+	void SetMasterVolume(float value);
+
+	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Sound")
+	float GetBGMVolume() const;
+	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Sound")
+	void SetBGMVolume(float value);
+
+	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Sound")
+	float GetSFXVolume() const;
+	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Sound")
+	void SetSFXVolume(float value);
+
+	UFUNCTION(BlueprintPure, Category = "Team Game Instance|Sound")
+	float GetUIVolume() const;
+	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Sound")
+	void SetUIVolume(float value);
+
+	UFUNCTION(BlueprintCallable, Category = "Team Game Instance|Sound")
+	void ApplySoundSettings();
+
+private:
+	void ApplySoundClassVolume(USoundClass* soundClass, float volume);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Team Game Instance|Sound")
+	TObjectPtr<USoundMix> soundMix;
+	UPROPERTY(EditDefaultsOnly, Category = "Team Game Instance|Sound")
+	TObjectPtr<USoundClass> masterSoundClass;
+	UPROPERTY(EditDefaultsOnly, Category = "Team Game Instance|Sound")
+	TObjectPtr<USoundClass> bgmSoundClass;
+	UPROPERTY(EditDefaultsOnly, Category = "Team Game Instance|Sound")
+	TObjectPtr<USoundClass> sfxSoundClass;
+	UPROPERTY(EditDefaultsOnly, Category = "Team Game Instance|Sound")
+	TObjectPtr<USoundClass> uiSoundClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Sound", meta = (AllowPrivateAccess = "true"))
+	float masterVolume;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Sound", meta = (AllowPrivateAccess = "true"))
+	float bgmVolume;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Sound", meta = (AllowPrivateAccess = "true"))
+	float sfxVolume;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Team Game Instance|Sound", meta = (AllowPrivateAccess = "true"))
+	float uiVolume;
+
 #pragma endregion
 	
 #pragma region TraitSystem

@@ -5,7 +5,6 @@
 #include "Components/Slider.h"
 #include "Components/TextBlock.h"
 #include "GameFramework/GameUserSettings.h"
-#include "Kismet/GameplayStatics.h"
 #include "Game/TeamGameInstance.h"
 
 void UOutGameSettingsWidget::NativeOnInitialized(){
@@ -13,6 +12,9 @@ void UOutGameSettingsWidget::NativeOnInitialized(){
 	
 	if (IsValid(mouseSensitivitySlider)) mouseSensitivitySlider->OnValueChanged.AddUniqueDynamic(this, &ThisClass::HandleMouseSensitivityChanged);
 	if (IsValid(masterVolumeSlider)) masterVolumeSlider->OnValueChanged.AddUniqueDynamic(this, &ThisClass::HandleMasterVolumeChanged);
+	if (IsValid(bgmVolumeSlider)) bgmVolumeSlider->OnValueChanged.AddUniqueDynamic(this, &ThisClass::HandleBGMVolumeChanged);
+	if (IsValid(sfxVolumeSlider)) sfxVolumeSlider->OnValueChanged.AddUniqueDynamic(this, &ThisClass::HandleSFXVolumeChanged);
+	if (IsValid(uiVolumeSlider)) uiVolumeSlider->OnValueChanged.AddUniqueDynamic(this, &ThisClass::HandleUIVolumeChanged);
 	if (IsValid(graphicsQualityComboBox)) graphicsQualityComboBox->OnSelectionChanged.AddUniqueDynamic(this, &ThisClass::HandleGraphicsQualityChanged);
 	if (IsValid(applyButton)) applyButton->OnClicked.AddUniqueDynamic(this, &ThisClass::HandleApplyClicked);
 	
@@ -26,22 +28,22 @@ void UOutGameSettingsWidget::UpdateSettings(){
 	{
 		const float mouseSensitivity = GI->GetMouseSensitivity();
 		const float masterVolume = GI->GetMasterVolume();
+		const float bgmVolume = GI->GetBGMVolume();
+		const float sfxVolume = GI->GetSFXVolume();
+		const float uiVolume = GI->GetUIVolume();
+
 		if (IsValid(mouseSensitivitySlider) == true) mouseSensitivitySlider->SetValue(mouseSensitivity);
 		if (IsValid(mouseSensitivityText) == true) mouseSensitivityText->SetText(FText::FromString(FString::Printf(TEXT("%.1f"), mouseSensitivity)));
 		if (IsValid(masterVolumeSlider) == true) masterVolumeSlider->SetValue(masterVolume);
 		if (IsValid(masterVolumeText) == true) masterVolumeText->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), masterVolume)));
-		
-		UGameplayStatics::PushSoundMixModifier(this, soundMix);
-		
-		UGameplayStatics::SetSoundMixClassOverride(
-			this,
-			soundMix,
-			masterSoundClass,
-			masterVolume / 100.0f,
-			1.0f,
-			0.0f,
-			true
-			);
+		if (IsValid(bgmVolumeSlider) == true) bgmVolumeSlider->SetValue(bgmVolume);
+		if (IsValid(bgmVolumeText) == true) bgmVolumeText->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), bgmVolume)));
+		if (IsValid(sfxVolumeSlider) == true) sfxVolumeSlider->SetValue(sfxVolume);
+		if (IsValid(sfxVolumeText) == true) sfxVolumeText->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), sfxVolume)));
+		if (IsValid(uiVolumeSlider) == true) uiVolumeSlider->SetValue(uiVolume);
+		if (IsValid(uiVolumeText) == true) uiVolumeText->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), uiVolume)));
+
+		GI->ApplySoundSettings();
 	}
 }
 
@@ -66,19 +68,43 @@ void UOutGameSettingsWidget::HandleMasterVolumeChanged(float value){
 		}
 	}
 	
-	UGameplayStatics::PushSoundMixModifier(this, soundMix);
-	
-	UGameplayStatics::SetSoundMixClassOverride(
-		this,
-		soundMix,
-		masterSoundClass,
-		value / 100.0f,
-		1.0f,
-		0.0f,
-		true
-		);
-	
 	masterVolumeText->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), value)));
+}
+
+void UOutGameSettingsWidget::HandleBGMVolumeChanged(float value){
+	if (UGameInstance* GameInstance = GetWorld()->GetGameInstance())
+	{
+		if (UTeamGameInstance* TeamGameInstance = Cast<UTeamGameInstance>(GameInstance))
+		{
+			TeamGameInstance->SetBGMVolume(value);
+		}
+	}
+
+	if (IsValid(bgmVolumeText) == true) bgmVolumeText->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), value)));
+}
+
+void UOutGameSettingsWidget::HandleSFXVolumeChanged(float value){
+	if (UGameInstance* GameInstance = GetWorld()->GetGameInstance())
+	{
+		if (UTeamGameInstance* TeamGameInstance = Cast<UTeamGameInstance>(GameInstance))
+		{
+			TeamGameInstance->SetSFXVolume(value);
+		}
+	}
+
+	if (IsValid(sfxVolumeText) == true) sfxVolumeText->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), value)));
+}
+
+void UOutGameSettingsWidget::HandleUIVolumeChanged(float value){
+	if (UGameInstance* GameInstance = GetWorld()->GetGameInstance())
+	{
+		if (UTeamGameInstance* TeamGameInstance = Cast<UTeamGameInstance>(GameInstance))
+		{
+			TeamGameInstance->SetUIVolume(value);
+		}
+	}
+
+	if (IsValid(uiVolumeText) == true) uiVolumeText->SetText(FText::FromString(FString::Printf(TEXT("%.0f"), value)));
 }
 
 void UOutGameSettingsWidget::HandleGraphicsQualityChanged(FString selectedItem, ESelectInfo::Type selectionType){

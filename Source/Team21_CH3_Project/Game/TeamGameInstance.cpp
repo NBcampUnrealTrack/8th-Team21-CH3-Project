@@ -2,6 +2,8 @@
 #include "TeamGameInstance.h"
 #include "TeamSaveGame.h"
 #include "Kismet/GameplayStatics.h"
+#include "Sound/SoundClass.h"
+#include "Sound/SoundMix.h"
 #include "Trait/SubSystem/TraitSubsystem.h"
 
 static const FString SaveSlotName = TEXT("PlayerSave");
@@ -15,6 +17,7 @@ void UTeamGameInstance::Init(){
 	Super::Init();
 
 	LoadGameData();
+	ApplySoundSettings();
 	
 	ApplyGoldTraitBonus();
 }
@@ -24,6 +27,9 @@ void UTeamGameInstance::ResetToDefaultValues()
 	selectedWeaponType = EWeaponType::Rifle;
 	mouseSensitivity = 1.0f;
 	masterVolume = 100.0f;
+	bgmVolume = 100.0f;
+	sfxVolume = 100.0f;
+	uiVolume = 100.0f;
 	playerTotalKillCount = 0;
 	playerGold = 10000;
 	goldGainMultiplier = 1.0f;
@@ -56,13 +62,6 @@ float UTeamGameInstance::GetMouseSensitivity() const{ return mouseSensitivity; }
 
 void UTeamGameInstance::SetMouseSensitivity(float value){
 	mouseSensitivity = FMath::Clamp(value, 0.5f, 3.0f);
-	SaveGameData();
-}
-
-float UTeamGameInstance::GetMasterVolume() const{ return masterVolume; }
-
-void UTeamGameInstance::SetMasterVolume(float value){
-	masterVolume = FMath::Clamp(value, 0.0f, 100.0f);
 	SaveGameData();
 }
 
@@ -138,6 +137,9 @@ void UTeamGameInstance::LoadGameData(){
 	playerTotalKillCount = CurrentSaveGame->playerTotalKillCount;
 	mouseSensitivity = CurrentSaveGame->mouseSensitivity;
 	masterVolume = CurrentSaveGame->masterVolume;
+	bgmVolume = CurrentSaveGame->bgmVolume;
+	sfxVolume = CurrentSaveGame->sfxVolume;
+	uiVolume = CurrentSaveGame->uiVolume;
 	playerGold = CurrentSaveGame->playerGold;
 	traitLevels = CurrentSaveGame->traitLevels;
 	bHasShownKeyGuide = CurrentSaveGame->bHasShownKeyGuide;
@@ -153,6 +155,9 @@ void UTeamGameInstance::SaveGameData(){
 	CurrentSaveGame->playerTotalKillCount = playerTotalKillCount;
 	CurrentSaveGame->mouseSensitivity = mouseSensitivity;
 	CurrentSaveGame->masterVolume = masterVolume;
+	CurrentSaveGame->bgmVolume = bgmVolume;
+	CurrentSaveGame->sfxVolume = sfxVolume;
+	CurrentSaveGame->uiVolume = uiVolume;
 	CurrentSaveGame->playerGold = playerGold;
 	CurrentSaveGame->traitLevels = traitLevels;
 	CurrentSaveGame->bHasShownKeyGuide = bHasShownKeyGuide;
@@ -171,6 +176,67 @@ void UTeamGameInstance::StartNewGame(){
 
 	SaveGameData();
 }
+
+#pragma region Sound
+
+float UTeamGameInstance::GetMasterVolume() const{ return masterVolume; }
+
+void UTeamGameInstance::SetMasterVolume(float value){
+	masterVolume = FMath::Clamp(value, 0.0f, 100.0f);
+	ApplySoundSettings();
+	SaveGameData();
+}
+
+float UTeamGameInstance::GetBGMVolume() const{ return bgmVolume; }
+
+void UTeamGameInstance::SetBGMVolume(float value){
+	bgmVolume = FMath::Clamp(value, 0.0f, 100.0f);
+	ApplySoundSettings();
+	SaveGameData();
+}
+
+float UTeamGameInstance::GetSFXVolume() const{ return sfxVolume; }
+
+void UTeamGameInstance::SetSFXVolume(float value){
+	sfxVolume = FMath::Clamp(value, 0.0f, 100.0f);
+	ApplySoundSettings();
+	SaveGameData();
+}
+
+float UTeamGameInstance::GetUIVolume() const{ return uiVolume; }
+
+void UTeamGameInstance::SetUIVolume(float value){
+	uiVolume = FMath::Clamp(value, 0.0f, 100.0f);
+	ApplySoundSettings();
+	SaveGameData();
+}
+
+void UTeamGameInstance::ApplySoundSettings(){
+	if (IsValid(soundMix) == false) return;
+
+	UGameplayStatics::PushSoundMixModifier(this, soundMix);
+
+	ApplySoundClassVolume(masterSoundClass, masterVolume);
+	ApplySoundClassVolume(bgmSoundClass, bgmVolume);
+	ApplySoundClassVolume(sfxSoundClass, sfxVolume);
+	ApplySoundClassVolume(uiSoundClass, uiVolume);
+}
+
+void UTeamGameInstance::ApplySoundClassVolume(USoundClass* soundClass, float volume){
+	if (IsValid(soundClass) == false) return;
+
+	UGameplayStatics::SetSoundMixClassOverride(
+		this,
+		soundMix,
+		soundClass,
+		volume / 100.0f,
+		1.0f,
+		0.0f,
+		true
+	);
+}
+
+#pragma endregion
 
 #pragma region TraitSystme
 
@@ -247,4 +313,4 @@ void UTeamGameInstance::SetHasShownKeyGuide(bool bInShown){
 	bHasShownKeyGuide = bInShown;
 }
 
-#pragma endregion 
+#pragma endregion
