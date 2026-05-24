@@ -26,6 +26,7 @@
 #include "Trait/SubSystem/TraitSubsystem.h"
 #include "InGameUI/InGameQuitWidget.h"
 #include "Particles/ParticleSystem.h"
+#include "Components/CapsuleComponent.h"
 
 
 
@@ -210,26 +211,37 @@ void APlayerCharacter::HandleOutOfCurrentHP()
 {
 	RefreshPlayerHealthUI();
 
+	//UE_LOG(LogTemp, Warning, TEXT("=== HandleOutOfCurrentHP 호출됨 ==="));
+
 	if (GetCharacterMovement())
 	{
+		// 로그 2 - 사망 시점 속도 확인
+		UE_LOG(LogTemp, Warning, TEXT("사망 시 Velocity: %s"),
+			*GetCharacterMovement()->Velocity.ToString());
+
 		GetCharacterMovement()->Velocity = FVector::ZeroVector;
 		GetCharacterMovement()->StopMovementImmediately();
+		GetCharacterMovement()->DisableMovement();
+
+		// 로그 3 - 초기화 후 속도 확인
+		//UE_LOG(LogTemp, Warning, TEXT("초기화 후 Velocity: %s"),*GetCharacterMovement()->Velocity.ToString());
 	}
 
 	if (GetMesh())
 	{
 		GetMesh()->SetPhysicsLinearVelocity(FVector::ZeroVector);
+		GetMesh()->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+
+		// 로그 4 - 메시 물리 속도 확인
+		//UE_LOG(LogTemp, Warning, TEXT("메시 PhysicsVelocity: %s"),*GetMesh()->GetPhysicsLinearVelocity().ToString());
 	}
 
-	APlayerController* PlayerController = Cast<APlayerController>(GetController());
-	if (IsValid(PlayerController))
+	if (GetCapsuleComponent())
 	{
-		AInGameHUD* InGameHUD = Cast<AInGameHUD>(PlayerController->GetHUD());
-		if (IsValid(InGameHUD))
-		{
-			// 플레이어가 사망하면 위험 피드백을 제거한다.
-			InGameHUD->HideHPDangerFeedback();
-		}
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		// 로그 5 - 콜리전 비활성화 확인
+		//UE_LOG(LogTemp, Warning, TEXT("캡슐 콜리전 비활성화 완료"));
 	}
 
 	AShooterInGameMode* InGameMode = Cast<AShooterInGameMode>(UGameplayStatics::GetGameMode(this));
