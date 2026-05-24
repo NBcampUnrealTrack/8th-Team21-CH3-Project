@@ -22,7 +22,6 @@ void UBTService_UpdatePlayerLocation::TickNode(UBehaviorTreeComponent& OwnerComp
 	AAI_Controller* AIC = Cast<AAI_Controller>(OwnerComp.GetAIOwner());
 	checkf(IsValid(AIC) == true, TEXT("AIController Is imValid"));
 	ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-	checkf(IsValid(Player) == true, TEXT("Player Is imValid"));
 	if (!Player)
 	{
 		return;
