@@ -14,6 +14,7 @@ class UDataTable;
 class UInGameQuitWidget;
 struct FPlayerTraitBonus;
 class UParticleSystem;
+class USoundBase;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API APlayerCharacter : public ACharacterBase
@@ -143,6 +144,10 @@ public:
 
 	//float TimeBetweenFire;
 	// 발사 간 타이밍
+
+protected:
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+	TObjectPtr<USoundBase> ToggleSelectorSound;
 
 #pragma endregion
 

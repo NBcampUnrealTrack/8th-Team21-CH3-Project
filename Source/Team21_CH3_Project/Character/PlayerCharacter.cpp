@@ -27,6 +27,7 @@
 #include "InGameUI/InGameQuitWidget.h"
 #include "Particles/ParticleSystem.h"
 #include "Components/CapsuleComponent.h"
+#include "Sound/SoundBase.h"
 
 
 
@@ -664,9 +665,18 @@ void APlayerCharacter::InputToggleSelector(const FInputActionValue& InValue)
 	{
 		return;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Toggle not work"));
+	//UE_LOG(LogTemp, Warning, TEXT("Toggle not work"));
 
 	bIsFullAutoFire = !bIsFullAutoFire;
+
+	if (IsValid(ToggleSelectorSound))
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			ToggleSelectorSound,
+			GetActorLocation()
+		);
+	}
 }
 
 void APlayerCharacter::InputStartFullAutoFire(const FInputActionValue& InValue)
