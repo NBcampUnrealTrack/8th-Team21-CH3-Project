@@ -71,16 +71,16 @@ EBTNodeResult::Type UBTTask_BossCharge::ExecuteTask(UBehaviorTreeComponent& Owne
 					NPC->GetCharacterMovement()->GroundFriction = 8.f;
 
 
-					GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("EndCharge"));
+					//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("EndCharge"));
 				}
 				FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 			}), ChargeDuration, false);
 
 	}
-	if (GEngine)
+	/*if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Orange, TEXT("BossCharge"));
 	}
-
+	*/
 	return EBTNodeResult::InProgress;
 }

@@ -31,7 +31,7 @@ void UBTService_BossCanCharge::TickNode(UBehaviorTreeComponent& OwnerComp, uint8
 	float Distance = FVector::Dist(NPC->GetActorLocation(), Player->GetActorLocation());
 	if (NPC->ActorHasTag(TEXT("Boss")) && Distance < MaxChargeDistance && BB->GetValueAsBool(ChargeCoolTimeKey.SelectedKeyName) == false)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, TEXT("BossCanCharge"));
+		//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, TEXT("BossCanCharge"));
 		OwnerComp.GetBlackboardComponent()->SetValueAsBool(bCanChargeKey.SelectedKeyName, true);
 	}
 	else
