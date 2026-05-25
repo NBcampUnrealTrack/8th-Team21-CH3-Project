@@ -37,10 +37,15 @@ bool UBTDecorator_IsInAttackRange::CalculateRawConditionValue(UBehaviorTreeCompo
 		VerticalAttackRange = 800.f;
 		BB->SetValueAsFloat(AttackRangeKey.SelectedKeyName, 1200.f);
 	}
+	else if (NPC->bAttackRange == false && NPC->ActorHasTag("Boss"))
+	{
+		VerticalAttackRange = 115.f;
+		BB->SetValueAsFloat(AttackRangeKey.SelectedKeyName, 120.f);
+	}
 	else
 	{
-		VerticalAttackRange = 65.f;
-		BB->SetValueAsFloat(AttackRangeKey.SelectedKeyName, 60.f);
+		VerticalAttackRange = 85.f;
+		BB->SetValueAsFloat(AttackRangeKey.SelectedKeyName, 80.f);
 	}
 	float AttackRange = BB->GetValueAsFloat(AttackRangeKey.SelectedKeyName);
 	if (IsValid(TargetPlayerCharacter) == true && TargetPlayerCharacter->IsPlayerControlled() == true)
