@@ -8,6 +8,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "OutGameUI/Widget/OutGameTransitionWidget.h"
+#include "Sound/SoundBase.h"
 
 void AInGameHUD::BeginPlay()
 {
@@ -31,6 +32,13 @@ void AInGameHUD::BeginPlay()
 				if (InGameStartTransitionWidgetInstance)
 				{
 					InGameStartTransitionWidgetInstance->AddToViewport(10000);
+
+					// 트랜지션 Hide 연출 실행 전에 Hide 사운드를 재생한다.
+					if (WaveTransitionHideSound)
+					{
+						UGameplayStatics::PlaySound2D(this, WaveTransitionHideSound);
+					}
+
 					InGameStartTransitionWidgetInstance->PlayFadeIn();
 				}
 			}
@@ -172,6 +180,12 @@ void AInGameHUD::PlayLevelTransitionFadeOut()
 
 	if (InGameStartTransitionWidgetInstance)
 	{
+		// 트랜지션 Open 연출 실행 전에 Open 사운드를 재생한다.
+		if (WaveTransitionOpenSound)
+		{
+			UGameplayStatics::PlaySound2D(this, WaveTransitionOpenSound);
+		}
+
 		// 웨이브 전환 / 레벨 리로드 직전 화면을 검게 덮는다.
 		InGameStartTransitionWidgetInstance->PlayFadeOut();
 	}

@@ -10,6 +10,7 @@
 class UInGameUI;
 class URoundTransitionWidget;
 class UOutGameTransitionWidget;
+class USoundBase;
 
 UCLASS()
 class TEAM21_CH3_PROJECT_API AInGameHUD : public AHUD
@@ -84,6 +85,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI|Transition", meta = (AllowPrivateAccess = "true"))
 	float InGameStartReadyDelay = 1.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI|Transition Sound", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USoundBase> WaveTransitionOpenSound;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI|Transition Sound", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USoundBase> WaveTransitionHideSound;
 
 	FTimerHandle InGameStartReadyTimerHandle;
 
