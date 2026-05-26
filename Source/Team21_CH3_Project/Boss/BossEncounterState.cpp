@@ -22,7 +22,6 @@ ABossEncounterState::ABossEncounterState()
 	meteorInterval = 5.0f;
 	meteorSpawnRadius = 800.0f;
 	objectBreakCount = 0;
-	phaseStartObjectCount = 3;
 	
 	currentState = EPhaseState::NonePhase;
 }
@@ -88,10 +87,8 @@ void ABossEncounterState::HandleBossCurrentHPChanged(float CurrentHP){
 		
 		announceWidgetInstance->SetVisibility(ESlateVisibility::Visible);
 		announceWidgetInstance->PlayAnnounceAnimation(FText::FromString
-			(TEXT("보스가 무적 상태입니다.\n회복 장치를 모두 파괴하세요.")));
+			(TEXT("보스가 회복 중 입니다.\n회복 장치를 모두 파괴하세요.")));
 		ANonPlayerCharacter* Boss = Cast<ANonPlayerCharacter>(cachedBoss);
-		//Boss->POW(true); 		// enable God Mode() 
-		// PlayAnnounceAnimation(); - Second Phase Start Message
 
 		for (auto& gimmick : bossWaveGimmicks)
 		{
@@ -111,19 +108,20 @@ void ABossEncounterState::HandleBossCurrentHPChanged(float CurrentHP){
 
 void ABossEncounterState::HandlePhaseObjectBreak(){
 	++objectBreakCount;
+	UE_LOG(LogTemp, Warning, TEXT("objectBreakCount : %d"), objectBreakCount);
 	
-	if (objectBreakCount >= phaseStartObjectCount) PhaseGimmickEnd();
+	if (objectBreakCount >= requiredCoreCount) PhaseGimmickEnd();
 	
 }
 
 void ABossEncounterState::PhaseGimmickEnd(){
 
 	ANonPlayerCharacter* Boss = Cast<ANonPlayerCharacter>(cachedBoss);
-	// Boss->POW(false); 	// disabled God Mode
+	UE_LOG(LogTemp, Warning, TEXT("PhaseGimmickEnd is Enabled"));
 	
 	announceWidgetInstance->SetVisibility(ESlateVisibility::Visible);
 	announceWidgetInstance->PlayAnnounceAnimation(FText::FromString
-	(TEXT("회복 장치가 모두 파괴되었습니다.\n보스의 무적 상태가 해제됩니다.")));
+	(TEXT("회복 장치가 모두 파괴되었습니다.\n보스가 더이상 회복 하지 않습니다.")));
 }
 
 void ABossEncounterState::CreateAnnounceAnimation(){

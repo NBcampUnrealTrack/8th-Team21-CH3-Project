@@ -56,7 +56,6 @@ private:
 	UStatusComponent* GetStatus();
 	
 	int32 objectBreakCount;
-	int32 phaseStartObjectCount;
 	EPhaseState currentState;
 	
 #pragma region MeteorStrike
