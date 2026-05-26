@@ -26,7 +26,11 @@ private:
 
 public:
 	FOnPostDead OnPostDead;
+	UPROPERTY(BlueprintReadOnly)
+	float NormalizedCurrentPitch; //에임오프셋 Pitch
 
+	UPROPERTY(BlueprintReadOnly)
+	float NormalizedCurrentYaw;
 protected:
 	TObjectPtr<ACharacterBase> OwnerCharacter;
 	TObjectPtr<UCharacterMovementComponent> OwnerCharacterMovement;
@@ -39,12 +43,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	float Direction = 0;
-
-	UPROPERTY(BlueprintReadOnly)
-	float NormalizedCurrentPitch; //에임오프셋 Pitch
-
-	UPROPERTY(BlueprintReadOnly)
-	float NormalizedCurrentYaw;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	uint8 bIsMove : 1; //ABP에서 사용할 Get변수

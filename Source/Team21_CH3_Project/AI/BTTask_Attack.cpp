@@ -48,12 +48,6 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 
 	if (Player && BB->GetValueAsFloat(AttackRangeKey.SelectedKeyName) >= 500.f)
 	{
-		FVector StartPos = NPC->GetActorLocation() + FVector(0.f, 0.f, 50.f);
-		FVector EndPos = Player->GetActorLocation();
-
-		FRotator LookAtRotation = FRotationMatrix::MakeFromX(EndPos - StartPos).Rotator();
-
-		NPC->SetActorRotation(LookAtRotation);
 
 		NPC->BeginAttack();
 	}

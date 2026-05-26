@@ -9,10 +9,12 @@
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Character/NonPlayerCharacter.h"
 #include "Character/PlayerCharacter.h"
+#include "Animation/CharacterAnimInstance.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardData.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 int32 AAI_Controller::ShowAIDebug(0);
@@ -151,3 +153,28 @@ void AAI_Controller::OnTargetDetected(AActor* Actor, const FAIStimulus Stimulus)
 		GetBlackboardComponent()->ClearValue(FName("TargetCharacter"));
 	}
 }
+/*
+void AAI_Controller::Tick(float DeltaTime)
+{
+	UBlackboardComponent* BB = GetBlackboardComponent();
+
+	APlayerCharacter* Target = Cast<APlayerCharacter>(BB->GetValueAsObject(FName("TargetCharacter")));
+	ANonPlayerCharacter* NPC = Cast<ANonPlayerCharacter>(GetPawn());
+
+	if (NPC->ActorHasTag("Shooter") && Target)
+	{
+		UCharacterAnimInstance* AnimationInstance = Cast <UCharacterAnimInstance>(NPC->GetMesh()->GetAnimInstance());
+		if (AnimationInstance)
+		{
+			FRotator LookAtRotator = UKismetMathLibrary::FindLookAtRotation(NPC->GetActorLocation(), Target->GetActorLocation());
+
+			FRotator DeltaRotator = UKismetMathLibrary::NormalizedDeltaRotator(LookAtRotator, NPC->GetActorRotation());
+
+			float TargetYaw = FMath::Clamp(DeltaRotator.Yaw, -90.f, 90.f);
+			float TargetPitch = FMath::Clamp(DeltaRotator.Pitch, -90.f, 90.f);
+
+			AnimationInstance->NormalizedCurrentPitch = FMath::FInterpTo(AnimationInstance->NormalizedCurrentPitch, TargetPitch, DeltaTime, 5.f);
+			AnimationInstance->NormalizedCurrentYaw = FMath::FInterpTo(AnimationInstance->NormalizedCurrentYaw, TargetYaw, DeltaTime, 5.f);
+		}
+	}
+}*/

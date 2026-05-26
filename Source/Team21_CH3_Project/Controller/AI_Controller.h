@@ -25,6 +25,7 @@ class TEAM21_CH3_PROJECT_API AAI_Controller : public ADetourCrowdAIController
 public:
 	AAI_Controller(const FObjectInitializer& ObjectInitializer);
 	virtual void UpdateControlRotation(float DeltaTime, bool bUpdatePawn) override;
+	//virtual void Tick(float DeltaTime) override;
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
