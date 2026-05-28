@@ -1,7 +1,10 @@
 # Survive the Wave
 
 Unreal Engine 5.5 기반 3D 슈터 팀 프로젝트입니다.  
-웨이브 전투, 증강 카드, 보스 기믹, 특성 성장, OutGame UI 흐름을 C++와 UMG 중심으로 구현했습니다.
+플레이어가 웨이브 단위로 적을 처치하며 골드와 증강 효과를 얻고,  
+OutGame에서 무기/특성/설정을 관리한 뒤 다음 전투로 진입하는 구조입니다.
+
+핵심 목표는 단순 콘텐츠 나열보다, 자연스러운 Character, InGame전투 루프와 AI, 데이터 기반 성장, WaveSpawn 시스템을 Unreal C++ 기반으로 구현하는 것이었습니다.
 
 ## Demo
 
@@ -18,13 +21,6 @@ Unreal Engine 5.5 기반 3D 슈터 팀 프로젝트입니다.
 | 언어 | C++ |
 | 주요 모듈 | Enhanced Input, UMG, AIModule, NavigationSystem, Niagara, LevelSequence |
 | 플랫폼 | Windows |
-
-## Overview
-
-플레이어가 웨이브 단위로 적을 처치하며 골드와 증강 효과를 얻고,  
-OutGame에서 무기/특성/설정을 관리한 뒤 다음 전투로 진입하는 구조의 슈터 프로젝트입니다.
-
-핵심 목표는 단순 콘텐츠 나열보다, 전투 루프와 UI 흐름, 데이터 기반 성장 시스템, 보스 기믹 구조를 Unreal C++ 기반으로 구현하는 것이었습니다.
 
 ## Main System
 ### OutGame UI - 조범근
